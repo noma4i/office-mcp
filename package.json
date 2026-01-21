@@ -1,15 +1,25 @@
 {
   "name": "word-mcp",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "MCP server for controlling Microsoft Word via AppleScript on macOS (based on Anthropic's Word extension)",
   "type": "module",
   "private": true,
-  "main": "server/index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
-    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage"
+    "build": "node scripts/build.js",
+    "build:watch": "node scripts/build.js --watch",
+    "dev": "yarn build && node dist/index.js",
+    "start": "node dist/index.js",
+    "test": "NODE_OPTIONS=--experimental-vm-modules yarn jest",
+    "test:watch": "NODE_OPTIONS=--experimental-vm-modules yarn jest --watch",
+    "test:coverage": "NODE_OPTIONS=--experimental-vm-modules yarn jest --coverage",
+    "clean": "rm -rf dist"
   },
+  "files": [
+    "dist/",
+    "manifest.json",
+    "icon.png"
+  ],
   "author": {
     "name": "noma4i",
     "url": "https://github.com/noma4i"
