@@ -1,0 +1,96 @@
+{
+  "extensionId": "ant.dir.ant.anthropic.ms_office_word",
+  "version": "0.4.1",
+  "downloadedAt": 1768602442028,
+  "manifest": {
+    "manifest_version": "0.3",
+    "name": "Word (By Anthropic)",
+    "display_name": "Word (By Anthropic)",
+    "version": "0.4.1",
+    "description": "Control Microsoft Word with AppleScript automation",
+    "long_description": "This extension allows Claude to interact with Microsoft Word on macOS, enabling document creation, editing, formatting, and management.\n\nIt uses macOS AppleScript automation to control Word and requires your explicit permission through macOS security prompts before accessing Microsoft Word. It is not affiliated with or endorsed by Microsoft Corporation.",
+    "author": {
+      "name": "Anthropic",
+      "url": "https://www.anthropic.com"
+    },
+    "homepage": "https://www.anthropic.com",
+    "documentation": "https://support.anthropic.com/en/collections/4078531-claude-ai",
+    "support": "https://support.anthropic.com/en/collections/4078531-claude-ai",
+    "icon": "icon.png",
+    "server": {
+      "type": "node",
+      "entry_point": "server/index.js",
+      "mcp_config": {
+        "command": "node",
+        "args": [
+          "${__dirname}/server/index.js"
+        ],
+        "env": {
+          "HOME": "${HOME}"
+        }
+      }
+    },
+    "tools": [
+      {
+        "name": "create_document",
+        "description": "Create a new Word document with optional content"
+      },
+      {
+        "name": "open_document",
+        "description": "Open an existing Word document"
+      },
+      {
+        "name": "get_document_text",
+        "description": "Get all text content from the active document"
+      },
+      {
+        "name": "insert_text",
+        "description": "Insert text at the current cursor position"
+      },
+      {
+        "name": "replace_text",
+        "description": "Find and replace text in the active document"
+      },
+      {
+        "name": "format_text",
+        "description": "Apply formatting to selected text (bold, italic, underline, font, size, color)"
+      },
+      {
+        "name": "save_document",
+        "description": "Save the active document"
+      },
+      {
+        "name": "close_document",
+        "description": "Close the active document"
+      },
+      {
+        "name": "export_pdf",
+        "description": "Export the active document as PDF"
+      }
+    ],
+    "keywords": [
+      "microsoft",
+      "word",
+      "office",
+      "documents",
+      "writing",
+      "productivity",
+      "macos",
+      "automation"
+    ],
+    "license": "MIT",
+    "privacy_policies": [
+      "https://www.microsoft.com/en-us/privacy/privacystatement"
+    ],
+    "compatibility": {
+      "claude_desktop": ">=0.10.0",
+      "platforms": [
+        "darwin"
+      ],
+      "runtimes": {
+        "node": ">=16.0.0"
+      }
+    }
+  },
+  "isInternalDxt": true
+}

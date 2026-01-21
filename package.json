@@ -1,0 +1,36 @@
+{
+  "name": "word-mcp",
+  "version": "0.6.0",
+  "description": "MCP server for controlling Microsoft Word via AppleScript on macOS (based on Anthropic's Word extension)",
+  "type": "module",
+  "private": true,
+  "main": "server/index.js",
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage"
+  },
+  "author": {
+    "name": "noma4i",
+    "url": "https://github.com/noma4i"
+  },
+  "contributors": [
+    {
+      "name": "Anthropic",
+      "url": "https://www.anthropic.com"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/noma4i/word_mcp.git"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/noma4i/word_mcp",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.21.1"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "jest": "^29.7.0"
+  }
+}
