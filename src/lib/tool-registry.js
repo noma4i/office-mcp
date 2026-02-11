@@ -6,6 +6,9 @@ import { hyperlinkTools } from '../tools/hyperlinks.js';
 import { paragraphTools } from '../tools/paragraphs.js';
 import { navigationTools } from '../tools/navigation.js';
 import { imageTools } from '../tools/images.js';
+import { headerFooterTools } from '../tools/headers-footers.js';
+import { sectionTools } from '../tools/sections.js';
+import { formattingReadTools } from '../tools/formatting-read.js';
 import { excelWorkbookTools } from '../tools/excel-workbooks.js';
 import { excelSheetTools } from '../tools/excel-sheets.js';
 import { excelCellTools } from '../tools/excel-cells.js';
@@ -22,6 +25,9 @@ export const ALL_TOOLS = [
   ...paragraphTools,
   ...navigationTools,
   ...imageTools,
+  ...headerFooterTools,
+  ...sectionTools,
+  ...formattingReadTools,
   ...excelWorkbookTools,
   ...excelSheetTools,
   ...excelCellTools,

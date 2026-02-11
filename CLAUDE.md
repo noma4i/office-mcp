@@ -24,7 +24,7 @@
 │   ├── index.js              # Точка входа
 │   ├── lib/
 │   │   ├── server.js         # MCP Server setup (Microsoft-Office-Server)
-│   │   ├── tool-registry.js  # Регистрация 70 инструментов (37 Word + 33 Excel)
+│   │   ├── tool-registry.js  # Регистрация 84 инструментов (51 Word + 33 Excel)
 │   │   ├── tool-executor.js  # Обработка CallTool requests
 │   │   ├── validators.js     # Функции валидации
 │   │   └── applescript/
@@ -33,13 +33,16 @@
 │   │       └── template-engine.js # Шаблонизатор
 │   └── tools/
 │       ├── documents.js        # Word: 7 инструментов
-│       ├── text.js             # Word: 3 инструмента
+│       ├── text.js             # Word: 4 инструмента (insert, replace, delete, format)
 │       ├── tables.js           # Word: 10 инструментов
 │       ├── bookmarks.js        # Word: 4 инструмента
 │       ├── hyperlinks.js       # Word: 2 инструмента
-│       ├── paragraphs.js       # Word: 3 инструмента
+│       ├── paragraphs.js       # Word: 4 инструмента (list, goto, style, delete)
 │       ├── navigation.js       # Word: 5 инструментов
 │       ├── images.js           # Word: 3 инструмента
+│       ├── headers-footers.js  # Word: 6 инструментов (get/set header/footer, insert images)
+│       ├── sections.js         # Word: 4 инструмента (list, info, page setup, break)
+│       ├── formatting-read.js  # Word: 2 инструмента (text formatting, paragraph formatting)
 │       ├── excel-workbooks.js  # Excel: 6 инструментов
 │       ├── excel-sheets.js     # Excel: 6 инструментов
 │       ├── excel-cells.js      # Excel: 7 инструментов
@@ -59,7 +62,7 @@
 | ---------------------------------------- | ---------------------------------------------- | ------------------------------------------------------- |
 | `src/index.js`                           | Точка входа                                    | `main()`                                                |
 | `src/lib/server.js`                      | MCP Server v0.8.0                              | `createServer()`, `startServer()`                       |
-| `src/lib/tool-registry.js`               | Регистрация 70 инструментов                    | `ALL_TOOLS`, `getToolDefinitions()`, `getToolHandler()` |
+| `src/lib/tool-registry.js`               | Регистрация 84 инструментов                    | `ALL_TOOLS`, `getToolDefinitions()`, `getToolHandler()` |
 | `src/lib/tool-executor.js`               | Обработчик инструментов                        | `executeTool()`                                         |
 | `src/lib/validators.js`                  | Валидация (`validateInteger` через `Number()`) | 5 функций                                               |
 | `src/lib/applescript/executor.js`        | Выполнение AppleScript (таймаут 30с)           | `runAppleScript()`                                      |
@@ -71,7 +74,7 @@
 - **Word**: префикс `word_` (`word_create_document`, `word_insert_text`, `word_list_tables`)
 - **Excel**: префикс `excel_` (`excel_create_workbook`, `excel_set_cell`, `excel_sort_range`)
 
-## Инструменты Word (37 шт.)
+## Инструменты Word (51 шт.)
 
 ### Документы (7)
 
@@ -85,13 +88,14 @@
 | `word_close_document`    | Закрыть          | `save?`    |
 | `word_export_pdf`        | Экспорт в PDF    | `path`     |
 
-### Текст (3)
+### Текст (4)
 
-| Инструмент          | Назначение       | Параметры                                          |
-| ------------------- | ---------------- | -------------------------------------------------- |
-| `word_insert_text`  | Вставить текст   | `text`                                             |
-| `word_replace_text` | Найти и заменить | `find`, `replace`, `all?`                          |
-| `word_format_text`  | Форматирование   | `bold?`, `italic?`, `underline?`, `font?`, `size?` |
+| Инструмент          | Назначение              | Параметры                                          |
+| ------------------- | ----------------------- | -------------------------------------------------- |
+| `word_insert_text`  | Вставить текст          | `text`                                             |
+| `word_replace_text` | Найти и заменить        | `find`, `replace?` (default ""), `all?`            |
+| `word_delete_text`  | Удалить текст/выделение | `text?` (если указан — найти и удалить все)        |
+| `word_format_text`  | Форматирование          | `bold?`, `italic?`, `underline?`, `font?`, `size?` |
 
 ### Навигация (5)
 
@@ -118,7 +122,7 @@
 | `word_add_table_column`    | Добавить колонку  | `tableIndex`, `afterColumn?`             |
 | `word_delete_table_column` | Удалить колонку   | `tableIndex`, `column`                   |
 
-### Закладки (4), Гиперссылки (2), Параграфы (3), Изображения (3)
+### Закладки (4), Гиперссылки (2), Параграфы (4), Изображения (3)
 
 | Инструмент                 | Назначение                             | Параметры                                        |
 | -------------------------- | -------------------------------------- | ------------------------------------------------ |
@@ -131,9 +135,37 @@
 | `word_list_paragraphs`     | Список со стилями                      | `limit?`                                         |
 | `word_goto_paragraph`      | Перейти                                | `index`                                          |
 | `word_set_paragraph_style` | Установить стиль                       | `index`, `styleName`                             |
+| `word_delete_paragraph`    | Удалить параграф                       | `index`                                          |
 | `word_insert_image`        | Вставить через clipboard               | `path`, `width?`, `height?`                      |
 | `word_list_inline_shapes`  | Список shapes                          | —                                                |
 | `word_resize_inline_shape` | Изменить размер                        | `index`, `width?`, `height?`, `lockAspectRatio?` |
+
+### Headers/Footers (6)
+
+| Инструмент                 | Назначение                    | Параметры                                                       |
+| -------------------------- | ----------------------------- | --------------------------------------------------------------- |
+| `word_get_header_text`     | Получить текст header         | `section?` (default 1), `type?` (primary/first_page/even_pages) |
+| `word_set_header_text`     | Установить текст header       | `text`, `section?`, `type?`                                     |
+| `word_get_footer_text`     | Получить текст footer         | `section?`, `type?`                                             |
+| `word_set_footer_text`     | Установить текст footer       | `text`, `section?`, `type?`                                     |
+| `word_insert_header_image` | Вставить изображение в header | `path`, `section?`, `type?`, `width?`, `height?`                |
+| `word_insert_footer_image` | Вставить изображение в footer | `path`, `section?`, `type?`, `width?`, `height?`                |
+
+### Секции (4)
+
+| Инструмент                  | Назначение                     | Параметры                                                                                                     |
+| --------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| `word_list_sections`        | Список секций с page setup     | —                                                                                                             |
+| `word_get_section_info`     | Детальная инфо о секции        | `index`                                                                                                       |
+| `word_set_page_setup`       | Установить margins/orientation | `index?`, `topMargin?`, `bottomMargin?`, `leftMargin?`, `rightMargin?`, `orientation?`, `differentFirstPage?` |
+| `word_insert_section_break` | Вставить разрыв секции         | `type?` (next_page/continuous/even_page/odd_page)                                                             |
+
+### Чтение форматирования (2)
+
+| Инструмент                      | Назначение                                  | Параметры |
+| ------------------------------- | ------------------------------------------- | --------- |
+| `word_get_text_formatting`      | Шрифт, размер, bold, italic, цвет выделения | —         |
+| `word_get_paragraph_formatting` | Стиль, выравнивание, отступы, интервалы     | —         |
 
 ## Инструменты Excel (33 шт.)
 
@@ -202,21 +234,27 @@
 
 ## Индексация
 
-- **Word**: все индексы 1-based (tableIndex, row, column, index)
+- **Word**: все индексы 1-based (tableIndex, row, column, index, section)
 - **Excel**: ячейки в A1-нотации, листы по имени или 1-based индексу, строки/колонки 1-based
 
 ## AppleScript синтаксис
 
 ### Word
 
-| Операция       | Синтаксис                                                                         |
-| -------------- | --------------------------------------------------------------------------------- |
-| Ячейка таблицы | `cell COLUMN of row ROW of table`                                                 |
-| Collapse       | `set selection end/start of selection to selection start/end of selection`        |
-| Find           | `execute find findObj`                                                            |
-| Закладки       | `make new bookmark at d with properties {name:"X", \|bookmark range\|:selection}` |
-| Гиперссылки    | `hyperlink objects of d`, `text to display of h` (в try/catch)                    |
-| Изображение    | clipboard + `paste object selection`                                              |
+| Операция            | Синтаксис                                                                         |
+| ------------------- | --------------------------------------------------------------------------------- |
+| Ячейка таблицы      | `cell COLUMN of row ROW of table`                                                 |
+| Collapse            | `set selection end/start of selection to selection start/end of selection`        |
+| Find                | `execute find findObj`                                                            |
+| Закладки            | `make new bookmark at d with properties {name:"X", \|bookmark range\|:selection}` |
+| Гиперссылки         | `hyperlink objects of d`, `text to display of h` (в try/catch)                    |
+| Изображение         | clipboard + `paste object selection`                                              |
+| Header              | `get header of section N of d index header footer primary`                        |
+| Footer              | `get footer of section N of d index header footer primary`                        |
+| Header/Footer текст | `content of text object of refHeader`                                             |
+| Section break       | `insert break r break type section break next page`                               |
+| Page setup          | `page setup of section N of d` → margins, orientation                             |
+| Paragraph format    | `paragraph format left indent of pf` (НЕ `left indent of pf`)                     |
 
 ### Excel
 
@@ -246,13 +284,13 @@ yarn test:watch        # Watch mode
 yarn test:coverage     # С покрытием
 ```
 
-| Тестовый файл                            | Покрытие                                   | Тестов |
-| ---------------------------------------- | ------------------------------------------ | ------ |
-| `tests/validation.test.js`               | Валидация                                  | 20+    |
-| `tests/mcp-tools.test.js`                | Word 37 инструментов                       | 80+    |
-| `tests/server-integration.test.js`       | Интеграция                                 | 30+    |
-| `tests/applescript-syntax.test.js`       | Word AppleScript + аудит + template-engine | 52     |
-| `tests/excel-applescript-syntax.test.js` | Excel AppleScript (все 33 инструмента)     | 42     |
+| Тестовый файл                            | Покрытие                                       | Тестов |
+| ---------------------------------------- | ---------------------------------------------- | ------ |
+| `tests/validation.test.js`               | Валидация                                      | 20+    |
+| `tests/mcp-tools.test.js`                | Word инструменты                               | 80+    |
+| `tests/server-integration.test.js`       | Интеграция (84 инструмента)                    | 40+    |
+| `tests/applescript-syntax.test.js`       | Word AppleScript + headers/sections/formatting | 70+    |
+| `tests/excel-applescript-syntax.test.js` | Excel AppleScript (все 33 инструмента)         | 42     |
 
 ## Связи
 

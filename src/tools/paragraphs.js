@@ -137,5 +137,42 @@ export const paragraphTools = [
 
       return await runAppleScript(script);
     }
+  },
+
+  {
+    name: 'word_delete_paragraph',
+    description: 'Delete a paragraph by index in the active Word document (1-based)',
+    annotations: { destructiveHint: true },
+    inputSchema: {
+      type: 'object',
+      properties: {
+        index: {
+          type: 'integer',
+          description: 'Paragraph index to delete (1-based)'
+        }
+      },
+      required: ['index']
+    },
+    async handler(args) {
+      const index = validateInteger(args.index, 'index', 1);
+
+      const script = `
+        tell application "Microsoft Word"
+          if (count of documents) = 0 then
+            return "No document is open"
+          end if
+          set d to active document
+          set paraCount to count of paragraphs of d
+          if ${index} > paraCount then
+            return "Paragraph index out of range. Document has " & paraCount & " paragraphs."
+          end if
+          set p to paragraph ${index} of d
+          delete (text object of p)
+          return "Paragraph ${index} deleted"
+        end tell
+      `;
+
+      return await runAppleScript(script);
+    }
   }
 ];

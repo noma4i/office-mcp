@@ -54,11 +54,11 @@ export const textTools = [
           default: true
         }
       },
-      required: ['find', 'replace']
+      required: ['find']
     },
     async handler(args) {
       const find = validateString(args.find, 'find', true);
-      const replace = validateString(args.replace, 'replace', true);
+      const replace = args.replace !== undefined ? validateString(args.replace, 'replace', false) : '';
       const all = validateBoolean(args.all, 'all', true);
 
       const script = `
@@ -79,6 +79,54 @@ export const textTools = [
       `;
 
       return await runAppleScript(script);
+    }
+  },
+
+  {
+    name: 'word_delete_text',
+    description: 'Delete selected text or find and delete all occurrences of specific text in the active Word document',
+    annotations: { destructiveHint: true },
+    inputSchema: {
+      type: 'object',
+      properties: {
+        text: {
+          type: 'string',
+          description: 'Text to find and delete. If not provided, deletes the current selection.'
+        }
+      }
+    },
+    async handler(args) {
+      if (args.text !== undefined) {
+        const text = validateString(args.text, 'text', true);
+        const script = `
+          tell application "Microsoft Word"
+            if (count of documents) = 0 then
+              return "No document is open"
+            end if
+            set activeDoc to active document
+            tell activeDoc
+              set findObject to find object of selection
+              clear formatting findObject
+              set content of findObject to ${JSON.stringify(text)}
+              set content of replacement of findObject to ""
+              execute find findObject replace replace all
+            end tell
+            return "Text deleted successfully"
+          end tell
+        `;
+        return await runAppleScript(script);
+      } else {
+        const script = `
+          tell application "Microsoft Word"
+            if (count of documents) = 0 then
+              return "No document is open"
+            end if
+            delete (text object of selection)
+            return "Selected text deleted"
+          end tell
+        `;
+        return await runAppleScript(script);
+      }
     }
   },
 

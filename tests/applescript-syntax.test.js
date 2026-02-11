@@ -21,6 +21,9 @@ const { hyperlinkTools } = await import('../src/tools/hyperlinks.js');
 const { navigationTools } = await import('../src/tools/navigation.js');
 const { documentTools } = await import('../src/tools/documents.js');
 const { imageTools } = await import('../src/tools/images.js');
+const { headerFooterTools } = await import('../src/tools/headers-footers.js');
+const { sectionTools } = await import('../src/tools/sections.js');
+const { formattingReadTools } = await import('../src/tools/formatting-read.js');
 const { processTemplate } = await import('../src/lib/applescript/template-engine.js');
 
 function findTool(tools, name) {
@@ -368,6 +371,119 @@ describe('AppleScript Syntax Verification', () => {
     test('open_document annotation is not readOnlyHint: true', () => {
       const tool = findTool(documentTools, 'word_open_document');
       expect(tool.annotations.readOnlyHint).toBe(false);
+    });
+  });
+
+  describe('Header/Footer Tools', () => {
+    test('word_get_header_text compiles', async () => {
+      const script = await captureScript(findTool(headerFooterTools, 'word_get_header_text'), {});
+      expect(script).toBeTruthy();
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
+    test('word_set_header_text compiles', async () => {
+      const script = await captureScript(findTool(headerFooterTools, 'word_set_header_text'), { text: 'Test Header' });
+      expect(script).toBeTruthy();
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
+    test('word_get_footer_text compiles', async () => {
+      const script = await captureScript(findTool(headerFooterTools, 'word_get_footer_text'), {});
+      expect(script).toBeTruthy();
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
+    test('word_set_footer_text compiles', async () => {
+      const script = await captureScript(findTool(headerFooterTools, 'word_set_footer_text'), { text: 'Test Footer' });
+      expect(script).toBeTruthy();
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
+    test('word_insert_header_image compiles', async () => {
+      const script = await captureScript(findTool(headerFooterTools, 'word_insert_header_image'), { path: '/tmp/test.png' });
+      expect(script).toBeTruthy();
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
+    test('word_insert_footer_image compiles', async () => {
+      const script = await captureScript(findTool(headerFooterTools, 'word_insert_footer_image'), { path: '/tmp/test.png' });
+      expect(script).toBeTruthy();
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+  });
+
+  describe('Section Tools', () => {
+    test('word_list_sections compiles', async () => {
+      const script = await captureScript(findTool(sectionTools, 'word_list_sections'), {});
+      expect(script).toBeTruthy();
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
+    test('word_get_section_info compiles', async () => {
+      const script = await captureScript(findTool(sectionTools, 'word_get_section_info'), { index: 1 });
+      expect(script).toBeTruthy();
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
+    test('word_set_page_setup compiles', async () => {
+      const script = await captureScript(findTool(sectionTools, 'word_set_page_setup'), { topMargin: 72 });
+      expect(script).toBeTruthy();
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
+    test('word_insert_section_break compiles', async () => {
+      const script = await captureScript(findTool(sectionTools, 'word_insert_section_break'), {});
+      expect(script).toBeTruthy();
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+  });
+
+  describe('Formatting Read Tools', () => {
+    test('word_get_text_formatting compiles', async () => {
+      const script = await captureScript(findTool(formattingReadTools, 'word_get_text_formatting'), {});
+      expect(script).toBeTruthy();
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
+    test('word_get_paragraph_formatting compiles', async () => {
+      const script = await captureScript(findTool(formattingReadTools, 'word_get_paragraph_formatting'), {});
+      expect(script).toBeTruthy();
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+  });
+
+  describe('Delete Tools', () => {
+    test('word_delete_text with text compiles', async () => {
+      const script = await captureScript(findTool(textTools, 'word_delete_text'), { text: 'test' });
+      expect(script).toBeTruthy();
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
+    test('word_delete_text without text compiles', async () => {
+      const script = await captureScript(findTool(textTools, 'word_delete_text'), {});
+      expect(script).toBeTruthy();
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
+    test('word_delete_paragraph compiles', async () => {
+      const script = await captureScript(findTool(paragraphTools, 'word_delete_paragraph'), { index: 1 });
+      expect(script).toBeTruthy();
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
     });
   });
 
