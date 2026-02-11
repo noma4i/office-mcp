@@ -24,6 +24,7 @@ const { imageTools } = await import('../src/tools/word-images.js');
 const { headerFooterTools } = await import('../src/tools/word-headers-footers.js');
 const { sectionTools } = await import('../src/tools/word-sections.js');
 const { formattingReadTools } = await import('../src/tools/word-formatting-read.js');
+const { clipboardTools } = await import('../src/tools/word-clipboard.js');
 const { processTemplate } = await import('../src/lib/applescript/template-engine.js');
 
 function findTool(tools, name) {
@@ -484,6 +485,49 @@ describe('AppleScript Syntax Verification', () => {
       expect(script).toBeTruthy();
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
+    });
+  });
+
+  describe('Clipboard Tools', () => {
+    test('word_copy_content without params compiles', async () => {
+      const script = await captureScript(findTool(clipboardTools, 'word_copy_content'), {});
+      expect(script).toBeTruthy();
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+      expect(script).toContain('copy object selection');
+    });
+
+    test('word_copy_content with paragraph range compiles', async () => {
+      const script = await captureScript(findTool(clipboardTools, 'word_copy_content'), { startParagraph: 2, endParagraph: 5 });
+      expect(script).toBeTruthy();
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+      expect(script).toContain('copy object selection');
+      expect(script).toContain('set rStart to selection start of selection');
+      expect(script).toContain('set rEnd to selection end of selection');
+    });
+
+    test('word_copy_content with single paragraph compiles', async () => {
+      const script = await captureScript(findTool(clipboardTools, 'word_copy_content'), { startParagraph: 3 });
+      expect(script).toBeTruthy();
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
+    test('word_copy_content rejects endParagraph without startParagraph', async () => {
+      await expect(findTool(clipboardTools, 'word_copy_content').handler({ endParagraph: 5 })).rejects.toThrow('endParagraph requires startParagraph');
+    });
+
+    test('word_copy_content rejects endParagraph < startParagraph', async () => {
+      await expect(findTool(clipboardTools, 'word_copy_content').handler({ startParagraph: 5, endParagraph: 2 })).rejects.toThrow('endParagraph must be >= startParagraph');
+    });
+
+    test('word_paste_content compiles', async () => {
+      const script = await captureScript(findTool(clipboardTools, 'word_paste_content'), {});
+      expect(script).toBeTruthy();
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+      expect(script).toContain('paste object selection');
     });
   });
 

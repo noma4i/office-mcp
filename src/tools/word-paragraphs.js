@@ -166,8 +166,8 @@ export const paragraphTools = [
           if ${index} > paraCount then
             return "Paragraph index out of range. Document has " & paraCount & " paragraphs."
           end if
-          set p to paragraph ${index} of d
-          delete (text object of p)
+          select (text object of paragraph ${index} of d)
+          delete (text object of selection)
           return "Paragraph ${index} deleted"
         end tell
       `;

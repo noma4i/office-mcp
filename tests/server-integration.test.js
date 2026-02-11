@@ -68,6 +68,9 @@ describe('MCP Server Integration', () => {
       'word_insert_image',
       'word_list_inline_shapes',
       'word_resize_inline_shape',
+      // Word Clipboard tools (2)
+      'word_copy_content',
+      'word_paste_content',
       // Word Header/Footer tools (6)
       'word_get_header_text',
       'word_set_header_text',
@@ -128,8 +131,8 @@ describe('MCP Server Integration', () => {
       'excel_export_csv'
     ];
 
-    test('should have all 84 tools defined', () => {
-      expect(tools).toHaveLength(84);
+    test('should have all 86 tools defined', () => {
+      expect(tools).toHaveLength(86);
     });
 
     test('should have document tools', () => {

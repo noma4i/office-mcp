@@ -66,14 +66,11 @@ export const textTools = [
           if (count of documents) = 0 then
             return "No document is open"
           end if
-          set activeDoc to active document
-          tell activeDoc
-            set findObject to find object of selection
-            clear formatting findObject
-            set content of findObject to ${JSON.stringify(find)}
-            set content of replacement of findObject to ${JSON.stringify(replace)}
-            ${all ? 'execute find findObject replace replace all' : 'execute find findObject replace replace one'}
-          end tell
+          set findObject to find object of selection
+          clear formatting findObject
+          set content of findObject to ${JSON.stringify(find)}
+          set content of replacement of findObject to ${JSON.stringify(replace)}
+          ${all ? 'execute find findObject replace replace all' : 'execute find findObject replace replace one'}
           return "Text replaced successfully"
         end tell
       `;
@@ -103,14 +100,11 @@ export const textTools = [
             if (count of documents) = 0 then
               return "No document is open"
             end if
-            set activeDoc to active document
-            tell activeDoc
-              set findObject to find object of selection
-              clear formatting findObject
-              set content of findObject to ${JSON.stringify(text)}
-              set content of replacement of findObject to ""
-              execute find findObject replace replace all
-            end tell
+            set findObject to find object of selection
+            clear formatting findObject
+            set content of findObject to ${JSON.stringify(text)}
+            set content of replacement of findObject to ""
+            execute find findObject replace replace all
             return "Text deleted successfully"
           end tell
         `;

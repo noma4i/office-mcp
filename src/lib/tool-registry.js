@@ -6,6 +6,7 @@ import { hyperlinkTools } from '../tools/word-hyperlinks.js';
 import { paragraphTools } from '../tools/word-paragraphs.js';
 import { navigationTools } from '../tools/word-navigation.js';
 import { imageTools } from '../tools/word-images.js';
+import { clipboardTools } from '../tools/word-clipboard.js';
 import { headerFooterTools } from '../tools/word-headers-footers.js';
 import { sectionTools } from '../tools/word-sections.js';
 import { formattingReadTools } from '../tools/word-formatting-read.js';
@@ -25,6 +26,7 @@ export const ALL_TOOLS = [
   ...paragraphTools,
   ...navigationTools,
   ...imageTools,
+  ...clipboardTools,
   ...headerFooterTools,
   ...sectionTools,
   ...formattingReadTools,

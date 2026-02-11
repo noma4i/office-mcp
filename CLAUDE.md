@@ -24,7 +24,7 @@
 │   ├── index.js              # Точка входа
 │   ├── lib/
 │   │   ├── server.js         # MCP Server setup (Microsoft-Office-Server)
-│   │   ├── tool-registry.js  # Регистрация 84 инструментов (51 Word + 33 Excel)
+│   │   ├── tool-registry.js  # Регистрация 86 инструментов (53 Word + 33 Excel)
 │   │   ├── tool-executor.js  # Обработка CallTool requests
 │   │   ├── validators.js     # Функции валидации
 │   │   └── applescript/
@@ -40,6 +40,7 @@
 │       ├── word-paragraphs.js       # Word: 4 инструмента (list, goto, style, delete)
 │       ├── word-navigation.js       # Word: 5 инструментов
 │       ├── word-images.js           # Word: 3 инструмента
+│       ├── word-clipboard.js        # Word: 2 инструмента (copy, paste)
 │       ├── word-headers-footers.js  # Word: 6 инструментов (get/set header/footer, insert images)
 │       ├── word-sections.js         # Word: 4 инструмента (list, info, page setup, break)
 │       ├── word-formatting-read.js  # Word: 2 инструмента (text formatting, paragraph formatting)
@@ -62,7 +63,7 @@
 | ---------------------------------------- | ---------------------------------------------- | ------------------------------------------------------- |
 | `src/index.js`                           | Точка входа                                    | `main()`                                                |
 | `src/lib/server.js`                      | MCP Server v0.8.0                              | `createServer()`, `startServer()`                       |
-| `src/lib/tool-registry.js`               | Регистрация 84 инструментов                    | `ALL_TOOLS`, `getToolDefinitions()`, `getToolHandler()` |
+| `src/lib/tool-registry.js`               | Регистрация 86 инструментов                    | `ALL_TOOLS`, `getToolDefinitions()`, `getToolHandler()` |
 | `src/lib/tool-executor.js`               | Обработчик инструментов                        | `executeTool()`                                         |
 | `src/lib/validators.js`                  | Валидация (`validateInteger` через `Number()`) | 5 функций                                               |
 | `src/lib/applescript/executor.js`        | Выполнение AppleScript (таймаут 30с)           | `runAppleScript()`                                      |
@@ -74,7 +75,7 @@
 - **Word**: префикс `word_` (`word_create_document`, `word_insert_text`, `word_list_tables`)
 - **Excel**: префикс `excel_` (`excel_create_workbook`, `excel_set_cell`, `excel_sort_range`)
 
-## Инструменты Word (51 шт.)
+## Инструменты Word (53 шт.)
 
 ### Документы (7)
 
@@ -139,6 +140,13 @@
 | `word_insert_image`        | Вставить через clipboard               | `path`, `width?`, `height?`                      |
 | `word_list_inline_shapes`  | Список shapes                          | —                                                |
 | `word_resize_inline_shape` | Изменить размер                        | `index`, `width?`, `height?`, `lockAspectRatio?` |
+
+### Clipboard (2)
+
+| Инструмент           | Назначение                         | Параметры                          |
+| -------------------- | ---------------------------------- | ---------------------------------- |
+| `word_copy_content`  | Копировать в clipboard с форматами | `startParagraph?`, `endParagraph?` |
+| `word_paste_content` | Вставить из clipboard с форматами  | —                                  |
 
 ### Headers/Footers (6)
 
@@ -245,10 +253,12 @@
 | ------------------- | --------------------------------------------------------------------------------- |
 | Ячейка таблицы      | `cell COLUMN of row ROW of table`                                                 |
 | Collapse            | `set selection end/start of selection to selection start/end of selection`        |
-| Find                | `execute find findObj`                                                            |
+| Find                | `find object of selection` (НЕ внутри `tell activeDoc`)                           |
 | Закладки            | `make new bookmark at d with properties {name:"X", \|bookmark range\|:selection}` |
 | Гиперссылки         | `hyperlink objects of d`, `text to display of h` (в try/catch)                    |
+| Copy/Paste          | `copy object selection`, `paste object selection`                                 |
 | Изображение         | clipboard + `paste object selection`                                              |
+| Delete paragraph    | `select (text object of paragraph N of d)` → `delete (text object of selection)`  |
 | Header              | `get header of section N of d index header footer primary`                        |
 | Footer              | `get footer of section N of d index header footer primary`                        |
 | Header/Footer текст | `content of text object of refHeader`                                             |
@@ -288,7 +298,7 @@ yarn test:coverage     # С покрытием
 | ---------------------------------------- | ---------------------------------------------- | ------ |
 | `tests/validation.test.js`               | Валидация                                      | 20+    |
 | `tests/mcp-tools.test.js`                | Word инструменты                               | 80+    |
-| `tests/server-integration.test.js`       | Интеграция (84 инструмента)                    | 40+    |
+| `tests/server-integration.test.js`       | Интеграция (86 инструментов)                   | 40+    |
 | `tests/applescript-syntax.test.js`       | Word AppleScript + headers/sections/formatting | 70+    |
 | `tests/excel-applescript-syntax.test.js` | Excel AppleScript (все 33 инструмента)         | 42     |
 
