@@ -3021,6 +3021,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"office-mcp@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "office-mcp@workspace:."
+  dependencies:
+    "@jest/globals": "npm:^29.7.0"
+    "@modelcontextprotocol/sdk": "npm:1.21.1"
+    jest: "npm:^29.7.0"
+  languageName: unknown
+  linkType: soft
+
 "on-finished@npm:^2.4.1":
   version: 2.4.1
   resolution: "on-finished@npm:2.4.1"
@@ -3847,16 +3857,6 @@ __metadata:
   checksum: 10c0/fe9d6463fe44a76232bb6e3b3181922c87510a5b250a98f1e43a69c99c079b3f42ddeca7e03d3e5f2241bf2d334f5a7657cfa868b97c109f3870625842f4cc15
   languageName: node
   linkType: hard
-
-"word-mcp@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "word-mcp@workspace:."
-  dependencies:
-    "@jest/globals": "npm:^29.7.0"
-    "@modelcontextprotocol/sdk": "npm:1.21.1"
-    jest: "npm:^29.7.0"
-  languageName: unknown
-  linkType: soft
 
 "wrap-ansi@npm:^7.0.0":
   version: 7.0.0

@@ -1,7 +1,7 @@
 {
-  "name": "word-mcp",
-  "version": "0.7.0",
-  "description": "MCP server for controlling Microsoft Word via AppleScript on macOS (based on Anthropic's Word extension)",
+  "name": "office-mcp",
+  "version": "0.8.0",
+  "description": "MCP server for controlling Microsoft Word and Excel via AppleScript on macOS",
   "type": "module",
   "private": true,
   "main": "dist/index.js",

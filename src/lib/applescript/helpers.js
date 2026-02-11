@@ -13,7 +13,7 @@ if length of cellText > 0 then
   end repeat
 end if`,
 
-  getTable: (tableIndex) => `
+  getTable: tableIndex => `
 set tableCount to count of tables of activeDoc
 if ${tableIndex} > tableCount then
   return "Table index out of range. Document has " & tableCount & " tables."
@@ -23,6 +23,17 @@ set t to table ${tableIndex} of activeDoc`,
   collapseToStart: `set selection end of selection to selection start of selection`,
 
   collapseToEnd: `set selection start of selection to selection end of selection`,
+
+  checkWorkbookOpen: `
+if (count of workbooks) = 0 then
+  return "No workbook is open"
+end if`,
+
+  getActiveWorkbook: `set wb to active workbook`,
+
+  getActiveSheet: `set ws to active sheet`,
+
+  getSheetByNameOrIndex: (nameOrIndex, isString) => (isString ? `set ws to worksheet ${nameOrIndex} of wb` : `set ws to worksheet ${nameOrIndex} of wb`)
 };
 
 export function escapeAppleScriptString(str) {

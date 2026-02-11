@@ -1,9 +1,6 @@
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-} from "@modelcontextprotocol/sdk/types.js";
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 
 import { getToolDefinitions, getToolHandler } from './tool-registry.js';
 import { executeTool } from './tool-executor.js';
@@ -11,13 +8,13 @@ import { executeTool } from './tool-executor.js';
 export function createServer() {
   const server = new Server(
     {
-      name: "Microsoft-Word-Server",
-      version: "0.7.0",
+      name: 'Microsoft-Office-Server',
+      version: '0.8.0'
     },
     {
       capabilities: {
-        tools: {},
-      },
+        tools: {}
+      }
     }
   );
 
@@ -27,7 +24,7 @@ export function createServer() {
     };
   });
 
-  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  server.setRequestHandler(CallToolRequestSchema, async request => {
     const toolName = request.params.name;
     const args = request.params.arguments || {};
 

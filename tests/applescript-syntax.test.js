@@ -7,7 +7,7 @@ import { join } from 'path';
 let capturedScripts = {};
 
 jest.unstable_mockModule('../src/lib/applescript/executor.js', () => ({
-  runAppleScript: async (script) => {
+  runAppleScript: async script => {
     capturedScripts._last = script;
     return 'mocked';
   }
@@ -28,7 +28,7 @@ function findTool(tools, name) {
 }
 
 function compileAppleScript(script) {
-  const tmpFile = join(tmpdir(), `as_test_${Date.now()}.applescript`);
+  const tmpFile = join(tmpdir(), `as_test_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.applescript`);
   try {
     writeFileSync(tmpFile, script, 'utf8');
     execSync(`osacompile -o /dev/null ${tmpFile}`, {
@@ -39,18 +39,21 @@ function compileAppleScript(script) {
   } catch (err) {
     return { ok: false, error: err.stderr?.toString() || err.message };
   } finally {
-    try { unlinkSync(tmpFile); } catch {}
+    try {
+      unlinkSync(tmpFile);
+    } catch {}
   }
 }
 
 async function captureScript(tool, args = {}) {
   capturedScripts._last = null;
-  try { await tool.handler(args); } catch {}
+  try {
+    await tool.handler(args);
+  } catch {}
   return capturedScripts._last;
 }
 
 describe('AppleScript Syntax Verification', () => {
-
   describe('Document Tools', () => {
     test('create_document compiles', async () => {
       const script = await captureScript(findTool(documentTools, 'create_document'), {});
@@ -352,8 +355,7 @@ describe('AppleScript Syntax Verification', () => {
     });
 
     test('resize_inline_shape rejects non-integer index', async () => {
-      await expect(findTool(imageTools, 'resize_inline_shape').handler({ index: 1.5, width: 200 }))
-        .rejects.toThrow('index must be an integer');
+      await expect(findTool(imageTools, 'resize_inline_shape').handler({ index: 1.5, width: 200 })).rejects.toThrow('index must be an integer');
     });
   });
 
@@ -390,13 +392,11 @@ describe('AppleScript Syntax Verification', () => {
     });
 
     test('throws on unsupported value types (object)', () => {
-      expect(() => processTemplate('<<OBJ>>', { OBJ: { a: 1 } }))
-        .toThrow('Unsupported template value type');
+      expect(() => processTemplate('<<OBJ>>', { OBJ: { a: 1 } })).toThrow('Unsupported template value type');
     });
 
     test('throws on unsupported value types (array)', () => {
-      expect(() => processTemplate('<<ARR>>', { ARR: [1, 2] }))
-        .toThrow('Unsupported template value type');
+      expect(() => processTemplate('<<ARR>>', { ARR: [1, 2] })).toThrow('Unsupported template value type');
     });
   });
 });

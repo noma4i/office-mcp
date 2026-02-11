@@ -1,4 +1,4 @@
-# Microsoft Word MCP Server
+# Microsoft Office MCP Server
 
 > **Правила документации:**
 >
@@ -8,233 +8,251 @@
 
 ## Overview
 
-- **Цель**: MCP сервер для управления Microsoft Word через AppleScript
+- **Цель**: MCP сервер для управления Microsoft Word и Excel через AppleScript
 - **Принцип**: Модульная архитектура с разделением инструментов по категориям
-- **Версия**: 0.7.0 (модульный рефакторинг)
+- **Версия**: 0.8.0
 - **Автор**: noma4i (github.com/noma4i)
-- **Оригинал**: Based on Anthropic's Word extension
+- **Пакет**: `office-mcp`
 
-## Архитектура (v0.7.0)
+## Архитектура
 
 ### Структура проекта
 
 ```
 /
-├── src/                      # Исходники
-│   ├── index.js              # Точка входа (15 строк)
+├── src/
+│   ├── index.js              # Точка входа
 │   ├── lib/
-│   │   ├── server.js         # MCP Server setup
-│   │   ├── tool-registry.js  # Регистрация инструментов
+│   │   ├── server.js         # MCP Server setup (Microsoft-Office-Server)
+│   │   ├── tool-registry.js  # Регистрация 70 инструментов (37 Word + 33 Excel)
 │   │   ├── tool-executor.js  # Обработка CallTool requests
 │   │   ├── validators.js     # Функции валидации
 │   │   └── applescript/
-│   │       ├── executor.js   # Выполнение AppleScript
-│   │       ├── helpers.js    # Общие AppleScript функции
+│   │       ├── executor.js   # Выполнение AppleScript (таймаут 30с)
+│   │       ├── helpers.js    # Общие AppleScript фрагменты (Word + Excel)
 │   │       └── template-engine.js # Шаблонизатор
 │   └── tools/
-│       ├── documents.js      # 7 инструментов для документов
-│       ├── text.js           # 3 инструмента для текста
-│       ├── tables.js         # 10 инструментов для таблиц
-│       ├── bookmarks.js      # 4 инструмента для закладок
-│       ├── hyperlinks.js     # 2 инструмента для гиперссылок
-│       ├── paragraphs.js     # 3 инструмента для параграфов
-│       ├── navigation.js     # 5 инструментов для навигации
-│       └── images.js         # 3 инструмента для изображений
+│       ├── documents.js        # Word: 7 инструментов
+│       ├── text.js             # Word: 3 инструмента
+│       ├── tables.js           # Word: 10 инструментов
+│       ├── bookmarks.js        # Word: 4 инструмента
+│       ├── hyperlinks.js       # Word: 2 инструмента
+│       ├── paragraphs.js       # Word: 3 инструмента
+│       ├── navigation.js       # Word: 5 инструментов
+│       ├── images.js           # Word: 3 инструмента
+│       ├── excel-workbooks.js  # Excel: 6 инструментов
+│       ├── excel-sheets.js     # Excel: 6 инструментов
+│       ├── excel-cells.js      # Excel: 7 инструментов
+│       ├── excel-formatting.js # Excel: 5 инструментов
+│       ├── excel-rows-columns.js # Excel: 6 инструментов
+│       └── excel-data.js       # Excel: 3 инструмента
 ├── dist/                     # Собранные файлы (копия src/)
-├── scripts/
-│   └── build.js              # Скрипт сборки
-├── server/
-│   └── index.old.js          # Старый монолитный файл (backup)
+├── scripts/build.js          # Скрипт сборки
 ├── tests/                    # Тесты
-├── .yarnrc.yml               # Yarn config (nodeLinker: node-modules)
-├── package.json              # Yarn + build скрипты
-└── yarn.lock                 # Yarn lockfile
+├── package.json              # office-mcp v0.8.0
+└── yarn.lock
 ```
 
 ### Основные модули
 
-| Модуль                                   | Назначение                                                                                 | API                                                     |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------- |
-| `src/index.js`                           | Точка входа, запуск сервера                                                                | `main()`                                                |
-| `src/lib/server.js`                      | MCP Server setup v0.7.0                                                                    | `createServer()`, `startServer()`                       |
-| `src/lib/tool-registry.js`               | Регистрация всех 37 инструментов                                                           | `ALL_TOOLS`, `getToolDefinitions()`, `getToolHandler()` |
-| `src/lib/tool-executor.js`               | Единый обработчик инструментов                                                             | `executeTool()`                                         |
-| `src/lib/validators.js`                  | Валидация входных данных (`validateInteger` строго проверяет целые числа через `Number()`) | 5 функций валидации                                     |
-| `src/lib/applescript/executor.js`        | Выполнение AppleScript (таймаут 30с)                                                       | `runAppleScript()`                                      |
-| `src/lib/applescript/helpers.js`         | Переиспользуемые фрагменты                                                                 | `COMMON_SCRIPTS`                                        |
-| `src/lib/applescript/template-engine.js` | Подстановка параметров (regex-safe ключи, type-safe значения)                              | `processTemplate()`                                     |
+| Модуль                                   | Назначение                                     | API                                                     |
+| ---------------------------------------- | ---------------------------------------------- | ------------------------------------------------------- |
+| `src/index.js`                           | Точка входа                                    | `main()`                                                |
+| `src/lib/server.js`                      | MCP Server v0.8.0                              | `createServer()`, `startServer()`                       |
+| `src/lib/tool-registry.js`               | Регистрация 70 инструментов                    | `ALL_TOOLS`, `getToolDefinitions()`, `getToolHandler()` |
+| `src/lib/tool-executor.js`               | Обработчик инструментов                        | `executeTool()`                                         |
+| `src/lib/validators.js`                  | Валидация (`validateInteger` через `Number()`) | 5 функций                                               |
+| `src/lib/applescript/executor.js`        | Выполнение AppleScript (таймаут 30с)           | `runAppleScript()`                                      |
+| `src/lib/applescript/helpers.js`         | Фрагменты Word + Excel                         | `COMMON_SCRIPTS`                                        |
+| `src/lib/applescript/template-engine.js` | Шаблоны (regex-safe, type-safe)                | `processTemplate()`                                     |
 
-### Модули инструментов (37 инструментов)
+### Нейминг инструментов
 
-| Модуль     | Инструменты     | Файл                      |
-| ---------- | --------------- | ------------------------- |
-| Documents  | 7 инструментов  | `src/tools/documents.js`  |
-| Text       | 3 инструмента   | `src/tools/text.js`       |
-| Navigation | 5 инструментов  | `src/tools/navigation.js` |
-| Bookmarks  | 4 инструмента   | `src/tools/bookmarks.js`  |
-| Hyperlinks | 2 инструмента   | `src/tools/hyperlinks.js` |
-| Paragraphs | 3 инструмента   | `src/tools/paragraphs.js` |
-| Images     | 3 инструмента   | `src/tools/images.js`     |
-| Tables     | 10 инструментов | `src/tools/tables.js`     |
+- **Word**: без префикса (`create_document`, `insert_text`, `list_tables`)
+- **Excel**: префикс `excel_` (`excel_create_workbook`, `excel_set_cell`, `excel_sort_range`)
 
-## Сборка и запуск
+## Инструменты Word (37 шт.)
 
-### Команды Yarn
+### Документы (7)
 
-| Команда              | Назначение                        |
-| -------------------- | --------------------------------- |
-| `yarn install`       | Установка зависимостей            |
-| `yarn build`         | Сборка (копирование src/ → dist/) |
-| `yarn build:watch`   | Сборка в режиме watch             |
-| `yarn dev`           | Сборка + запуск                   |
-| `yarn start`         | Запуск из dist/                   |
-| `yarn test`          | Запуск всех тестов                |
-| `yarn test:watch`    | Тесты в режиме watch              |
-| `yarn test:coverage` | Тесты с покрытием                 |
-| `yarn clean`         | Удалить dist/                     |
+| Инструмент          | Назначение       | Параметры  |
+| ------------------- | ---------------- | ---------- |
+| `create_document`   | Создать документ | `content?` |
+| `open_document`     | Открыть документ | `path`     |
+| `get_document_text` | Получить текст   | —          |
+| `get_document_info` | Статистика       | —          |
+| `save_document`     | Сохранить        | `path?`    |
+| `close_document`    | Закрыть          | `save?`    |
+| `export_pdf`        | Экспорт в PDF    | `path`     |
 
-### Система сборки
+### Текст (3)
 
-- **Простая**: Копирование файлов из `src/` в `dist/`
-- **Без транспиляции**: Код уже в ES modules
-- **Скрипт**: `scripts/build.js`
-- **Entry point**: `dist/index.js`
+| Инструмент     | Назначение       | Параметры                                          |
+| -------------- | ---------------- | -------------------------------------------------- |
+| `insert_text`  | Вставить текст   | `text`                                             |
+| `replace_text` | Найти и заменить | `find`, `replace`, `all?`                          |
+| `format_text`  | Форматирование   | `bold?`, `italic?`, `underline?`, `font?`, `size?` |
 
-## Добавление нового инструмента
+### Навигация (5)
 
-1. Добавить объект `{name, description, annotations, inputSchema, handler}` в массив в `src/tools/[category].js`
-2. Использовать валидаторы из `../lib/validators.js` и `runAppleScript()` из `../lib/applescript/executor.js`
-3. Автоматическая регистрация через `tool-registry.js` — дополнительных действий не требуется
+| Инструмент               | Назначение          | Параметры                   |
+| ------------------------ | ------------------- | --------------------------- |
+| `move_cursor_after_text` | Курсор после текста | `searchText`, `occurrence?` |
+| `goto_start`             | В начало            | —                           |
+| `goto_end`               | В конец             | —                           |
+| `get_selection_info`     | Позиция выделения   | —                           |
+| `select_all`             | Выделить всё        | —                           |
 
-## Инструменты (37 шт.)
+### Таблицы (10)
 
-### Документы
+| Инструмент            | Назначение        | Параметры                                |
+| --------------------- | ----------------- | ---------------------------------------- |
+| `list_tables`         | Список таблиц     | —                                        |
+| `get_table_cell`      | Значение ячейки   | `tableIndex`, `row`, `column`            |
+| `set_table_cell`      | Установить ячейку | `tableIndex`, `row`, `column`, `text`    |
+| `select_table_cell`   | Курсор в ячейку   | `tableIndex`, `row`, `column`            |
+| `find_table_header`   | Найти заголовок   | `tableIndex`, `headerText`, `headerRow?` |
+| `create_table`        | Создать таблицу   | `rows`, `columns`                        |
+| `add_table_row`       | Добавить строку   | `tableIndex`, `afterRow?`                |
+| `delete_table_row`    | Удалить строку    | `tableIndex`, `row`                      |
+| `add_table_column`    | Добавить колонку  | `tableIndex`, `afterColumn?`             |
+| `delete_table_column` | Удалить колонку   | `tableIndex`, `column`                   |
 
-| Инструмент          | Назначение                            | Параметры  |
-| ------------------- | ------------------------------------- | ---------- |
-| `create_document`   | Создать новый документ                | `content?` |
-| `open_document`     | Открыть документ                      | `path`     |
-| `get_document_text` | Получить весь текст                   | —          |
-| `get_document_info` | Статистика (слова, символы, страницы) | —          |
-| `save_document`     | Сохранить документ                    | `path?`    |
-| `close_document`    | Закрыть документ                      | `save?`    |
-| `export_pdf`        | Экспорт в PDF                         | `path`     |
+### Закладки (4), Гиперссылки (2), Параграфы (3), Изображения (3)
 
-### Текст
+| Инструмент            | Назначение                             | Параметры                                        |
+| --------------------- | -------------------------------------- | ------------------------------------------------ |
+| `list_bookmarks`      | Список закладок                        | —                                                |
+| `create_bookmark`     | Создать закладку                       | `name`                                           |
+| `goto_bookmark`       | Перейти                                | `name`                                           |
+| `delete_bookmark`     | Удалить                                | `name`                                           |
+| `list_hyperlinks`     | Список (try/catch для text to display) | —                                                |
+| `create_hyperlink`    | Создать                                | `url`, `displayText?`                            |
+| `list_paragraphs`     | Список со стилями                      | `limit?`                                         |
+| `goto_paragraph`      | Перейти                                | `index`                                          |
+| `set_paragraph_style` | Установить стиль                       | `index`, `styleName`                             |
+| `insert_image`        | Вставить через clipboard               | `path`, `width?`, `height?`                      |
+| `list_inline_shapes`  | Список shapes                          | —                                                |
+| `resize_inline_shape` | Изменить размер                        | `index`, `width?`, `height?`, `lockAspectRatio?` |
 
-| Инструмент     | Назначение               | Параметры                                          |
-| -------------- | ------------------------ | -------------------------------------------------- |
-| `insert_text`  | Вставить текст в курсор  | `text`                                             |
-| `replace_text` | Найти и заменить         | `find`, `replace`, `all?`                          |
-| `format_text`  | Форматирование выделения | `bold?`, `italic?`, `underline?`, `font?`, `size?` |
+## Инструменты Excel (33 шт.)
 
-### Навигация
+### Workbooks (6)
 
-| Инструмент               | Назначение                     | Параметры                   |
-| ------------------------ | ------------------------------ | --------------------------- |
-| `move_cursor_after_text` | Курсор после найденного текста | `searchText`, `occurrence?` |
-| `goto_start`             | Курсор в начало документа      | —                           |
-| `goto_end`               | Курсор в конец документа       | —                           |
-| `get_selection_info`     | Позиция и длина выделения      | —                           |
-| `select_all`             | Выделить весь документ         | —                           |
+| Инструмент                | Назначение           | Параметры |
+| ------------------------- | -------------------- | --------- |
+| `excel_create_workbook`   | Создать книгу        | —         |
+| `excel_open_workbook`     | Открыть книгу        | `path`    |
+| `excel_get_workbook_info` | Имя, путь, листы     | —         |
+| `excel_save_workbook`     | Сохранить            | `path?`   |
+| `excel_close_workbook`    | Закрыть              | `save?`   |
+| `excel_list_workbooks`    | Список открытых книг | —         |
 
-### Таблицы
+### Sheets (6)
 
-| Инструмент            | Назначение                  | Параметры                                |
-| --------------------- | --------------------------- | ---------------------------------------- |
-| `list_tables`         | Список таблиц с размерами   | —                                        |
-| `get_table_cell`      | Получить текст ячейки       | `tableIndex`, `row`, `column`            |
-| `set_table_cell`      | Установить текст в ячейку   | `tableIndex`, `row`, `column`, `text`    |
-| `select_table_cell`   | Переместить курсор в ячейку | `tableIndex`, `row`, `column`            |
-| `find_table_header`   | Найти колонку по заголовку  | `tableIndex`, `headerText`, `headerRow?` |
-| `create_table`        | Создать таблицу в курсоре   | `rows`, `columns`                        |
-| `add_table_row`       | Добавить строку             | `tableIndex`, `afterRow?`                |
-| `delete_table_row`    | Удалить строку              | `tableIndex`, `row`                      |
-| `add_table_column`    | Добавить колонку            | `tableIndex`, `afterColumn?`             |
-| `delete_table_column` | Удалить колонку             | `tableIndex`, `column`                   |
+| Инструмент             | Назначение          | Параметры                |
+| ---------------------- | ------------------- | ------------------------ |
+| `excel_list_sheets`    | Список листов       | —                        |
+| `excel_create_sheet`   | Создать лист        | `name?`, `afterIndex?`   |
+| `excel_delete_sheet`   | Удалить лист        | `nameOrIndex`            |
+| `excel_rename_sheet`   | Переименовать       | `nameOrIndex`, `newName` |
+| `excel_activate_sheet` | Переключиться       | `nameOrIndex`            |
+| `excel_get_sheet_info` | Used range, размеры | `nameOrIndex?`           |
 
-### Закладки
+### Cells (7)
 
-| Инструмент        | Назначение                    | Параметры |
-| ----------------- | ----------------------------- | --------- |
-| `list_bookmarks`  | Список закладок               | —         |
-| `create_bookmark` | Создать закладку на выделении | `name`    |
-| `goto_bookmark`   | Перейти к закладке            | `name`    |
-| `delete_bookmark` | Удалить закладку              | `name`    |
+| Инструмент               | Назначение               | Параметры              |
+| ------------------------ | ------------------------ | ---------------------- |
+| `excel_get_cell`         | Значение ячейки          | `cell` (A1-нотация)    |
+| `excel_set_cell`         | Установить значение      | `cell`, `value`        |
+| `excel_get_range`        | Значения диапазона (TSV) | `range`                |
+| `excel_set_cell_formula` | Установить формулу       | `cell`, `formula`      |
+| `excel_clear_range`      | Очистить диапазон        | `range`                |
+| `excel_get_used_range`   | Адрес и размеры          | —                      |
+| `excel_find_cell`        | Найти текст              | `searchText`, `range?` |
 
-### Гиперссылки
+### Formatting (5)
 
-| Инструмент         | Назначение          | Параметры             |
-| ------------------ | ------------------- | --------------------- |
-| `list_hyperlinks`  | Список гиперссылок  | —                     |
-| `create_hyperlink` | Создать гиперссылку | `url`, `displayText?` |
+| Инструмент                | Назначение          | Параметры                                                   |
+| ------------------------- | ------------------- | ----------------------------------------------------------- |
+| `excel_format_cells`      | Шрифт, размер, цвет | `range`, `bold?`, `italic?`, `font?`, `size?`, `fontColor?` |
+| `excel_set_number_format` | Числовой формат     | `range`, `format`                                           |
+| `excel_set_cell_color`    | Цвет фона           | `range`, `color` [R,G,B]                                    |
+| `excel_merge_cells`       | Объединить          | `range`                                                     |
+| `excel_autofit`           | Авто-ширина колонок | `range`                                                     |
 
-### Параграфы
+### Rows & Columns (6)
 
-| Инструмент            | Назначение                   | Параметры            |
-| --------------------- | ---------------------------- | -------------------- |
-| `list_paragraphs`     | Список параграфов со стилями | `limit?`             |
-| `goto_paragraph`      | Перейти к параграфу          | `index`              |
-| `set_paragraph_style` | Установить стиль параграфа   | `index`, `styleName` |
+| Инструмент               | Назначение       | Параметры          |
+| ------------------------ | ---------------- | ------------------ |
+| `excel_insert_rows`      | Вставить строки  | `row`, `count?`    |
+| `excel_delete_rows`      | Удалить строки   | `row`, `count?`    |
+| `excel_insert_columns`   | Вставить колонки | `column`, `count?` |
+| `excel_delete_columns`   | Удалить колонки  | `column`, `count?` |
+| `excel_set_column_width` | Ширина колонки   | `column`, `width`  |
+| `excel_set_row_height`   | Высота строки    | `row`, `height`    |
 
-### Изображения
+### Data (3)
 
-| Инструмент            | Назначение                               | Параметры                                        |
-| --------------------- | ---------------------------------------- | ------------------------------------------------ |
-| `insert_image`        | Вставить изображение через clipboard     | `path`, `width?`, `height?`                      |
-| `list_inline_shapes`  | Список inline shapes (картинки, объекты) | —                                                |
-| `resize_inline_shape` | Изменить размер inline shape             | `index`, `width?`, `height?`, `lockAspectRatio?` |
+| Инструмент         | Назначение      | Параметры                                      |
+| ------------------ | --------------- | ---------------------------------------------- |
+| `excel_sort_range` | Сортировка      | `range`, `keyCell`, `ascending?`, `hasHeader?` |
+| `excel_calculate`  | Пересчёт формул | —                                              |
+| `excel_export_csv` | Экспорт в CSV   | `path`                                         |
 
 ## Индексация
 
-- Все индексы **1-based** (tableIndex=1, row=1, column=1, index=1)
-- `get_table_cell` автоматически удаляет маркеры ячеек (ASCII 7, 13)
+- **Word**: все индексы 1-based (tableIndex, row, column, index)
+- **Excel**: ячейки в A1-нотации, листы по имени или 1-based индексу, строки/колонки 1-based
 
-## AppleScript синтаксис (Word)
+## AppleScript синтаксис
 
-| Операция            | Синтаксис                                                                                                |
-| ------------------- | -------------------------------------------------------------------------------------------------------- |
-| Получить ячейку     | `cell COLUMN of row ROW of table`                                                                        |
-| Collapse to start   | `set selection end of selection to selection start of selection`                                         |
-| Collapse to end     | `set selection start of selection to selection end of selection`                                         |
-| Find text           | `execute find findObj` + проверка `selStart ≠ selEnd`                                                    |
-| Статистика          | `compute statistics d statistic statistic words`                                                         |
-| Создать таблицу     | `make new table at text object of selection with properties {number of rows:N, number of columns:M}`     |
-| Добавить строку     | `select (text object of row N of t)` → `insert rows selection position below`                            |
-| Добавить колонку    | `select (text object of cell N of row 1 of t)` → `insert columns selection position insert on the right` |
-| Удалить строку      | `delete row N of table`                                                                                  |
-| Закладки создать    | `make new bookmark at d with properties {name:"X", \|bookmark range\|:selection}`                        |
-| Закладки перейти    | `select (text object of b)`                                                                              |
-| Гиперссылки создать | `tell selection` → `make new hyperlink object at end with properties {\|hyperlink address\|:"URL"}`      |
-| Гиперссылки список  | `hyperlink objects of d`, `hyperlink object i of d`, `text to display of h` (в try/catch)                |
-| Параграф стиль      | `name local of style of p`, `set style of p to "Heading 1"`                                              |
-| Изображение         | clipboard + `paste object selection`, `inline shape N of d`, `width/height of shp`                       |
+### Word
+
+| Операция       | Синтаксис                                                                         |
+| -------------- | --------------------------------------------------------------------------------- |
+| Ячейка таблицы | `cell COLUMN of row ROW of table`                                                 |
+| Collapse       | `set selection end/start of selection to selection start/end of selection`        |
+| Find           | `execute find findObj`                                                            |
+| Закладки       | `make new bookmark at d with properties {name:"X", \|bookmark range\|:selection}` |
+| Гиперссылки    | `hyperlink objects of d`, `text to display of h` (в try/catch)                    |
+| Изображение    | clipboard + `paste object selection`                                              |
+
+### Excel
+
+| Операция        | Синтаксис                                                         |
+| --------------- | ----------------------------------------------------------------- |
+| Ячейка          | `value of cell "A1" of ws`, `set value of cell "A1" of ws to V`   |
+| Формула         | `set formula of cell "A1" of ws to "=SUM()"` (НЕ `formula value`) |
+| Диапазон        | `range "A1:B2" of ws`                                             |
+| Used range      | `used range of ws`, `get address of used range`                   |
+| Лист            | `worksheet N of wb`, `worksheet "Name" of wb`                     |
+| Создать лист    | `make new worksheet at end of wb`                                 |
+| Сохранить       | `save workbook as wb filename PATH`                               |
+| Открыть         | `open workbook workbook file name PATH`                           |
+| Шрифт           | `bold of font object of cell`, `font size of font object of cell` |
+| Цвет фона       | `color of interior object of cell to {R,G,B}`                     |
+| Вставить строку | `insert into range (range "N:N" of ws) shift shift down`          |
+| Удалить строку  | `delete range (range "N:N" of ws) shift shift up`                 |
+| Сортировка      | `sort range ... key1 ... order1 sort ascending header header yes` |
+| Autofit         | `set r to entire column of range "A:C" of ws` → `autofit r`       |
+| Поиск           | `find searchRange what "text"`                                    |
 
 ## Тестирование
 
-### Запуск тестов
-
 ```bash
-yarn test              # Запуск всех тестов
-yarn test:watch        # Режим watch
-yarn test:coverage     # С отчетом покрытия
+yarn test              # Все тесты
+yarn test:watch        # Watch mode
+yarn test:coverage     # С покрытием
 ```
 
-### Структура тестов
-
-| Тестовый файл                      | Покрытие                                               | Тестов |
-| ---------------------------------- | ------------------------------------------------------ | ------ |
-| `tests/validation.test.js`         | Валидация входных данных                               | 20+    |
-| `tests/mcp-tools.test.js`          | Все 37 инструментов MCP                                | 80+    |
-| `tests/server-integration.test.js` | Интеграция сервера                                     | 30+    |
-| `tests/applescript-syntax.test.js` | Компиляция AppleScript + аудит-фиксы + template-engine | 52     |
-
-### Покрытие кода
-
-- **Branches**: 80%
-- **Functions**: 80%
-- **Lines**: 80%
-- **Statements**: 80%
+| Тестовый файл                            | Покрытие                                   | Тестов |
+| ---------------------------------------- | ------------------------------------------ | ------ |
+| `tests/validation.test.js`               | Валидация                                  | 20+    |
+| `tests/mcp-tools.test.js`                | Word 37 инструментов                       | 80+    |
+| `tests/server-integration.test.js`       | Интеграция                                 | 30+    |
+| `tests/applescript-syntax.test.js`       | Word AppleScript + аудит + template-engine | 52     |
+| `tests/excel-applescript-syntax.test.js` | Excel AppleScript (все 33 инструмента)     | 42     |
 
 ## Связи
 
