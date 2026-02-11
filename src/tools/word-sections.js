@@ -207,10 +207,10 @@ export const sectionTools = [
     },
     async handler(args) {
       const typeMap = {
-        'next_page': 'section break next page',
-        'continuous': 'section break continuous',
-        'even_page': 'section break even page',
-        'odd_page': 'section break odd page'
+        next_page: 'section break next page',
+        continuous: 'section break continuous',
+        even_page: 'section break even page',
+        odd_page: 'section break odd page'
       };
       const breakType = typeMap[args.type] || typeMap['next_page'];
 
@@ -220,7 +220,7 @@ export const sectionTools = [
             return "No document is open"
           end if
           set r to text object of selection
-          insert break r break type ${breakType}
+          insert break at r break type ${breakType}
           return "Section break inserted (${args.type || 'next_page'})"
         end tell
       `;

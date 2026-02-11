@@ -262,7 +262,7 @@
 | Header              | `get header of section N of d index header footer primary`                        |
 | Footer              | `get footer of section N of d index header footer primary`                        |
 | Header/Footer текст | `content of text object of refHeader`                                             |
-| Section break       | `insert break r break type section break next page`                               |
+| Section break       | `insert break at r break type section break next page`                            |
 | Page setup          | `page setup of section N of d` → margins, orientation                             |
 | Paragraph format    | `paragraph format left indent of pf` (НЕ `left indent of pf`)                     |
 
