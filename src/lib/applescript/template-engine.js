@@ -1,5 +1,9 @@
 import { COMMON_SCRIPTS } from './helpers.js';
 
+function escapeRegExp(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 export function processTemplate(template, params = {}) {
   let script = template;
 
@@ -10,7 +14,7 @@ export function processTemplate(template, params = {}) {
   script = script.replace(/<<COLLAPSE_TO_END>>/g, COMMON_SCRIPTS.collapseToEnd);
 
   for (const [key, value] of Object.entries(params)) {
-    const placeholder = new RegExp(`<<${key}>>`, 'g');
+    const placeholder = new RegExp(`<<${escapeRegExp(key)}>>`, 'g');
     let replacementValue;
 
     if (typeof value === 'string') {
@@ -21,7 +25,7 @@ export function processTemplate(template, params = {}) {
     } else if (typeof value === 'number') {
       replacementValue = value.toString();
     } else {
-      replacementValue = String(value);
+      throw new Error(`Unsupported template value type for key "${key}": ${typeof value}`);
     }
 
     script = script.replace(placeholder, replacementValue);

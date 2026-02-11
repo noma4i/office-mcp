@@ -1,39 +1,39 @@
-import { validateString, validateNumber, validateBoolean } from '../lib/validators.js';
+import { validateString, validateNumber, validateInteger, validateBoolean } from '../lib/validators.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
 
 export const imageTools = [
   {
-    name: "insert_image",
-    description: "Insert an image into the document at the current cursor position using macOS clipboard",
+    name: 'insert_image',
+    description: 'Insert an image into the document at the current cursor position using macOS clipboard',
     annotations: { destructiveHint: true },
     inputSchema: {
-      type: "object",
+      type: 'object',
       properties: {
         path: {
-          type: "string",
-          description: "Full path to the image file (PNG, JPEG, TIFF, etc.)",
+          type: 'string',
+          description: 'Full path to the image file (PNG, JPEG, TIFF, etc.)'
         },
         width: {
-          type: "number",
-          description: "Optional width in points to resize the image after insertion",
+          type: 'number',
+          description: 'Optional width in points to resize the image after insertion'
         },
         height: {
-          type: "number",
-          description: "Optional height in points to resize the image after insertion",
-        },
+          type: 'number',
+          description: 'Optional height in points to resize the image after insertion'
+        }
       },
-      required: ["path"],
+      required: ['path']
     },
     async handler(args) {
-      const path = validateString(args.path, "path", true);
-      const width = args.width !== undefined ? validateNumber(args.width, "width", 1, 10000) : undefined;
-      const height = args.height !== undefined ? validateNumber(args.height, "height", 1, 10000) : undefined;
+      const path = validateString(args.path, 'path', true);
+      const width = args.width !== undefined ? validateNumber(args.width, 'width', 1, 10000) : undefined;
+      const height = args.height !== undefined ? validateNumber(args.height, 'height', 1, 10000) : undefined;
 
       let resizeBlock = '';
       if (width !== undefined || height !== undefined) {
         resizeBlock = `
           set shp to inline shape (count of inline shapes of d) of d
-          set lock aspect ratio of shp to ${(width !== undefined && height !== undefined) ? 'false' : 'true'}`;
+          set lock aspect ratio of shp to ${width !== undefined && height !== undefined ? 'false' : 'true'}`;
         if (width !== undefined) {
           resizeBlock += `\n          set width of shp to ${width}`;
         }
@@ -73,12 +73,12 @@ export const imageTools = [
   },
 
   {
-    name: "list_inline_shapes",
-    description: "List all inline shapes (images, objects) in the active document with their dimensions",
+    name: 'list_inline_shapes',
+    description: 'List all inline shapes (images, objects) in the active document with their dimensions',
     annotations: { readOnlyHint: true },
     inputSchema: {
-      type: "object",
-      properties: {},
+      type: 'object',
+      properties: {}
     },
     async handler() {
       const script = `
@@ -116,40 +116,40 @@ export const imageTools = [
   },
 
   {
-    name: "resize_inline_shape",
-    description: "Resize an inline shape (image) by index",
+    name: 'resize_inline_shape',
+    description: 'Resize an inline shape (image) by index',
     annotations: { destructiveHint: true },
     inputSchema: {
-      type: "object",
+      type: 'object',
       properties: {
         index: {
-          type: "integer",
-          description: "Inline shape index (1-based)",
+          type: 'integer',
+          description: 'Inline shape index (1-based)'
         },
         width: {
-          type: "number",
-          description: "New width in points",
+          type: 'number',
+          description: 'New width in points'
         },
         height: {
-          type: "number",
-          description: "New height in points",
+          type: 'number',
+          description: 'New height in points'
         },
         lockAspectRatio: {
-          type: "boolean",
-          description: "Lock aspect ratio when resizing (default: true)",
-          default: true,
-        },
+          type: 'boolean',
+          description: 'Lock aspect ratio when resizing (default: true)',
+          default: true
+        }
       },
-      required: ["index"],
+      required: ['index']
     },
     async handler(args) {
-      const index = validateNumber(args.index, "index", 1, 10000);
-      const width = args.width !== undefined ? validateNumber(args.width, "width", 1, 10000) : undefined;
-      const height = args.height !== undefined ? validateNumber(args.height, "height", 1, 10000) : undefined;
-      const lockAspectRatio = args.lockAspectRatio !== undefined ? validateBoolean(args.lockAspectRatio, "lockAspectRatio") : true;
+      const index = validateInteger(args.index, 'index', 1, 10000);
+      const width = args.width !== undefined ? validateNumber(args.width, 'width', 1, 10000) : undefined;
+      const height = args.height !== undefined ? validateNumber(args.height, 'height', 1, 10000) : undefined;
+      const lockAspectRatio = args.lockAspectRatio !== undefined ? validateBoolean(args.lockAspectRatio, 'lockAspectRatio') : true;
 
       if (width === undefined && height === undefined) {
-        throw new Error("At least one of width or height is required");
+        throw new Error('At least one of width or height is required');
       }
 
       let resizeCommands = [];

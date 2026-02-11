@@ -3,12 +3,12 @@ import { runAppleScript } from '../lib/applescript/executor.js';
 
 export const bookmarkTools = [
   {
-    name: "list_bookmarks",
-    description: "List all bookmarks in the active document",
+    name: 'list_bookmarks',
+    description: 'List all bookmarks in the active document',
     annotations: { readOnlyHint: true },
     inputSchema: {
-      type: "object",
-      properties: {},
+      type: 'object',
+      properties: {}
     },
     async handler() {
       const script = `
@@ -35,21 +35,21 @@ export const bookmarkTools = [
   },
 
   {
-    name: "create_bookmark",
-    description: "Create a bookmark at the current selection",
+    name: 'create_bookmark',
+    description: 'Create a bookmark at the current selection',
     annotations: { destructiveHint: true },
     inputSchema: {
-      type: "object",
+      type: 'object',
       properties: {
         name: {
-          type: "string",
-          description: "Bookmark name",
-        },
+          type: 'string',
+          description: 'Bookmark name'
+        }
       },
-      required: ["name"],
+      required: ['name']
     },
     async handler(args) {
-      const name = validateString(args.name, "name", true);
+      const name = validateString(args.name, 'name', true);
 
       const script = `
         tell application "Microsoft Word"
@@ -57,7 +57,7 @@ export const bookmarkTools = [
             return "No document is open"
           end if
           set d to active document
-          make new bookmark at d with properties {name:${JSON.stringify(name)}, bookmark range:selection}
+          make new bookmark at d with properties {name:${JSON.stringify(name)}, |bookmark range|:selection}
           return "Bookmark created: " & ${JSON.stringify(name)}
         end tell
       `;
@@ -67,21 +67,21 @@ export const bookmarkTools = [
   },
 
   {
-    name: "goto_bookmark",
-    description: "Jump to a bookmark by name",
+    name: 'goto_bookmark',
+    description: 'Jump to a bookmark by name',
     annotations: { destructiveHint: true },
     inputSchema: {
-      type: "object",
+      type: 'object',
       properties: {
         name: {
-          type: "string",
-          description: "Bookmark name",
-        },
+          type: 'string',
+          description: 'Bookmark name'
+        }
       },
-      required: ["name"],
+      required: ['name']
     },
     async handler(args) {
-      const name = validateString(args.name, "name", true);
+      const name = validateString(args.name, 'name', true);
 
       const script = `
         tell application "Microsoft Word"
@@ -90,7 +90,7 @@ export const bookmarkTools = [
           end if
           set d to active document
           set b to bookmark ${JSON.stringify(name)} of d
-          select (bookmark range of b)
+          select (text object of b)
           return "Jumped to bookmark: " & ${JSON.stringify(name)}
         end tell
       `;
@@ -100,21 +100,21 @@ export const bookmarkTools = [
   },
 
   {
-    name: "delete_bookmark",
-    description: "Delete a bookmark by name",
+    name: 'delete_bookmark',
+    description: 'Delete a bookmark by name',
     annotations: { destructiveHint: true },
     inputSchema: {
-      type: "object",
+      type: 'object',
       properties: {
         name: {
-          type: "string",
-          description: "Bookmark name",
-        },
+          type: 'string',
+          description: 'Bookmark name'
+        }
       },
-      required: ["name"],
+      required: ['name']
     },
     async handler(args) {
-      const name = validateString(args.name, "name", true);
+      const name = validateString(args.name, 'name', true);
 
       const script = `
         tell application "Microsoft Word"

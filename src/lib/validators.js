@@ -3,12 +3,12 @@ export function validateString(value, name, required = true) {
     if (required) {
       throw new Error(`${name} is required`);
     }
-    return "";
+    return '';
   }
-  if (typeof value !== "string") {
+  if (typeof value !== 'string') {
     throw new Error(`${name} must be a string`);
   }
-  if (required && value.trim() === "") {
+  if (required && value.length === 0) {
     throw new Error(`${name} cannot be empty`);
   }
   return value;
@@ -18,7 +18,7 @@ export function validateBoolean(value, name, defaultValue = false) {
   if (value === undefined || value === null) {
     return defaultValue;
   }
-  if (typeof value !== "boolean") {
+  if (typeof value !== 'boolean') {
     throw new Error(`${name} must be a boolean`);
   }
   return value;
@@ -42,7 +42,7 @@ export function validateInteger(value, name, min = 0, max = Number.MAX_SAFE_INTE
   if (value === undefined || value === null) {
     return undefined;
   }
-  const num = parseInt(value, 10);
+  const num = Number(value);
   if (!Number.isInteger(num)) {
     throw new Error(`${name} must be an integer`);
   }
@@ -54,6 +54,6 @@ export function validateInteger(value, name, min = 0, max = Number.MAX_SAFE_INTE
 
 export function getErrorMessage(error) {
   if (error instanceof Error) return error.message;
-  if (typeof error === "string") return error;
+  if (typeof error === 'string') return error;
   return String(error);
 }

@@ -53,16 +53,16 @@
 
 ### Основные модули
 
-| Модуль                                   | Назначение                       | API                                                     |
-| ---------------------------------------- | -------------------------------- | ------------------------------------------------------- |
-| `src/index.js`                           | Точка входа, запуск сервера      | `main()`                                                |
-| `src/lib/server.js`                      | MCP Server setup v0.7.0          | `createServer()`, `startServer()`                       |
-| `src/lib/tool-registry.js`               | Регистрация всех 37 инструментов | `ALL_TOOLS`, `getToolDefinitions()`, `getToolHandler()` |
-| `src/lib/tool-executor.js`               | Единый обработчик инструментов   | `executeTool()`                                         |
-| `src/lib/validators.js`                  | Валидация входных данных         | 5 функций валидации                                     |
-| `src/lib/applescript/executor.js`        | Выполнение AppleScript           | `runAppleScript()`                                      |
-| `src/lib/applescript/helpers.js`         | Переиспользуемые фрагменты       | `COMMON_SCRIPTS`                                        |
-| `src/lib/applescript/template-engine.js` | Подстановка параметров           | `processTemplate()`                                     |
+| Модуль                                   | Назначение                                                                                 | API                                                     |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------- |
+| `src/index.js`                           | Точка входа, запуск сервера                                                                | `main()`                                                |
+| `src/lib/server.js`                      | MCP Server setup v0.7.0                                                                    | `createServer()`, `startServer()`                       |
+| `src/lib/tool-registry.js`               | Регистрация всех 37 инструментов                                                           | `ALL_TOOLS`, `getToolDefinitions()`, `getToolHandler()` |
+| `src/lib/tool-executor.js`               | Единый обработчик инструментов                                                             | `executeTool()`                                         |
+| `src/lib/validators.js`                  | Валидация входных данных (`validateInteger` строго проверяет целые числа через `Number()`) | 5 функций валидации                                     |
+| `src/lib/applescript/executor.js`        | Выполнение AppleScript (таймаут 30с)                                                       | `runAppleScript()`                                      |
+| `src/lib/applescript/helpers.js`         | Переиспользуемые фрагменты                                                                 | `COMMON_SCRIPTS`                                        |
+| `src/lib/applescript/template-engine.js` | Подстановка параметров (regex-safe ключи, type-safe значения)                              | `processTemplate()`                                     |
 
 ### Модули инструментов (37 инструментов)
 
@@ -192,20 +192,23 @@
 
 ## AppleScript синтаксис (Word)
 
-| Операция          | Синтаксис                                                                             |
-| ----------------- | ------------------------------------------------------------------------------------- |
-| Получить ячейку   | `cell COLUMN of row ROW of table`                                                     |
-| Collapse to start | `set selection end of selection to selection start of selection`                      |
-| Collapse to end   | `set selection start of selection to selection end of selection`                      |
-| Find text         | `execute find findObj` + проверка `selStart ≠ selEnd`                                 |
-| Статистика        | `compute statistics d statistic statistic words`                                      |
-| Создать таблицу   | `make new table at selection with properties {number of rows:N, number of columns:M}` |
-| Добавить строку   | `insert rows below row N of table`                                                    |
-| Удалить строку    | `delete row N of table`                                                               |
-| Закладки          | `make new bookmark at d with properties {name:"X", bookmark range:selection}`         |
-| Гиперссылки       | `make new hyperlink at selection with properties {hyperlink address:"URL"}`           |
-| Параграф          | `paragraph N of d`, `style of paragraph N`                                            |
-| Изображение       | clipboard + `paste object selection`, `inline shape N of d`, `width/height of shp`    |
+| Операция            | Синтаксис                                                                                                |
+| ------------------- | -------------------------------------------------------------------------------------------------------- |
+| Получить ячейку     | `cell COLUMN of row ROW of table`                                                                        |
+| Collapse to start   | `set selection end of selection to selection start of selection`                                         |
+| Collapse to end     | `set selection start of selection to selection end of selection`                                         |
+| Find text           | `execute find findObj` + проверка `selStart ≠ selEnd`                                                    |
+| Статистика          | `compute statistics d statistic statistic words`                                                         |
+| Создать таблицу     | `make new table at text object of selection with properties {number of rows:N, number of columns:M}`     |
+| Добавить строку     | `select (text object of row N of t)` → `insert rows selection position below`                            |
+| Добавить колонку    | `select (text object of cell N of row 1 of t)` → `insert columns selection position insert on the right` |
+| Удалить строку      | `delete row N of table`                                                                                  |
+| Закладки создать    | `make new bookmark at d with properties {name:"X", \|bookmark range\|:selection}`                        |
+| Закладки перейти    | `select (text object of b)`                                                                              |
+| Гиперссылки создать | `tell selection` → `make new hyperlink object at end with properties {\|hyperlink address\|:"URL"}`      |
+| Гиперссылки список  | `hyperlink objects of d`, `hyperlink object i of d`, `text to display of h` (в try/catch)                |
+| Параграф стиль      | `name local of style of p`, `set style of p to "Heading 1"`                                              |
+| Изображение         | clipboard + `paste object selection`, `inline shape N of d`, `width/height of shp`                       |
 
 ## Тестирование
 
@@ -219,11 +222,12 @@ yarn test:coverage     # С отчетом покрытия
 
 ### Структура тестов
 
-| Тестовый файл                      | Покрытие                 | Тестов |
-| ---------------------------------- | ------------------------ | ------ |
-| `tests/validation.test.js`         | Валидация входных данных | 20+    |
-| `tests/mcp-tools.test.js`          | Все 37 инструментов MCP  | 80+    |
-| `tests/server-integration.test.js` | Интеграция сервера       | 30+    |
+| Тестовый файл                      | Покрытие                                               | Тестов |
+| ---------------------------------- | ------------------------------------------------------ | ------ |
+| `tests/validation.test.js`         | Валидация входных данных                               | 20+    |
+| `tests/mcp-tools.test.js`          | Все 37 инструментов MCP                                | 80+    |
+| `tests/server-integration.test.js` | Интеграция сервера                                     | 30+    |
+| `tests/applescript-syntax.test.js` | Компиляция AppleScript + аудит-фиксы + template-engine | 52     |
 
 ### Покрытие кода
 

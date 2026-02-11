@@ -3,12 +3,12 @@ import { runAppleScript } from '../lib/applescript/executor.js';
 
 export const tableTools = [
   {
-    name: "list_tables",
-    description: "List all tables in the active document with their dimensions (rows x columns)",
+    name: 'list_tables',
+    description: 'List all tables in the active document with their dimensions (rows x columns)',
     annotations: { readOnlyHint: true },
     inputSchema: {
-      type: "object",
-      properties: {},
+      type: 'object',
+      properties: {}
     },
     async handler() {
       const script = `
@@ -37,31 +37,31 @@ export const tableTools = [
   },
 
   {
-    name: "get_table_cell",
-    description: "Get the text content of a specific table cell",
+    name: 'get_table_cell',
+    description: 'Get the text content of a specific table cell',
     annotations: { readOnlyHint: true },
     inputSchema: {
-      type: "object",
+      type: 'object',
       properties: {
         tableIndex: {
-          type: "integer",
-          description: "Table index (1-based)",
+          type: 'integer',
+          description: 'Table index (1-based)'
         },
         row: {
-          type: "integer",
-          description: "Row number (1-based)",
+          type: 'integer',
+          description: 'Row number (1-based)'
         },
         column: {
-          type: "integer",
-          description: "Column number (1-based)",
-        },
+          type: 'integer',
+          description: 'Column number (1-based)'
+        }
       },
-      required: ["tableIndex", "row", "column"],
+      required: ['tableIndex', 'row', 'column']
     },
     async handler(args) {
-      const tableIndex = validateInteger(args.tableIndex, "tableIndex", 1);
-      const row = validateInteger(args.row, "row", 1);
-      const column = validateInteger(args.column, "column", 1);
+      const tableIndex = validateInteger(args.tableIndex, 'tableIndex', 1);
+      const row = validateInteger(args.row, 'row', 1);
+      const column = validateInteger(args.column, 'column', 1);
 
       const script = `
         tell application "Microsoft Word"
@@ -91,36 +91,36 @@ export const tableTools = [
   },
 
   {
-    name: "set_table_cell",
-    description: "Set the text content of a specific table cell",
+    name: 'set_table_cell',
+    description: 'Set the text content of a specific table cell',
     annotations: { destructiveHint: true },
     inputSchema: {
-      type: "object",
+      type: 'object',
       properties: {
         tableIndex: {
-          type: "integer",
-          description: "Table index (1-based)",
+          type: 'integer',
+          description: 'Table index (1-based)'
         },
         row: {
-          type: "integer",
-          description: "Row number (1-based)",
+          type: 'integer',
+          description: 'Row number (1-based)'
         },
         column: {
-          type: "integer",
-          description: "Column number (1-based)",
+          type: 'integer',
+          description: 'Column number (1-based)'
         },
         text: {
-          type: "string",
-          description: "Text to set in the cell",
-        },
+          type: 'string',
+          description: 'Text to set in the cell'
+        }
       },
-      required: ["tableIndex", "row", "column", "text"],
+      required: ['tableIndex', 'row', 'column', 'text']
     },
     async handler(args) {
-      const tableIndex = validateInteger(args.tableIndex, "tableIndex", 1);
-      const row = validateInteger(args.row, "row", 1);
-      const column = validateInteger(args.column, "column", 1);
-      const text = validateString(args.text, "text", true);
+      const tableIndex = validateInteger(args.tableIndex, 'tableIndex', 1);
+      const row = validateInteger(args.row, 'row', 1);
+      const column = validateInteger(args.column, 'column', 1);
+      const text = validateString(args.text, 'text', true);
 
       const script = `
         tell application "Microsoft Word"
@@ -144,31 +144,31 @@ export const tableTools = [
   },
 
   {
-    name: "select_table_cell",
-    description: "Select a specific table cell and move cursor there",
+    name: 'select_table_cell',
+    description: 'Select a specific table cell and move cursor there',
     annotations: { destructiveHint: true },
     inputSchema: {
-      type: "object",
+      type: 'object',
       properties: {
         tableIndex: {
-          type: "integer",
-          description: "Table index (1-based)",
+          type: 'integer',
+          description: 'Table index (1-based)'
         },
         row: {
-          type: "integer",
-          description: "Row number (1-based)",
+          type: 'integer',
+          description: 'Row number (1-based)'
         },
         column: {
-          type: "integer",
-          description: "Column number (1-based)",
-        },
+          type: 'integer',
+          description: 'Column number (1-based)'
+        }
       },
-      required: ["tableIndex", "row", "column"],
+      required: ['tableIndex', 'row', 'column']
     },
     async handler(args) {
-      const tableIndex = validateInteger(args.tableIndex, "tableIndex", 1);
-      const row = validateInteger(args.row, "row", 1);
-      const column = validateInteger(args.column, "column", 1);
+      const tableIndex = validateInteger(args.tableIndex, 'tableIndex', 1);
+      const row = validateInteger(args.row, 'row', 1);
+      const column = validateInteger(args.column, 'column', 1);
 
       const script = `
         tell application "Microsoft Word"
@@ -192,32 +192,32 @@ export const tableTools = [
   },
 
   {
-    name: "find_table_header",
-    description: "Find a table column by header text (searches in specified header row)",
+    name: 'find_table_header',
+    description: 'Find a table column by header text (searches in specified header row)',
     annotations: { readOnlyHint: true },
     inputSchema: {
-      type: "object",
+      type: 'object',
       properties: {
         tableIndex: {
-          type: "integer",
-          description: "Table index (1-based)",
+          type: 'integer',
+          description: 'Table index (1-based)'
         },
         headerText: {
-          type: "string",
-          description: "Text to search for in header",
+          type: 'string',
+          description: 'Text to search for in header'
         },
         headerRow: {
-          type: "integer",
-          description: "Row number to search in (default: 1)",
-          default: 1,
-        },
+          type: 'integer',
+          description: 'Row number to search in (default: 1)',
+          default: 1
+        }
       },
-      required: ["tableIndex", "headerText"],
+      required: ['tableIndex', 'headerText']
     },
     async handler(args) {
-      const tableIndex = validateInteger(args.tableIndex, "tableIndex", 1);
-      const headerText = validateString(args.headerText, "headerText", true);
-      const headerRow = validateInteger(args.headerRow, "headerRow", 1) || 1;
+      const tableIndex = validateInteger(args.tableIndex, 'tableIndex', 1);
+      const headerText = validateString(args.headerText, 'headerText', true);
+      const headerRow = validateInteger(args.headerRow, 'headerRow', 1) || 1;
 
       const script = `
         tell application "Microsoft Word"
@@ -259,33 +259,33 @@ export const tableTools = [
   },
 
   {
-    name: "create_table",
-    description: "Create a new table at the current cursor position",
+    name: 'create_table',
+    description: 'Create a new table at the current cursor position',
     annotations: { destructiveHint: true },
     inputSchema: {
-      type: "object",
+      type: 'object',
       properties: {
         rows: {
-          type: "integer",
-          description: "Number of rows",
+          type: 'integer',
+          description: 'Number of rows'
         },
         columns: {
-          type: "integer",
-          description: "Number of columns",
-        },
+          type: 'integer',
+          description: 'Number of columns'
+        }
       },
-      required: ["rows", "columns"],
+      required: ['rows', 'columns']
     },
     async handler(args) {
-      const rows = validateInteger(args.rows, "rows", 1);
-      const columns = validateInteger(args.columns, "columns", 1);
+      const rows = validateInteger(args.rows, 'rows', 1);
+      const columns = validateInteger(args.columns, 'columns', 1);
 
       const script = `
         tell application "Microsoft Word"
           if (count of documents) = 0 then
             return "No document is open"
           end if
-          make new table at selection with properties {number of rows:${rows}, number of columns:${columns}}
+          make new table at text object of selection with properties {number of rows:${rows}, number of columns:${columns}}
           return "Table created with ${rows} rows and ${columns} columns"
         end tell
       `;
@@ -295,77 +295,70 @@ export const tableTools = [
   },
 
   {
-    name: "add_table_row",
-    description: "Add a new row to a table",
+    name: 'add_table_row',
+    description: 'Add a new row to a table',
     annotations: { destructiveHint: true },
     inputSchema: {
-      type: "object",
+      type: 'object',
       properties: {
         tableIndex: {
-          type: "integer",
-          description: "Table index (1-based)",
+          type: 'integer',
+          description: 'Table index (1-based)'
         },
         afterRow: {
-          type: "integer",
-          description: "Insert after this row (if not provided, adds at end)",
-        },
+          type: 'integer',
+          description: 'Insert after this row (if not provided, adds at end)'
+        }
       },
-      required: ["tableIndex"],
+      required: ['tableIndex']
     },
     async handler(args) {
-      const tableIndex = validateInteger(args.tableIndex, "tableIndex", 1);
-      const afterRow = validateInteger(args.afterRow, "afterRow", 1);
+      const tableIndex = validateInteger(args.tableIndex, 'tableIndex', 1);
+      const afterRow = validateInteger(args.afterRow, 'afterRow', 1);
 
-      const script = afterRow
-        ? `
-          tell application "Microsoft Word"
-            if (count of documents) = 0 then
-              return "No document is open"
-            end if
-            set d to active document
-            set t to table ${tableIndex} of d
-            insert rows below row ${afterRow} of t
-            return "Row added after row ${afterRow} in table ${tableIndex}"
-          end tell
-        `
-        : `
-          tell application "Microsoft Word"
-            if (count of documents) = 0 then
-              return "No document is open"
-            end if
-            set d to active document
-            set t to table ${tableIndex} of d
-            set rowCount to count of rows of t
-            insert rows below row rowCount of t
-            return "Row added at end of table ${tableIndex}"
-          end tell
-        `;
+      const targetRow = afterRow || 0;
+      const script = `
+        tell application "Microsoft Word"
+          if (count of documents) = 0 then
+            return "No document is open"
+          end if
+          set d to active document
+          set t to table ${tableIndex} of d
+          set targetRowNum to ${targetRow}
+          if targetRowNum = 0 then
+            set targetRowNum to count of rows of t
+          end if
+          select (text object of row targetRowNum of t)
+          insert rows selection position below
+          return "Row added after row " & targetRowNum & " in table ${tableIndex}"
+        end tell
+      `;
 
       return await runAppleScript(script);
     }
   },
 
   {
-    name: "delete_table_row",
-    description: "Delete a row from a table",
+    name: 'delete_table_row',
+    description: 'Delete a row from a table',
     annotations: { destructiveHint: true },
     inputSchema: {
-      type: "object",
+      type: 'object',
       properties: {
         tableIndex: {
-          type: "integer",
-          description: "Table index (1-based)",
+          type: 'integer',
+          description: 'Table index (1-based)'
         },
         row: {
-          type: "integer",
-          description: "Row number to delete (1-based)",
-        },
+          type: 'integer',
+          description: 'Row number to delete (1-based)'
+        }
       },
-      required: ["tableIndex", "row"],
+      required: ['tableIndex', 'row']
     },
     async handler(args) {
-      const tableIndex = validateInteger(args.tableIndex, "tableIndex", 1);
-      const row = validateInteger(args.row, "row", 1);
+      const tableIndex = validateInteger(args.tableIndex, 'tableIndex', 1);
+      const row = validateInteger(args.row, 'row', 1);
 
       const script = `
         tell application "Microsoft Word"
@@ -384,77 +377,70 @@ export const tableTools = [
   },
 
   {
-    name: "add_table_column",
-    description: "Add a new column to a table",
+    name: 'add_table_column',
+    description: 'Add a new column to a table',
     annotations: { destructiveHint: true },
     inputSchema: {
-      type: "object",
+      type: 'object',
       properties: {
         tableIndex: {
-          type: "integer",
-          description: "Table index (1-based)",
+          type: 'integer',
+          description: 'Table index (1-based)'
         },
         afterColumn: {
-          type: "integer",
-          description: "Insert after this column (if not provided, adds at end)",
-        },
+          type: 'integer',
+          description: 'Insert after this column (if not provided, adds at end)'
+        }
       },
-      required: ["tableIndex"],
+      required: ['tableIndex']
     },
     async handler(args) {
-      const tableIndex = validateInteger(args.tableIndex, "tableIndex", 1);
-      const afterColumn = validateInteger(args.afterColumn, "afterColumn", 1);
+      const tableIndex = validateInteger(args.tableIndex, 'tableIndex', 1);
+      const afterColumn = validateInteger(args.afterColumn, 'afterColumn', 1);
 
-      const script = afterColumn
-        ? `
-          tell application "Microsoft Word"
-            if (count of documents) = 0 then
-              return "No document is open"
-            end if
-            set d to active document
-            set t to table ${tableIndex} of d
-            insert columns after column ${afterColumn} of t
-            return "Column added after column ${afterColumn} in table ${tableIndex}"
-          end tell
-        `
-        : `
-          tell application "Microsoft Word"
-            if (count of documents) = 0 then
-              return "No document is open"
-            end if
-            set d to active document
-            set t to table ${tableIndex} of d
-            set colCount to count of columns of t
-            insert columns after column colCount of t
-            return "Column added at end of table ${tableIndex}"
-          end tell
-        `;
+      const targetCol = afterColumn || 0;
+      const script = `
+        tell application "Microsoft Word"
+          if (count of documents) = 0 then
+            return "No document is open"
+          end if
+          set d to active document
+          set t to table ${tableIndex} of d
+          set targetColNum to ${targetCol}
+          if targetColNum = 0 then
+            set targetColNum to count of columns of t
+          end if
+          select (text object of cell targetColNum of row 1 of t)
+          insert columns selection position insert on the right
+          return "Column added after column " & targetColNum & " in table ${tableIndex}"
+        end tell
+      `;
 
       return await runAppleScript(script);
     }
   },
 
   {
-    name: "delete_table_column",
-    description: "Delete a column from a table",
+    name: 'delete_table_column',
+    description: 'Delete a column from a table',
     annotations: { destructiveHint: true },
     inputSchema: {
-      type: "object",
+      type: 'object',
       properties: {
         tableIndex: {
-          type: "integer",
-          description: "Table index (1-based)",
+          type: 'integer',
+          description: 'Table index (1-based)'
         },
         column: {
-          type: "integer",
-          description: "Column number to delete (1-based)",
-        },
+          type: 'integer',
+          description: 'Column number to delete (1-based)'
+        }
       },
-      required: ["tableIndex", "column"],
+      required: ['tableIndex', 'column']
     },
     async handler(args) {
-      const tableIndex = validateInteger(args.tableIndex, "tableIndex", 1);
-      const column = validateInteger(args.column, "column", 1);
+      const tableIndex = validateInteger(args.tableIndex, 'tableIndex', 1);
+      const column = validateInteger(args.column, 'column', 1);
 
       const script = `
         tell application "Microsoft Word"

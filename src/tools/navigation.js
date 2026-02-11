@@ -3,12 +3,12 @@ import { runAppleScript } from '../lib/applescript/executor.js';
 
 export const navigationTools = [
   {
-    name: "goto_start",
-    description: "Move cursor to the beginning of the document",
+    name: 'goto_start',
+    description: 'Move cursor to the beginning of the document',
     annotations: { destructiveHint: true },
     inputSchema: {
-      type: "object",
-      properties: {},
+      type: 'object',
+      properties: {}
     },
     async handler() {
       const script = `
@@ -28,12 +28,12 @@ export const navigationTools = [
   },
 
   {
-    name: "goto_end",
-    description: "Move cursor to the end of the document",
+    name: 'goto_end',
+    description: 'Move cursor to the end of the document',
     annotations: { destructiveHint: true },
     inputSchema: {
-      type: "object",
-      properties: {},
+      type: 'object',
+      properties: {}
     },
     async handler() {
       const script = `
@@ -53,12 +53,12 @@ export const navigationTools = [
   },
 
   {
-    name: "get_selection_info",
-    description: "Get position and length of current selection",
+    name: 'get_selection_info',
+    description: 'Get position and length of current selection',
     annotations: { readOnlyHint: true },
     inputSchema: {
-      type: "object",
-      properties: {},
+      type: 'object',
+      properties: {}
     },
     async handler() {
       const script = `
@@ -78,12 +78,12 @@ export const navigationTools = [
   },
 
   {
-    name: "select_all",
-    description: "Select all content in the document",
+    name: 'select_all',
+    description: 'Select all content in the document',
     annotations: { destructiveHint: true },
     inputSchema: {
-      type: "object",
-      properties: {},
+      type: 'object',
+      properties: {}
     },
     async handler() {
       const script = `
@@ -102,27 +102,27 @@ export const navigationTools = [
   },
 
   {
-    name: "move_cursor_after_text",
-    description: "Find text and move cursor to the end of the specified occurrence",
+    name: 'move_cursor_after_text',
+    description: 'Find text and move cursor to the end of the specified occurrence',
     annotations: { destructiveHint: true },
     inputSchema: {
-      type: "object",
+      type: 'object',
       properties: {
         searchText: {
-          type: "string",
-          description: "Text to search for",
+          type: 'string',
+          description: 'Text to search for'
         },
         occurrence: {
-          type: "integer",
-          description: "Which occurrence to jump to (default: 1)",
-          default: 1,
-        },
+          type: 'integer',
+          description: 'Which occurrence to jump to (default: 1)',
+          default: 1
+        }
       },
-      required: ["searchText"],
+      required: ['searchText']
     },
     async handler(args) {
-      const searchText = validateString(args.searchText, "searchText", true);
-      const occurrence = validateInteger(args.occurrence, "occurrence", 1) || 1;
+      const searchText = validateString(args.searchText, 'searchText', true);
+      const occurrence = validateInteger(args.occurrence, 'occurrence', 1) || 1;
 
       const script = `
         tell application "Microsoft Word"
@@ -143,7 +143,6 @@ export const navigationTools = [
 
           set foundCount to 0
           repeat ${occurrence} times
-            set prevStart to selection start of selection
             execute find findObj
             set selStart to selection start of selection
             set selEnd to selection end of selection

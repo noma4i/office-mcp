@@ -33,7 +33,7 @@ export const paragraphTools = [
           set paraList to "Total paragraphs: " & paraCount & linefeed & linefeed
           repeat with i from 1 to maxPara
             set p to paragraph i of d
-            set pStyle to style of p
+            set pStyle to name local of style of p
             set pText to content of text object of p
             if length of pText > 50 then
               set pText to text 1 thru 50 of pText & "..."

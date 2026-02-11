@@ -3,20 +3,20 @@ import { runAppleScript } from '../lib/applescript/executor.js';
 
 export const documentTools = [
   {
-    name: "create_document",
-    description: "Create a new Word document with optional content",
+    name: 'create_document',
+    description: 'Create a new Word document with optional content',
     annotations: { destructiveHint: true },
     inputSchema: {
-      type: "object",
+      type: 'object',
       properties: {
         content: {
-          type: "string",
-          description: "Optional initial content for the document",
-        },
-      },
+          type: 'string',
+          description: 'Optional initial content for the document'
+        }
+      }
     },
     async handler(args) {
-      const content = validateString(args.content, "content", false);
+      const content = validateString(args.content, 'content', false);
 
       const script = content
         ? `
@@ -42,21 +42,21 @@ export const documentTools = [
   },
 
   {
-    name: "open_document",
-    description: "Open an existing Word document",
-    annotations: { readOnlyHint: true },
+    name: 'open_document',
+    description: 'Open an existing Word document',
+    annotations: { readOnlyHint: false },
     inputSchema: {
-      type: "object",
+      type: 'object',
       properties: {
         path: {
-          type: "string",
-          description: "Full path to the document to open",
-        },
+          type: 'string',
+          description: 'Full path to the document to open'
+        }
       },
-      required: ["path"],
+      required: ['path']
     },
     async handler(args) {
-      const path = validateString(args.path, "path", true);
+      const path = validateString(args.path, 'path', true);
 
       const script = `
         tell application "Microsoft Word"
@@ -71,12 +71,12 @@ export const documentTools = [
   },
 
   {
-    name: "get_document_text",
-    description: "Get all text content from the active document",
+    name: 'get_document_text',
+    description: 'Get all text content from the active document',
     annotations: { readOnlyHint: true },
     inputSchema: {
-      type: "object",
-      properties: {},
+      type: 'object',
+      properties: {}
     },
     async handler() {
       const script = `
@@ -94,12 +94,12 @@ export const documentTools = [
   },
 
   {
-    name: "get_document_info",
-    description: "Get document statistics (words, characters, paragraphs, pages)",
+    name: 'get_document_info',
+    description: 'Get document statistics (words, characters, paragraphs, pages)',
     annotations: { readOnlyHint: true },
     inputSchema: {
-      type: "object",
-      properties: {},
+      type: 'object',
+      properties: {}
     },
     async handler() {
       const script = `
@@ -110,7 +110,7 @@ export const documentTools = [
           set d to active document
           set wordCount to compute statistics d statistic statistic words
           set charCount to compute statistics d statistic statistic characters
-          set charWithSpaces to compute statistics d statistic statistic characters including spaces
+          set charWithSpaces to compute statistics d statistic statistic characters with spaces
           set paraCount to compute statistics d statistic statistic paragraphs
           set pageCount to compute statistics d statistic statistic pages
           return "Words: " & wordCount & linefeed & "Characters: " & charCount & linefeed & "Characters (with spaces): " & charWithSpaces & linefeed & "Paragraphs: " & paraCount & linefeed & "Pages: " & pageCount
@@ -122,20 +122,20 @@ export const documentTools = [
   },
 
   {
-    name: "save_document",
-    description: "Save the active document",
+    name: 'save_document',
+    description: 'Save the active document',
     annotations: { destructiveHint: true },
     inputSchema: {
-      type: "object",
+      type: 'object',
       properties: {
         path: {
-          type: "string",
-          description: "Optional path to save as (if not provided, saves to current location)",
-        },
-      },
+          type: 'string',
+          description: 'Optional path to save as (if not provided, saves to current location)'
+        }
+      }
     },
     async handler(args) {
-      const path = args.path ? validateString(args.path, "path", false) : undefined;
+      const path = args.path ? validateString(args.path, 'path', false) : undefined;
 
       const script = path
         ? `
@@ -164,21 +164,21 @@ export const documentTools = [
   },
 
   {
-    name: "close_document",
-    description: "Close the active document",
+    name: 'close_document',
+    description: 'Close the active document',
     annotations: { destructiveHint: true },
     inputSchema: {
-      type: "object",
+      type: 'object',
       properties: {
         save: {
-          type: "boolean",
-          description: "Save before closing (default: true)",
-          default: true,
-        },
-      },
+          type: 'boolean',
+          description: 'Save before closing (default: true)',
+          default: true
+        }
+      }
     },
     async handler(args) {
-      const save = validateBoolean(args.save, "save", true);
+      const save = validateBoolean(args.save, 'save', true);
 
       const script = `
         tell application "Microsoft Word"
@@ -196,21 +196,21 @@ export const documentTools = [
   },
 
   {
-    name: "export_pdf",
-    description: "Export the active document as PDF",
+    name: 'export_pdf',
+    description: 'Export the active document as PDF',
     annotations: { destructiveHint: true },
     inputSchema: {
-      type: "object",
+      type: 'object',
       properties: {
         path: {
-          type: "string",
-          description: "Full path for the PDF file",
-        },
+          type: 'string',
+          description: 'Full path for the PDF file'
+        }
       },
-      required: ["path"],
+      required: ['path']
     },
     async handler(args) {
-      const path = validateString(args.path, "path", true);
+      const path = validateString(args.path, 'path', true);
 
       const script = `
         tell application "Microsoft Word"
