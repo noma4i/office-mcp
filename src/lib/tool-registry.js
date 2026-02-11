@@ -5,16 +5,9 @@ import { bookmarkTools } from '../tools/bookmarks.js';
 import { hyperlinkTools } from '../tools/hyperlinks.js';
 import { paragraphTools } from '../tools/paragraphs.js';
 import { navigationTools } from '../tools/navigation.js';
+import { imageTools } from '../tools/images.js';
 
-export const ALL_TOOLS = [
-  ...documentTools,
-  ...textTools,
-  ...tableTools,
-  ...bookmarkTools,
-  ...hyperlinkTools,
-  ...paragraphTools,
-  ...navigationTools
-];
+export const ALL_TOOLS = [...documentTools, ...textTools, ...tableTools, ...bookmarkTools, ...hyperlinkTools, ...paragraphTools, ...navigationTools, ...imageTools];
 
 export function getToolDefinitions() {
   return ALL_TOOLS.map(tool => ({

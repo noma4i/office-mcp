@@ -38,13 +38,15 @@
 │       ├── bookmarks.js      # 4 инструмента для закладок
 │       ├── hyperlinks.js     # 2 инструмента для гиперссылок
 │       ├── paragraphs.js     # 3 инструмента для параграфов
-│       └── navigation.js     # 5 инструментов для навигации
+│       ├── navigation.js     # 5 инструментов для навигации
+│       └── images.js         # 3 инструмента для изображений
 ├── dist/                     # Собранные файлы (копия src/)
 ├── scripts/
 │   └── build.js              # Скрипт сборки
 ├── server/
 │   └── index.old.js          # Старый монолитный файл (backup)
 ├── tests/                    # Тесты
+├── .yarnrc.yml               # Yarn config (nodeLinker: node-modules)
 ├── package.json              # Yarn + build скрипты
 └── yarn.lock                 # Yarn lockfile
 ```
@@ -55,14 +57,14 @@
 | ---------------------------------------- | -------------------------------- | ------------------------------------------------------- |
 | `src/index.js`                           | Точка входа, запуск сервера      | `main()`                                                |
 | `src/lib/server.js`                      | MCP Server setup v0.7.0          | `createServer()`, `startServer()`                       |
-| `src/lib/tool-registry.js`               | Регистрация всех 34 инструментов | `ALL_TOOLS`, `getToolDefinitions()`, `getToolHandler()` |
+| `src/lib/tool-registry.js`               | Регистрация всех 37 инструментов | `ALL_TOOLS`, `getToolDefinitions()`, `getToolHandler()` |
 | `src/lib/tool-executor.js`               | Единый обработчик инструментов   | `executeTool()`                                         |
 | `src/lib/validators.js`                  | Валидация входных данных         | 5 функций валидации                                     |
 | `src/lib/applescript/executor.js`        | Выполнение AppleScript           | `runAppleScript()`                                      |
 | `src/lib/applescript/helpers.js`         | Переиспользуемые фрагменты       | `COMMON_SCRIPTS`                                        |
 | `src/lib/applescript/template-engine.js` | Подстановка параметров           | `processTemplate()`                                     |
 
-### Модули инструментов (34 инструмента)
+### Модули инструментов (37 инструментов)
 
 | Модуль     | Инструменты     | Файл                      |
 | ---------- | --------------- | ------------------------- |
@@ -72,6 +74,7 @@
 | Bookmarks  | 4 инструмента   | `src/tools/bookmarks.js`  |
 | Hyperlinks | 2 инструмента   | `src/tools/hyperlinks.js` |
 | Paragraphs | 3 инструмента   | `src/tools/paragraphs.js` |
+| Images     | 3 инструмента   | `src/tools/images.js`     |
 | Tables     | 10 инструментов | `src/tools/tables.js`     |
 
 ## Сборка и запуск
@@ -99,33 +102,11 @@
 
 ## Добавление нового инструмента
 
-1. **Добавить в соответствующий файл** `src/tools/[category].js`:
+1. Добавить объект `{name, description, annotations, inputSchema, handler}` в массив в `src/tools/[category].js`
+2. Использовать валидаторы из `../lib/validators.js` и `runAppleScript()` из `../lib/applescript/executor.js`
+3. Автоматическая регистрация через `tool-registry.js` — дополнительных действий не требуется
 
-   ```javascript
-   {
-     name: "my_new_tool",
-     description: "Tool description",
-     annotations: { destructiveHint: true },
-     inputSchema: { ... },
-     async handler(args) {
-       // Валидация
-       const param = validateString(args.param, "param", true);
-
-       // AppleScript
-       const script = `
-         tell application "Microsoft Word"
-           ...
-         end tell
-       `;
-
-       return await runAppleScript(script);
-     }
-   }
-   ```
-
-2. **Готово!** Автоматическая регистрация через `tool-registry.js`
-
-## Инструменты (34 шт.)
+## Инструменты (37 шт.)
 
 ### Документы
 
@@ -196,6 +177,14 @@
 | `goto_paragraph`      | Перейти к параграфу          | `index`              |
 | `set_paragraph_style` | Установить стиль параграфа   | `index`, `styleName` |
 
+### Изображения
+
+| Инструмент            | Назначение                               | Параметры                                        |
+| --------------------- | ---------------------------------------- | ------------------------------------------------ |
+| `insert_image`        | Вставить изображение через clipboard     | `path`, `width?`, `height?`                      |
+| `list_inline_shapes`  | Список inline shapes (картинки, объекты) | —                                                |
+| `resize_inline_shape` | Изменить размер inline shape             | `index`, `width?`, `height?`, `lockAspectRatio?` |
+
 ## Индексация
 
 - Все индексы **1-based** (tableIndex=1, row=1, column=1, index=1)
@@ -215,7 +204,8 @@
 | Удалить строку    | `delete row N of table`                                                               |
 | Закладки          | `make new bookmark at d with properties {name:"X", bookmark range:selection}`         |
 | Гиперссылки       | `make new hyperlink at selection with properties {hyperlink address:"URL"}`           |
-| Параграф          | `paragraph N of d`, `paragraph style of paragraph N`                                  |
+| Параграф          | `paragraph N of d`, `style of paragraph N`                                            |
+| Изображение       | clipboard + `paste object selection`, `inline shape N of d`, `width/height of shp`    |
 
 ## Тестирование
 
@@ -232,7 +222,7 @@ yarn test:coverage     # С отчетом покрытия
 | Тестовый файл                      | Покрытие                 | Тестов |
 | ---------------------------------- | ------------------------ | ------ |
 | `tests/validation.test.js`         | Валидация входных данных | 20+    |
-| `tests/mcp-tools.test.js`          | Все 34 инструмента MCP   | 80+    |
+| `tests/mcp-tools.test.js`          | Все 37 инструментов MCP  | 80+    |
 | `tests/server-integration.test.js` | Интеграция сервера       | 30+    |
 
 ### Покрытие кода

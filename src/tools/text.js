@@ -3,21 +3,21 @@ import { runAppleScript } from '../lib/applescript/executor.js';
 
 export const textTools = [
   {
-    name: "insert_text",
-    description: "Insert text at the current cursor position",
+    name: 'insert_text',
+    description: 'Insert text at the current cursor position',
     annotations: { destructiveHint: true },
     inputSchema: {
-      type: "object",
+      type: 'object',
       properties: {
         text: {
-          type: "string",
-          description: "Text to insert",
-        },
+          type: 'string',
+          description: 'Text to insert'
+        }
       },
-      required: ["text"],
+      required: ['text']
     },
     async handler(args) {
-      const text = validateString(args.text, "text", true);
+      const text = validateString(args.text, 'text', true);
 
       const script = `
         tell application "Microsoft Word"
@@ -34,32 +34,32 @@ export const textTools = [
   },
 
   {
-    name: "replace_text",
-    description: "Find and replace text in the active document",
+    name: 'replace_text',
+    description: 'Find and replace text in the active document',
     annotations: { destructiveHint: true },
     inputSchema: {
-      type: "object",
+      type: 'object',
       properties: {
         find: {
-          type: "string",
-          description: "Text to find",
+          type: 'string',
+          description: 'Text to find'
         },
         replace: {
-          type: "string",
-          description: "Text to replace with",
+          type: 'string',
+          description: 'Text to replace with'
         },
         all: {
-          type: "boolean",
-          description: "Replace all occurrences (default: true)",
-          default: true,
-        },
+          type: 'boolean',
+          description: 'Replace all occurrences (default: true)',
+          default: true
+        }
       },
-      required: ["find", "replace"],
+      required: ['find', 'replace']
     },
     async handler(args) {
-      const find = validateString(args.find, "find", true);
-      const replace = validateString(args.replace, "replace", true);
-      const all = validateBoolean(args.all, "all", true);
+      const find = validateString(args.find, 'find', true);
+      const replace = validateString(args.replace, 'replace', true);
+      const all = validateBoolean(args.all, 'all', true);
 
       const script = `
         tell application "Microsoft Word"
@@ -71,7 +71,7 @@ export const textTools = [
             set findObject to find object of selection
             clear formatting findObject
             set content of findObject to ${JSON.stringify(find)}
-            set replacement to ${JSON.stringify(replace)}
+            set content of replacement of findObject to ${JSON.stringify(replace)}
             ${all ? 'execute find findObject replace replace all' : 'execute find findObject replace replace one'}
           end tell
           return "Text replaced successfully"
@@ -83,50 +83,40 @@ export const textTools = [
   },
 
   {
-    name: "format_text",
-    description: "Apply formatting to the currently selected text",
+    name: 'format_text',
+    description: 'Apply formatting to the currently selected text',
     annotations: { destructiveHint: true },
     inputSchema: {
-      type: "object",
+      type: 'object',
       properties: {
         bold: {
-          type: "boolean",
-          description: "Make text bold",
+          type: 'boolean',
+          description: 'Make text bold'
         },
         italic: {
-          type: "boolean",
-          description: "Make text italic",
+          type: 'boolean',
+          description: 'Make text italic'
         },
         underline: {
-          type: "boolean",
-          description: "Underline text",
+          type: 'boolean',
+          description: 'Underline text'
         },
         font: {
-          type: "string",
-          description: "Font name",
+          type: 'string',
+          description: 'Font name'
         },
         size: {
-          type: "number",
-          description: "Font size",
-        },
-      },
+          type: 'number',
+          description: 'Font size'
+        }
+      }
     },
     async handler(args) {
-      const bold = args.bold !== undefined
-        ? validateBoolean(args.bold, "bold")
-        : undefined;
-      const italic = args.italic !== undefined
-        ? validateBoolean(args.italic, "italic")
-        : undefined;
-      const underline = args.underline !== undefined
-        ? validateBoolean(args.underline, "underline")
-        : undefined;
-      const font = args.font
-        ? validateString(args.font, "font", false)
-        : undefined;
-      const size = args.size !== undefined
-        ? validateNumber(args.size, "size", 1, 1000)
-        : undefined;
+      const bold = args.bold !== undefined ? validateBoolean(args.bold, 'bold') : undefined;
+      const italic = args.italic !== undefined ? validateBoolean(args.italic, 'italic') : undefined;
+      const underline = args.underline !== undefined ? validateBoolean(args.underline, 'underline') : undefined;
+      const font = args.font ? validateString(args.font, 'font', false) : undefined;
+      const size = args.size !== undefined ? validateNumber(args.size, 'size', 1, 1000) : undefined;
 
       let formatCommands = [];
       if (bold !== undefined) {
@@ -146,7 +136,7 @@ export const textTools = [
       }
 
       if (formatCommands.length === 0) {
-        throw new Error("At least one formatting option is required");
+        throw new Error('At least one formatting option is required');
       }
 
       const script = `
