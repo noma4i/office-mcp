@@ -13,17 +13,17 @@ jest.unstable_mockModule('../src/lib/applescript/executor.js', () => ({
   }
 }));
 
-const { textTools } = await import('../src/tools/text.js');
-const { tableTools } = await import('../src/tools/tables.js');
-const { paragraphTools } = await import('../src/tools/paragraphs.js');
-const { bookmarkTools } = await import('../src/tools/bookmarks.js');
-const { hyperlinkTools } = await import('../src/tools/hyperlinks.js');
-const { navigationTools } = await import('../src/tools/navigation.js');
-const { documentTools } = await import('../src/tools/documents.js');
-const { imageTools } = await import('../src/tools/images.js');
-const { headerFooterTools } = await import('../src/tools/headers-footers.js');
-const { sectionTools } = await import('../src/tools/sections.js');
-const { formattingReadTools } = await import('../src/tools/formatting-read.js');
+const { textTools } = await import('../src/tools/word-text.js');
+const { tableTools } = await import('../src/tools/word-tables.js');
+const { paragraphTools } = await import('../src/tools/word-paragraphs.js');
+const { bookmarkTools } = await import('../src/tools/word-bookmarks.js');
+const { hyperlinkTools } = await import('../src/tools/word-hyperlinks.js');
+const { navigationTools } = await import('../src/tools/word-navigation.js');
+const { documentTools } = await import('../src/tools/word-documents.js');
+const { imageTools } = await import('../src/tools/word-images.js');
+const { headerFooterTools } = await import('../src/tools/word-headers-footers.js');
+const { sectionTools } = await import('../src/tools/word-sections.js');
+const { formattingReadTools } = await import('../src/tools/word-formatting-read.js');
 const { processTemplate } = await import('../src/lib/applescript/template-engine.js');
 
 function findTool(tools, name) {
