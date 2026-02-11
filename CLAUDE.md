@@ -32,17 +32,17 @@
 │   │       ├── helpers.js    # Общие AppleScript фрагменты (Word + Excel)
 │   │       └── template-engine.js # Шаблонизатор
 │   └── tools/
-│       ├── documents.js        # Word: 7 инструментов
-│       ├── text.js             # Word: 4 инструмента (insert, replace, delete, format)
-│       ├── tables.js           # Word: 10 инструментов
-│       ├── bookmarks.js        # Word: 4 инструмента
-│       ├── hyperlinks.js       # Word: 2 инструмента
-│       ├── paragraphs.js       # Word: 4 инструмента (list, goto, style, delete)
-│       ├── navigation.js       # Word: 5 инструментов
-│       ├── images.js           # Word: 3 инструмента
-│       ├── headers-footers.js  # Word: 6 инструментов (get/set header/footer, insert images)
-│       ├── sections.js         # Word: 4 инструмента (list, info, page setup, break)
-│       ├── formatting-read.js  # Word: 2 инструмента (text formatting, paragraph formatting)
+│       ├── word-documents.js        # Word: 7 инструментов
+│       ├── word-text.js             # Word: 4 инструмента (insert, replace, delete, format)
+│       ├── word-tables.js           # Word: 10 инструментов
+│       ├── word-bookmarks.js        # Word: 4 инструмента
+│       ├── word-hyperlinks.js       # Word: 2 инструмента
+│       ├── word-paragraphs.js       # Word: 4 инструмента (list, goto, style, delete)
+│       ├── word-navigation.js       # Word: 5 инструментов
+│       ├── word-images.js           # Word: 3 инструмента
+│       ├── word-headers-footers.js  # Word: 6 инструментов (get/set header/footer, insert images)
+│       ├── word-sections.js         # Word: 4 инструмента (list, info, page setup, break)
+│       ├── word-formatting-read.js  # Word: 2 инструмента (text formatting, paragraph formatting)
 │       ├── excel-workbooks.js  # Excel: 6 инструментов
 │       ├── excel-sheets.js     # Excel: 6 инструментов
 │       ├── excel-cells.js      # Excel: 7 инструментов
