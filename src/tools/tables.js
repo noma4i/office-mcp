@@ -3,8 +3,8 @@ import { runAppleScript } from '../lib/applescript/executor.js';
 
 export const tableTools = [
   {
-    name: 'list_tables',
-    description: 'List all tables in the active document with their dimensions (rows x columns)',
+    name: 'word_list_tables',
+    description: 'List all tables in the active Word document with their dimensions (rows x columns)',
     annotations: { readOnlyHint: true },
     inputSchema: {
       type: 'object',
@@ -37,8 +37,8 @@ export const tableTools = [
   },
 
   {
-    name: 'get_table_cell',
-    description: 'Get the text content of a specific table cell',
+    name: 'word_get_table_cell',
+    description: 'Get the text content of a specific table cell in Word',
     annotations: { readOnlyHint: true },
     inputSchema: {
       type: 'object',
@@ -91,8 +91,8 @@ export const tableTools = [
   },
 
   {
-    name: 'set_table_cell',
-    description: 'Set the text content of a specific table cell',
+    name: 'word_set_table_cell',
+    description: 'Set the text content of a specific table cell in Word',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -144,8 +144,8 @@ export const tableTools = [
   },
 
   {
-    name: 'select_table_cell',
-    description: 'Select a specific table cell and move cursor there',
+    name: 'word_select_table_cell',
+    description: 'Select a specific table cell and move cursor there in Word',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -192,8 +192,8 @@ export const tableTools = [
   },
 
   {
-    name: 'find_table_header',
-    description: 'Find a table column by header text (searches in specified header row)',
+    name: 'word_find_table_header',
+    description: 'Find a table column by header text in Word (searches in specified header row)',
     annotations: { readOnlyHint: true },
     inputSchema: {
       type: 'object',
@@ -259,8 +259,8 @@ export const tableTools = [
   },
 
   {
-    name: 'create_table',
-    description: 'Create a new table at the current cursor position',
+    name: 'word_create_table',
+    description: 'Create a new table at the current cursor position in Word',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -295,8 +295,8 @@ export const tableTools = [
   },
 
   {
-    name: 'add_table_row',
-    description: 'Add a new row to a table',
+    name: 'word_add_table_row',
+    description: 'Add a new row to a table in Word',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -339,8 +339,8 @@ export const tableTools = [
   },
 
   {
-    name: 'delete_table_row',
-    description: 'Delete a row from a table',
+    name: 'word_delete_table_row',
+    description: 'Delete a row from a table in Word',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -377,8 +377,8 @@ export const tableTools = [
   },
 
   {
-    name: 'add_table_column',
-    description: 'Add a new column to a table',
+    name: 'word_add_table_column',
+    description: 'Add a new column to a table in Word',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -421,8 +421,8 @@ export const tableTools = [
   },
 
   {
-    name: 'delete_table_column',
-    description: 'Delete a column from a table',
+    name: 'word_delete_table_column',
+    description: 'Delete a column from a table in Word',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',

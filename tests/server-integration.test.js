@@ -4,12 +4,12 @@ describe('MCP Server Integration', () => {
   describe('Server Configuration', () => {
     test('should have correct server name and version', () => {
       const serverConfig = {
-        name: "Microsoft-Word-Server",
-        version: "0.6.0",
+        name: "Microsoft-Office-Server",
+        version: "0.8.0",
       };
 
-      expect(serverConfig.name).toBe("Microsoft-Word-Server");
-      expect(serverConfig.version).toBe("0.6.0");
+      expect(serverConfig.name).toBe("Microsoft-Office-Server");
+      expect(serverConfig.version).toBe("0.8.0");
     });
 
     test('should expose tools capability', () => {
@@ -23,108 +23,123 @@ describe('MCP Server Integration', () => {
 
   describe('Tool Definitions', () => {
     const tools = [
-      'create_document',
-      'open_document',
-      'get_document_text',
-      'get_document_info',
-      'insert_text',
-      'replace_text',
-      'format_text',
-      'save_document',
-      'close_document',
-      'export_pdf',
-      'list_tables',
-      'get_table_cell',
-      'set_table_cell',
-      'select_table_cell',
-      'find_table_header',
-      'move_cursor_after_text',
-      'goto_start',
-      'goto_end',
-      'get_selection_info',
-      'select_all',
-      'create_table',
-      'add_table_row',
-      'delete_table_row',
-      'add_table_column',
-      'delete_table_column',
-      'list_bookmarks',
-      'create_bookmark',
-      'goto_bookmark',
-      'delete_bookmark',
-      'list_hyperlinks',
-      'create_hyperlink',
-      'list_paragraphs',
-      'goto_paragraph',
-      'set_paragraph_style',
+      // Word Document tools (7)
+      'word_create_document', 'word_open_document', 'word_get_document_text',
+      'word_get_document_info', 'word_save_document', 'word_close_document', 'word_export_pdf',
+      // Word Text tools (3)
+      'word_insert_text', 'word_replace_text', 'word_format_text',
+      // Word Navigation tools (5)
+      'word_move_cursor_after_text', 'word_goto_start', 'word_goto_end',
+      'word_get_selection_info', 'word_select_all',
+      // Word Table tools (10)
+      'word_list_tables', 'word_get_table_cell', 'word_set_table_cell',
+      'word_select_table_cell', 'word_find_table_header', 'word_create_table',
+      'word_add_table_row', 'word_delete_table_row', 'word_add_table_column', 'word_delete_table_column',
+      // Word Bookmark tools (4)
+      'word_list_bookmarks', 'word_create_bookmark', 'word_goto_bookmark', 'word_delete_bookmark',
+      // Word Hyperlink tools (2)
+      'word_list_hyperlinks', 'word_create_hyperlink',
+      // Word Paragraph tools (3)
+      'word_list_paragraphs', 'word_goto_paragraph', 'word_set_paragraph_style',
+      // Word Image tools (3)
+      'word_insert_image', 'word_list_inline_shapes', 'word_resize_inline_shape',
+      // Excel Workbook tools (6)
+      'excel_create_workbook', 'excel_open_workbook', 'excel_get_workbook_info',
+      'excel_save_workbook', 'excel_close_workbook', 'excel_list_workbooks',
+      // Excel Sheet tools (6)
+      'excel_list_sheets', 'excel_create_sheet', 'excel_delete_sheet',
+      'excel_rename_sheet', 'excel_activate_sheet', 'excel_get_sheet_info',
+      // Excel Cell tools (7)
+      'excel_get_cell', 'excel_set_cell', 'excel_get_range',
+      'excel_set_cell_formula', 'excel_clear_range', 'excel_get_used_range', 'excel_find_cell',
+      // Excel Formatting tools (5)
+      'excel_format_cells', 'excel_set_number_format', 'excel_set_cell_color',
+      'excel_merge_cells', 'excel_autofit',
+      // Excel Row/Column tools (6)
+      'excel_insert_rows', 'excel_delete_rows', 'excel_insert_columns',
+      'excel_delete_columns', 'excel_set_column_width', 'excel_set_row_height',
+      // Excel Data tools (3)
+      'excel_sort_range', 'excel_calculate', 'excel_export_csv',
     ];
 
-    test('should have all 34 tools defined', () => {
-      expect(tools).toHaveLength(34);
+    test('should have all 70 tools defined', () => {
+      expect(tools).toHaveLength(70);
     });
 
     test('should have document tools', () => {
       const documentTools = tools.filter(t =>
-        ['create_document', 'open_document', 'get_document_text', 'get_document_info',
-         'save_document', 'close_document', 'export_pdf'].includes(t)
+        ['word_create_document', 'word_open_document', 'word_get_document_text', 'word_get_document_info',
+         'word_save_document', 'word_close_document', 'word_export_pdf'].includes(t)
       );
       expect(documentTools).toHaveLength(7);
     });
 
     test('should have text tools', () => {
       const textTools = tools.filter(t =>
-        ['insert_text', 'replace_text', 'format_text'].includes(t)
+        ['word_insert_text', 'word_replace_text', 'word_format_text'].includes(t)
       );
       expect(textTools).toHaveLength(3);
     });
 
     test('should have navigation tools', () => {
       const navigationTools = tools.filter(t =>
-        ['move_cursor_after_text', 'goto_start', 'goto_end', 'get_selection_info', 'select_all'].includes(t)
+        ['word_move_cursor_after_text', 'word_goto_start', 'word_goto_end', 'word_get_selection_info', 'word_select_all'].includes(t)
       );
       expect(navigationTools).toHaveLength(5);
     });
 
     test('should have table tools', () => {
       const tableTools = tools.filter(t =>
-        ['list_tables', 'get_table_cell', 'set_table_cell', 'select_table_cell', 'find_table_header',
-         'create_table', 'add_table_row', 'delete_table_row', 'add_table_column', 'delete_table_column'].includes(t)
+        ['word_list_tables', 'word_get_table_cell', 'word_set_table_cell', 'word_select_table_cell', 'word_find_table_header',
+         'word_create_table', 'word_add_table_row', 'word_delete_table_row', 'word_add_table_column', 'word_delete_table_column'].includes(t)
       );
       expect(tableTools).toHaveLength(10);
     });
 
     test('should have bookmark tools', () => {
       const bookmarkTools = tools.filter(t =>
-        ['list_bookmarks', 'create_bookmark', 'goto_bookmark', 'delete_bookmark'].includes(t)
+        ['word_list_bookmarks', 'word_create_bookmark', 'word_goto_bookmark', 'word_delete_bookmark'].includes(t)
       );
       expect(bookmarkTools).toHaveLength(4);
     });
 
     test('should have hyperlink tools', () => {
       const hyperlinkTools = tools.filter(t =>
-        ['list_hyperlinks', 'create_hyperlink'].includes(t)
+        ['word_list_hyperlinks', 'word_create_hyperlink'].includes(t)
       );
       expect(hyperlinkTools).toHaveLength(2);
     });
 
     test('should have paragraph tools', () => {
       const paragraphTools = tools.filter(t =>
-        ['list_paragraphs', 'goto_paragraph', 'set_paragraph_style'].includes(t)
+        ['word_list_paragraphs', 'word_goto_paragraph', 'word_set_paragraph_style'].includes(t)
       );
       expect(paragraphTools).toHaveLength(3);
+    });
+
+    test('should have image tools', () => {
+      const imageTools = tools.filter(t =>
+        ['word_insert_image', 'word_list_inline_shapes', 'word_resize_inline_shape'].includes(t)
+      );
+      expect(imageTools).toHaveLength(3);
+    });
+
+    test('should have Excel tools', () => {
+      const excelTools = tools.filter(t => t.startsWith('excel_'));
+      expect(excelTools).toHaveLength(33);
     });
   });
 
   describe('Tool Annotations', () => {
     test('destructive tools should have destructiveHint', () => {
       const destructiveTools = [
-        'create_document', 'insert_text', 'replace_text', 'format_text',
-        'save_document', 'close_document', 'export_pdf', 'set_table_cell',
-        'select_table_cell', 'move_cursor_after_text', 'goto_start', 'goto_end',
-        'select_all', 'create_table', 'add_table_row', 'delete_table_row',
-        'add_table_column', 'delete_table_column', 'create_bookmark',
-        'goto_bookmark', 'delete_bookmark', 'create_hyperlink', 'goto_paragraph',
-        'set_paragraph_style'
+        'word_create_document', 'word_insert_text', 'word_replace_text', 'word_format_text',
+        'word_save_document', 'word_close_document', 'word_export_pdf', 'word_set_table_cell',
+        'word_select_table_cell', 'word_move_cursor_after_text', 'word_goto_start', 'word_goto_end',
+        'word_select_all', 'word_create_table', 'word_add_table_row', 'word_delete_table_row',
+        'word_add_table_column', 'word_delete_table_column', 'word_create_bookmark',
+        'word_goto_bookmark', 'word_delete_bookmark', 'word_create_hyperlink', 'word_goto_paragraph',
+        'word_set_paragraph_style'
       ];
 
       expect(destructiveTools.length).toBeGreaterThan(0);
@@ -132,9 +147,9 @@ describe('MCP Server Integration', () => {
 
     test('read-only tools should have readOnlyHint', () => {
       const readOnlyTools = [
-        'open_document', 'get_document_text', 'get_document_info', 'list_tables',
-        'get_table_cell', 'find_table_header', 'get_selection_info',
-        'list_bookmarks', 'list_hyperlinks', 'list_paragraphs'
+        'word_open_document', 'word_get_document_text', 'word_get_document_info', 'word_list_tables',
+        'word_get_table_cell', 'word_find_table_header', 'word_get_selection_info',
+        'word_list_bookmarks', 'word_list_hyperlinks', 'word_list_paragraphs'
       ];
 
       expect(readOnlyTools.length).toBeGreaterThan(0);

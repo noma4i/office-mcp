@@ -3,8 +3,8 @@ import { runAppleScript } from '../lib/applescript/executor.js';
 
 export const navigationTools = [
   {
-    name: 'goto_start',
-    description: 'Move cursor to the beginning of the document',
+    name: 'word_goto_start',
+    description: 'Move cursor to the beginning of the Word document',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -28,8 +28,8 @@ export const navigationTools = [
   },
 
   {
-    name: 'goto_end',
-    description: 'Move cursor to the end of the document',
+    name: 'word_goto_end',
+    description: 'Move cursor to the end of the Word document',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -53,8 +53,8 @@ export const navigationTools = [
   },
 
   {
-    name: 'get_selection_info',
-    description: 'Get position and length of current selection',
+    name: 'word_get_selection_info',
+    description: 'Get position and length of current selection in Word',
     annotations: { readOnlyHint: true },
     inputSchema: {
       type: 'object',
@@ -78,8 +78,8 @@ export const navigationTools = [
   },
 
   {
-    name: 'select_all',
-    description: 'Select all content in the document',
+    name: 'word_select_all',
+    description: 'Select all content in the Word document',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -102,8 +102,8 @@ export const navigationTools = [
   },
 
   {
-    name: 'move_cursor_after_text',
-    description: 'Find text and move cursor to the end of the specified occurrence',
+    name: 'word_move_cursor_after_text',
+    description: 'Find text and move cursor after the specified occurrence in Word',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',

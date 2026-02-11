@@ -4,7 +4,7 @@ import { runAppleScript } from '../lib/applescript/executor.js';
 export const excelFormattingTools = [
   {
     name: 'excel_format_cells',
-    description: 'Format cells (bold, italic, font, size, font color)',
+    description: 'Format cells in Excel (bold, italic, font, size, font color)',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -79,7 +79,7 @@ export const excelFormattingTools = [
 
   {
     name: 'excel_set_number_format',
-    description: 'Set the number format of a range',
+    description: 'Set the number format of a range in Excel',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -114,7 +114,7 @@ export const excelFormattingTools = [
 
   {
     name: 'excel_set_cell_color',
-    description: 'Set the background color of a range',
+    description: 'Set the background color of a range in Excel',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -152,7 +152,7 @@ export const excelFormattingTools = [
 
   {
     name: 'excel_merge_cells',
-    description: 'Merge a range of cells',
+    description: 'Merge a range of cells in the active Excel worksheet',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -182,7 +182,7 @@ export const excelFormattingTools = [
 
   {
     name: 'excel_autofit',
-    description: 'Auto-fit column widths for a range',
+    description: 'Auto-fit column widths for a range in the active Excel worksheet',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',

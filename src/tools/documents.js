@@ -3,8 +3,8 @@ import { runAppleScript } from '../lib/applescript/executor.js';
 
 export const documentTools = [
   {
-    name: 'create_document',
-    description: 'Create a new Word document with optional content',
+    name: 'word_create_document',
+    description: 'Create a new Microsoft Word document with optional content',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -42,8 +42,8 @@ export const documentTools = [
   },
 
   {
-    name: 'open_document',
-    description: 'Open an existing Word document',
+    name: 'word_open_document',
+    description: 'Open an existing Microsoft Word document',
     annotations: { readOnlyHint: false },
     inputSchema: {
       type: 'object',
@@ -71,8 +71,8 @@ export const documentTools = [
   },
 
   {
-    name: 'get_document_text',
-    description: 'Get all text content from the active document',
+    name: 'word_get_document_text',
+    description: 'Get all text content from the active Word document',
     annotations: { readOnlyHint: true },
     inputSchema: {
       type: 'object',
@@ -94,8 +94,8 @@ export const documentTools = [
   },
 
   {
-    name: 'get_document_info',
-    description: 'Get document statistics (words, characters, paragraphs, pages)',
+    name: 'word_get_document_info',
+    description: 'Get Word document statistics (words, characters, paragraphs, pages)',
     annotations: { readOnlyHint: true },
     inputSchema: {
       type: 'object',
@@ -122,8 +122,8 @@ export const documentTools = [
   },
 
   {
-    name: 'save_document',
-    description: 'Save the active document',
+    name: 'word_save_document',
+    description: 'Save the active Word document',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -164,8 +164,8 @@ export const documentTools = [
   },
 
   {
-    name: 'close_document',
-    description: 'Close the active document',
+    name: 'word_close_document',
+    description: 'Close the active Word document',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -196,8 +196,8 @@ export const documentTools = [
   },
 
   {
-    name: 'export_pdf',
-    description: 'Export the active document as PDF',
+    name: 'word_export_pdf',
+    description: 'Export the active Word document as PDF',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',

@@ -4,7 +4,7 @@ import { runAppleScript } from '../lib/applescript/executor.js';
 export const excelWorkbookTools = [
   {
     name: 'excel_create_workbook',
-    description: 'Create a new Excel workbook',
+    description: 'Create a new workbook in Microsoft Excel',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -24,7 +24,7 @@ export const excelWorkbookTools = [
 
   {
     name: 'excel_open_workbook',
-    description: 'Open an existing Excel workbook',
+    description: 'Open an existing workbook in Microsoft Excel',
     annotations: { readOnlyHint: false },
     inputSchema: {
       type: 'object',
@@ -51,7 +51,7 @@ export const excelWorkbookTools = [
 
   {
     name: 'excel_get_workbook_info',
-    description: 'Get workbook information (name, path, sheet count)',
+    description: 'Get workbook information (name, path, sheet count) in Microsoft Excel',
     annotations: { readOnlyHint: true },
     inputSchema: {
       type: 'object',
@@ -76,7 +76,7 @@ export const excelWorkbookTools = [
 
   {
     name: 'excel_save_workbook',
-    description: 'Save the active workbook',
+    description: 'Save the active workbook in Microsoft Excel',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -119,7 +119,7 @@ export const excelWorkbookTools = [
 
   {
     name: 'excel_close_workbook',
-    description: 'Close the active workbook',
+    description: 'Close the active workbook in Microsoft Excel',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -149,7 +149,7 @@ export const excelWorkbookTools = [
 
   {
     name: 'excel_list_workbooks',
-    description: 'List all open workbooks',
+    description: 'List all open workbooks in Microsoft Excel',
     annotations: { readOnlyHint: true },
     inputSchema: {
       type: 'object',

@@ -3,8 +3,8 @@ import { runAppleScript } from '../lib/applescript/executor.js';
 
 export const textTools = [
   {
-    name: 'insert_text',
-    description: 'Insert text at the current cursor position',
+    name: 'word_insert_text',
+    description: 'Insert text at the current cursor position in Microsoft Word',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -34,8 +34,8 @@ export const textTools = [
   },
 
   {
-    name: 'replace_text',
-    description: 'Find and replace text in the active document',
+    name: 'word_replace_text',
+    description: 'Find and replace text in the active Word document',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -83,8 +83,8 @@ export const textTools = [
   },
 
   {
-    name: 'format_text',
-    description: 'Apply formatting to the currently selected text',
+    name: 'word_format_text',
+    description: 'Apply formatting to the currently selected text in Word',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',

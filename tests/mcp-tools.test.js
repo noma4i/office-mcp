@@ -1,6 +1,6 @@
 import { describe, test, expect } from '@jest/globals';
 
-describe('MCP Word Server Tools', () => {
+describe('MCP Office Server Tools', () => {
 
   describe('Document Tools', () => {
     test('create_document - with content', () => {

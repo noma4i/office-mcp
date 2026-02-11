@@ -12,7 +12,7 @@ function resolveSheet(nameOrIndex) {
 export const excelSheetTools = [
   {
     name: 'excel_list_sheets',
-    description: 'List all worksheets in the active workbook',
+    description: 'List all worksheets in the active Excel workbook',
     annotations: { readOnlyHint: true },
     inputSchema: {
       type: 'object',
@@ -44,7 +44,7 @@ export const excelSheetTools = [
 
   {
     name: 'excel_create_sheet',
-    description: 'Create a new worksheet',
+    description: 'Create a new worksheet in the active Excel workbook',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -86,7 +86,7 @@ export const excelSheetTools = [
 
   {
     name: 'excel_delete_sheet',
-    description: 'Delete a worksheet by name or index',
+    description: 'Delete a worksheet by name or index in Excel',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -121,7 +121,7 @@ export const excelSheetTools = [
 
   {
     name: 'excel_rename_sheet',
-    description: 'Rename a worksheet',
+    description: 'Rename a worksheet in the active Excel workbook',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -160,7 +160,7 @@ export const excelSheetTools = [
 
   {
     name: 'excel_activate_sheet',
-    description: 'Activate (switch to) a worksheet by name or index',
+    description: 'Activate (switch to) a worksheet by name or index in Excel',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -194,7 +194,7 @@ export const excelSheetTools = [
 
   {
     name: 'excel_get_sheet_info',
-    description: 'Get worksheet info (used range address, row count, column count)',
+    description: 'Get worksheet info (used range address, row count, column count) in Excel',
     annotations: { readOnlyHint: true },
     inputSchema: {
       type: 'object',

@@ -3,8 +3,8 @@ import { runAppleScript } from '../lib/applescript/executor.js';
 
 export const imageTools = [
   {
-    name: 'insert_image',
-    description: 'Insert an image into the document at the current cursor position using macOS clipboard',
+    name: 'word_insert_image',
+    description: 'Insert an image into the Word document at the current cursor position using macOS clipboard',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -73,8 +73,8 @@ export const imageTools = [
   },
 
   {
-    name: 'list_inline_shapes',
-    description: 'List all inline shapes (images, objects) in the active document with their dimensions',
+    name: 'word_list_inline_shapes',
+    description: 'List all inline shapes (images, objects) in the active Word document with their dimensions',
     annotations: { readOnlyHint: true },
     inputSchema: {
       type: 'object',
@@ -116,8 +116,8 @@ export const imageTools = [
   },
 
   {
-    name: 'resize_inline_shape',
-    description: 'Resize an inline shape (image) by index',
+    name: 'word_resize_inline_shape',
+    description: 'Resize an inline shape (image) by index in the active Word document',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',

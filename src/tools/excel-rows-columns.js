@@ -14,7 +14,7 @@ function columnLetter(num) {
 export const excelRowColumnTools = [
   {
     name: 'excel_insert_rows',
-    description: 'Insert rows at a specific position',
+    description: 'Insert rows at a specific position in the active Excel worksheet',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -51,7 +51,7 @@ export const excelRowColumnTools = [
 
   {
     name: 'excel_delete_rows',
-    description: 'Delete rows at a specific position',
+    description: 'Delete rows at a specific position in the active Excel worksheet',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -88,7 +88,7 @@ export const excelRowColumnTools = [
 
   {
     name: 'excel_insert_columns',
-    description: 'Insert columns at a specific position',
+    description: 'Insert columns at a specific position in the active Excel worksheet',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -126,7 +126,7 @@ export const excelRowColumnTools = [
 
   {
     name: 'excel_delete_columns',
-    description: 'Delete columns at a specific position',
+    description: 'Delete columns at a specific position in the active Excel worksheet',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -164,7 +164,7 @@ export const excelRowColumnTools = [
 
   {
     name: 'excel_set_column_width',
-    description: 'Set the width of a column',
+    description: 'Set the width of a column in the active Excel worksheet',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -199,7 +199,7 @@ export const excelRowColumnTools = [
 
   {
     name: 'excel_set_row_height',
-    description: 'Set the height of a row',
+    description: 'Set the height of a row in the active Excel worksheet',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',

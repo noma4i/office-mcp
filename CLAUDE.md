@@ -68,72 +68,72 @@
 
 ### Нейминг инструментов
 
-- **Word**: без префикса (`create_document`, `insert_text`, `list_tables`)
+- **Word**: префикс `word_` (`word_create_document`, `word_insert_text`, `word_list_tables`)
 - **Excel**: префикс `excel_` (`excel_create_workbook`, `excel_set_cell`, `excel_sort_range`)
 
 ## Инструменты Word (37 шт.)
 
 ### Документы (7)
 
-| Инструмент          | Назначение       | Параметры  |
-| ------------------- | ---------------- | ---------- |
-| `create_document`   | Создать документ | `content?` |
-| `open_document`     | Открыть документ | `path`     |
-| `get_document_text` | Получить текст   | —          |
-| `get_document_info` | Статистика       | —          |
-| `save_document`     | Сохранить        | `path?`    |
-| `close_document`    | Закрыть          | `save?`    |
-| `export_pdf`        | Экспорт в PDF    | `path`     |
+| Инструмент               | Назначение       | Параметры  |
+| ------------------------ | ---------------- | ---------- |
+| `word_create_document`   | Создать документ | `content?` |
+| `word_open_document`     | Открыть документ | `path`     |
+| `word_get_document_text` | Получить текст   | —          |
+| `word_get_document_info` | Статистика       | —          |
+| `word_save_document`     | Сохранить        | `path?`    |
+| `word_close_document`    | Закрыть          | `save?`    |
+| `word_export_pdf`        | Экспорт в PDF    | `path`     |
 
 ### Текст (3)
 
-| Инструмент     | Назначение       | Параметры                                          |
-| -------------- | ---------------- | -------------------------------------------------- |
-| `insert_text`  | Вставить текст   | `text`                                             |
-| `replace_text` | Найти и заменить | `find`, `replace`, `all?`                          |
-| `format_text`  | Форматирование   | `bold?`, `italic?`, `underline?`, `font?`, `size?` |
+| Инструмент          | Назначение       | Параметры                                          |
+| ------------------- | ---------------- | -------------------------------------------------- |
+| `word_insert_text`  | Вставить текст   | `text`                                             |
+| `word_replace_text` | Найти и заменить | `find`, `replace`, `all?`                          |
+| `word_format_text`  | Форматирование   | `bold?`, `italic?`, `underline?`, `font?`, `size?` |
 
 ### Навигация (5)
 
-| Инструмент               | Назначение          | Параметры                   |
-| ------------------------ | ------------------- | --------------------------- |
-| `move_cursor_after_text` | Курсор после текста | `searchText`, `occurrence?` |
-| `goto_start`             | В начало            | —                           |
-| `goto_end`               | В конец             | —                           |
-| `get_selection_info`     | Позиция выделения   | —                           |
-| `select_all`             | Выделить всё        | —                           |
+| Инструмент                    | Назначение          | Параметры                   |
+| ----------------------------- | ------------------- | --------------------------- |
+| `word_move_cursor_after_text` | Курсор после текста | `searchText`, `occurrence?` |
+| `word_goto_start`             | В начало            | —                           |
+| `word_goto_end`               | В конец             | —                           |
+| `word_get_selection_info`     | Позиция выделения   | —                           |
+| `word_select_all`             | Выделить всё        | —                           |
 
 ### Таблицы (10)
 
-| Инструмент            | Назначение        | Параметры                                |
-| --------------------- | ----------------- | ---------------------------------------- |
-| `list_tables`         | Список таблиц     | —                                        |
-| `get_table_cell`      | Значение ячейки   | `tableIndex`, `row`, `column`            |
-| `set_table_cell`      | Установить ячейку | `tableIndex`, `row`, `column`, `text`    |
-| `select_table_cell`   | Курсор в ячейку   | `tableIndex`, `row`, `column`            |
-| `find_table_header`   | Найти заголовок   | `tableIndex`, `headerText`, `headerRow?` |
-| `create_table`        | Создать таблицу   | `rows`, `columns`                        |
-| `add_table_row`       | Добавить строку   | `tableIndex`, `afterRow?`                |
-| `delete_table_row`    | Удалить строку    | `tableIndex`, `row`                      |
-| `add_table_column`    | Добавить колонку  | `tableIndex`, `afterColumn?`             |
-| `delete_table_column` | Удалить колонку   | `tableIndex`, `column`                   |
+| Инструмент                 | Назначение        | Параметры                                |
+| -------------------------- | ----------------- | ---------------------------------------- |
+| `word_list_tables`         | Список таблиц     | —                                        |
+| `word_get_table_cell`      | Значение ячейки   | `tableIndex`, `row`, `column`            |
+| `word_set_table_cell`      | Установить ячейку | `tableIndex`, `row`, `column`, `text`    |
+| `word_select_table_cell`   | Курсор в ячейку   | `tableIndex`, `row`, `column`            |
+| `word_find_table_header`   | Найти заголовок   | `tableIndex`, `headerText`, `headerRow?` |
+| `word_create_table`        | Создать таблицу   | `rows`, `columns`                        |
+| `word_add_table_row`       | Добавить строку   | `tableIndex`, `afterRow?`                |
+| `word_delete_table_row`    | Удалить строку    | `tableIndex`, `row`                      |
+| `word_add_table_column`    | Добавить колонку  | `tableIndex`, `afterColumn?`             |
+| `word_delete_table_column` | Удалить колонку   | `tableIndex`, `column`                   |
 
 ### Закладки (4), Гиперссылки (2), Параграфы (3), Изображения (3)
 
-| Инструмент            | Назначение                             | Параметры                                        |
-| --------------------- | -------------------------------------- | ------------------------------------------------ |
-| `list_bookmarks`      | Список закладок                        | —                                                |
-| `create_bookmark`     | Создать закладку                       | `name`                                           |
-| `goto_bookmark`       | Перейти                                | `name`                                           |
-| `delete_bookmark`     | Удалить                                | `name`                                           |
-| `list_hyperlinks`     | Список (try/catch для text to display) | —                                                |
-| `create_hyperlink`    | Создать                                | `url`, `displayText?`                            |
-| `list_paragraphs`     | Список со стилями                      | `limit?`                                         |
-| `goto_paragraph`      | Перейти                                | `index`                                          |
-| `set_paragraph_style` | Установить стиль                       | `index`, `styleName`                             |
-| `insert_image`        | Вставить через clipboard               | `path`, `width?`, `height?`                      |
-| `list_inline_shapes`  | Список shapes                          | —                                                |
-| `resize_inline_shape` | Изменить размер                        | `index`, `width?`, `height?`, `lockAspectRatio?` |
+| Инструмент                 | Назначение                             | Параметры                                        |
+| -------------------------- | -------------------------------------- | ------------------------------------------------ |
+| `word_list_bookmarks`      | Список закладок                        | —                                                |
+| `word_create_bookmark`     | Создать закладку                       | `name`                                           |
+| `word_goto_bookmark`       | Перейти                                | `name`                                           |
+| `word_delete_bookmark`     | Удалить                                | `name`                                           |
+| `word_list_hyperlinks`     | Список (try/catch для text to display) | —                                                |
+| `word_create_hyperlink`    | Создать                                | `url`, `displayText?`                            |
+| `word_list_paragraphs`     | Список со стилями                      | `limit?`                                         |
+| `word_goto_paragraph`      | Перейти                                | `index`                                          |
+| `word_set_paragraph_style` | Установить стиль                       | `index`, `styleName`                             |
+| `word_insert_image`        | Вставить через clipboard               | `path`, `width?`, `height?`                      |
+| `word_list_inline_shapes`  | Список shapes                          | —                                                |
+| `word_resize_inline_shape` | Изменить размер                        | `index`, `width?`, `height?`, `lockAspectRatio?` |
 
 ## Инструменты Excel (33 шт.)
 

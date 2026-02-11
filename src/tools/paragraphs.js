@@ -3,8 +3,8 @@ import { runAppleScript } from '../lib/applescript/executor.js';
 
 export const paragraphTools = [
   {
-    name: 'list_paragraphs',
-    description: 'List paragraphs with their styles (limited to first N paragraphs)',
+    name: 'word_list_paragraphs',
+    description: 'List paragraphs with their styles in the active Word document (limited to first N paragraphs)',
     annotations: { readOnlyHint: true },
     inputSchema: {
       type: 'object',
@@ -61,8 +61,8 @@ export const paragraphTools = [
   },
 
   {
-    name: 'goto_paragraph',
-    description: 'Jump to a specific paragraph by index (1-based)',
+    name: 'word_goto_paragraph',
+    description: 'Jump to a specific paragraph by index in Word (1-based)',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -98,8 +98,8 @@ export const paragraphTools = [
   },
 
   {
-    name: 'set_paragraph_style',
-    description: 'Apply a paragraph style to a specific paragraph',
+    name: 'word_set_paragraph_style',
+    description: 'Apply a paragraph style to a specific paragraph in Word',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',

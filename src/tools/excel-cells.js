@@ -4,7 +4,7 @@ import { runAppleScript } from '../lib/applescript/executor.js';
 export const excelCellTools = [
   {
     name: 'excel_get_cell',
-    description: 'Get the value of a cell (A1 notation)',
+    description: 'Get the value of a cell in Excel (A1 notation)',
     annotations: { readOnlyHint: true },
     inputSchema: {
       type: 'object',
@@ -37,7 +37,7 @@ export const excelCellTools = [
 
   {
     name: 'excel_set_cell',
-    description: 'Set the value of a cell',
+    description: 'Set the value of a cell in the active Excel worksheet',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -75,7 +75,7 @@ export const excelCellTools = [
 
   {
     name: 'excel_get_range',
-    description: 'Get values from a range of cells as text',
+    description: 'Get values from a range of cells in Excel as text',
     annotations: { readOnlyHint: true },
     inputSchema: {
       type: 'object',
@@ -122,7 +122,7 @@ export const excelCellTools = [
 
   {
     name: 'excel_set_cell_formula',
-    description: 'Set a formula in a cell',
+    description: 'Set a formula in an Excel cell',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -157,7 +157,7 @@ export const excelCellTools = [
 
   {
     name: 'excel_clear_range',
-    description: 'Clear contents of a range',
+    description: 'Clear contents of a range in the active Excel worksheet',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -187,7 +187,7 @@ export const excelCellTools = [
 
   {
     name: 'excel_get_used_range',
-    description: 'Get the used range address and dimensions of the active sheet',
+    description: 'Get the used range address and dimensions of the active Excel sheet',
     annotations: { readOnlyHint: true },
     inputSchema: {
       type: 'object',
@@ -213,7 +213,7 @@ export const excelCellTools = [
 
   {
     name: 'excel_find_cell',
-    description: 'Find a cell containing specific text',
+    description: 'Find a cell containing specific text in the active Excel worksheet',
     annotations: { readOnlyHint: true },
     inputSchema: {
       type: 'object',

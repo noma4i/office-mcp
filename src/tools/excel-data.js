@@ -4,7 +4,7 @@ import { runAppleScript } from '../lib/applescript/executor.js';
 export const excelDataTools = [
   {
     name: 'excel_sort_range',
-    description: 'Sort a range by a key column',
+    description: 'Sort a range by a key column in the active Excel worksheet',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -54,7 +54,7 @@ export const excelDataTools = [
 
   {
     name: 'excel_calculate',
-    description: 'Recalculate all formulas in all open workbooks',
+    description: 'Recalculate all formulas in all open Excel workbooks',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -76,7 +76,7 @@ export const excelDataTools = [
 
   {
     name: 'excel_export_csv',
-    description: 'Export the active workbook as CSV',
+    description: 'Export the active Excel workbook as CSV',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',

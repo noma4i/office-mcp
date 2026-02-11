@@ -3,8 +3,8 @@ import { runAppleScript } from '../lib/applescript/executor.js';
 
 export const hyperlinkTools = [
   {
-    name: 'list_hyperlinks',
-    description: 'List all hyperlinks in the active document',
+    name: 'word_list_hyperlinks',
+    description: 'List all hyperlinks in the active Word document',
     annotations: { readOnlyHint: true },
     inputSchema: {
       type: 'object',
@@ -41,8 +41,8 @@ export const hyperlinkTools = [
   },
 
   {
-    name: 'create_hyperlink',
-    description: 'Create a hyperlink at the current selection or cursor position',
+    name: 'word_create_hyperlink',
+    description: 'Create a hyperlink at the current selection or cursor position in Word',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',

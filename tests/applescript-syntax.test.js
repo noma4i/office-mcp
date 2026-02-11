@@ -56,44 +56,44 @@ async function captureScript(tool, args = {}) {
 describe('AppleScript Syntax Verification', () => {
   describe('Document Tools', () => {
     test('create_document compiles', async () => {
-      const script = await captureScript(findTool(documentTools, 'create_document'), {});
+      const script = await captureScript(findTool(documentTools, 'word_create_document'), {});
       expect(script).toBeTruthy();
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
 
     test('get_document_text compiles', async () => {
-      const script = await captureScript(findTool(documentTools, 'get_document_text'), {});
+      const script = await captureScript(findTool(documentTools, 'word_get_document_text'), {});
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
 
     test('get_document_info compiles', async () => {
-      const script = await captureScript(findTool(documentTools, 'get_document_info'), {});
+      const script = await captureScript(findTool(documentTools, 'word_get_document_info'), {});
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
 
     test('save_document compiles', async () => {
-      const script = await captureScript(findTool(documentTools, 'save_document'), {});
+      const script = await captureScript(findTool(documentTools, 'word_save_document'), {});
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
 
     test('close_document compiles', async () => {
-      const script = await captureScript(findTool(documentTools, 'close_document'), {});
+      const script = await captureScript(findTool(documentTools, 'word_close_document'), {});
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
 
     test('export_pdf compiles', async () => {
-      const script = await captureScript(findTool(documentTools, 'export_pdf'), { path: '/tmp/test.pdf' });
+      const script = await captureScript(findTool(documentTools, 'word_export_pdf'), { path: '/tmp/test.pdf' });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
 
     test('open_document compiles', async () => {
-      const script = await captureScript(findTool(documentTools, 'open_document'), { path: '/tmp/test.docx' });
+      const script = await captureScript(findTool(documentTools, 'word_open_document'), { path: '/tmp/test.docx' });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
@@ -101,37 +101,37 @@ describe('AppleScript Syntax Verification', () => {
 
   describe('Text Tools', () => {
     test('insert_text compiles', async () => {
-      const script = await captureScript(findTool(textTools, 'insert_text'), { text: 'Hello' });
+      const script = await captureScript(findTool(textTools, 'word_insert_text'), { text: 'Hello' });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
 
     test('insert_text accepts newline', async () => {
-      const script = await captureScript(findTool(textTools, 'insert_text'), { text: '\n' });
+      const script = await captureScript(findTool(textTools, 'word_insert_text'), { text: '\n' });
       expect(script).toBeTruthy();
       expect(script).toContain('type text selection text');
     });
 
     test('insert_text accepts whitespace', async () => {
-      const script = await captureScript(findTool(textTools, 'insert_text'), { text: '  ' });
+      const script = await captureScript(findTool(textTools, 'word_insert_text'), { text: '  ' });
       expect(script).toBeTruthy();
     });
 
     test('replace_text compiles', async () => {
-      const script = await captureScript(findTool(textTools, 'replace_text'), { find: 'old', replace: 'new' });
+      const script = await captureScript(findTool(textTools, 'word_replace_text'), { find: 'old', replace: 'new' });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
       expect(script).toContain('content of replacement of findObject');
     });
 
     test('format_text compiles (bold)', async () => {
-      const script = await captureScript(findTool(textTools, 'format_text'), { bold: true });
+      const script = await captureScript(findTool(textTools, 'word_format_text'), { bold: true });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
 
     test('format_text compiles (font + size)', async () => {
-      const script = await captureScript(findTool(textTools, 'format_text'), { font: 'Arial', size: 14 });
+      const script = await captureScript(findTool(textTools, 'word_format_text'), { font: 'Arial', size: 14 });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
@@ -139,7 +139,7 @@ describe('AppleScript Syntax Verification', () => {
 
   describe('Table Tools', () => {
     test('create_table compiles with correct target', async () => {
-      const script = await captureScript(findTool(tableTools, 'create_table'), { rows: 3, columns: 4 });
+      const script = await captureScript(findTool(tableTools, 'word_create_table'), { rows: 3, columns: 4 });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
       expect(script).toContain('text object of selection');
@@ -147,37 +147,37 @@ describe('AppleScript Syntax Verification', () => {
     });
 
     test('list_tables compiles', async () => {
-      const script = await captureScript(findTool(tableTools, 'list_tables'), {});
+      const script = await captureScript(findTool(tableTools, 'word_list_tables'), {});
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
 
     test('get_table_cell compiles', async () => {
-      const script = await captureScript(findTool(tableTools, 'get_table_cell'), { tableIndex: 1, row: 1, column: 1 });
+      const script = await captureScript(findTool(tableTools, 'word_get_table_cell'), { tableIndex: 1, row: 1, column: 1 });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
 
     test('set_table_cell compiles', async () => {
-      const script = await captureScript(findTool(tableTools, 'set_table_cell'), { tableIndex: 1, row: 1, column: 1, text: 'Test' });
+      const script = await captureScript(findTool(tableTools, 'word_set_table_cell'), { tableIndex: 1, row: 1, column: 1, text: 'Test' });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
 
     test('select_table_cell compiles', async () => {
-      const script = await captureScript(findTool(tableTools, 'select_table_cell'), { tableIndex: 1, row: 1, column: 1 });
+      const script = await captureScript(findTool(tableTools, 'word_select_table_cell'), { tableIndex: 1, row: 1, column: 1 });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
 
     test('find_table_header compiles', async () => {
-      const script = await captureScript(findTool(tableTools, 'find_table_header'), { tableIndex: 1, headerText: 'Name' });
+      const script = await captureScript(findTool(tableTools, 'word_find_table_header'), { tableIndex: 1, headerText: 'Name' });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
 
     test('add_table_row compiles with correct insert syntax', async () => {
-      const script = await captureScript(findTool(tableTools, 'add_table_row'), { tableIndex: 1, afterRow: 2 });
+      const script = await captureScript(findTool(tableTools, 'word_add_table_row'), { tableIndex: 1, afterRow: 2 });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
       expect(script).toContain('insert rows selection position below');
@@ -185,27 +185,27 @@ describe('AppleScript Syntax Verification', () => {
     });
 
     test('add_table_row without afterRow adds at end', async () => {
-      const script = await captureScript(findTool(tableTools, 'add_table_row'), { tableIndex: 1 });
+      const script = await captureScript(findTool(tableTools, 'word_add_table_row'), { tableIndex: 1 });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
       expect(script).toContain('count of rows of t');
     });
 
     test('delete_table_row compiles', async () => {
-      const script = await captureScript(findTool(tableTools, 'delete_table_row'), { tableIndex: 1, row: 2 });
+      const script = await captureScript(findTool(tableTools, 'word_delete_table_row'), { tableIndex: 1, row: 2 });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
 
     test('add_table_column compiles with correct insert syntax', async () => {
-      const script = await captureScript(findTool(tableTools, 'add_table_column'), { tableIndex: 1, afterColumn: 2 });
+      const script = await captureScript(findTool(tableTools, 'word_add_table_column'), { tableIndex: 1, afterColumn: 2 });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
       expect(script).toContain('insert columns selection position insert on the right');
     });
 
     test('delete_table_column compiles', async () => {
-      const script = await captureScript(findTool(tableTools, 'delete_table_column'), { tableIndex: 1, column: 2 });
+      const script = await captureScript(findTool(tableTools, 'word_delete_table_column'), { tableIndex: 1, column: 2 });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
@@ -213,7 +213,7 @@ describe('AppleScript Syntax Verification', () => {
 
   describe('Paragraph Tools', () => {
     test('list_paragraphs compiles with name local', async () => {
-      const script = await captureScript(findTool(paragraphTools, 'list_paragraphs'), { limit: 10 });
+      const script = await captureScript(findTool(paragraphTools, 'word_list_paragraphs'), { limit: 10 });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
       expect(script).toContain('name local of style of p');
@@ -221,13 +221,13 @@ describe('AppleScript Syntax Verification', () => {
     });
 
     test('goto_paragraph compiles', async () => {
-      const script = await captureScript(findTool(paragraphTools, 'goto_paragraph'), { index: 1 });
+      const script = await captureScript(findTool(paragraphTools, 'word_goto_paragraph'), { index: 1 });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
 
     test('set_paragraph_style compiles', async () => {
-      const script = await captureScript(findTool(paragraphTools, 'set_paragraph_style'), { index: 1, styleName: 'Heading 1' });
+      const script = await captureScript(findTool(paragraphTools, 'word_set_paragraph_style'), { index: 1, styleName: 'Heading 1' });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
       expect(script).toContain('set style of p to');
@@ -236,13 +236,13 @@ describe('AppleScript Syntax Verification', () => {
 
   describe('Bookmark Tools', () => {
     test('list_bookmarks compiles', async () => {
-      const script = await captureScript(findTool(bookmarkTools, 'list_bookmarks'), {});
+      const script = await captureScript(findTool(bookmarkTools, 'word_list_bookmarks'), {});
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
 
     test('create_bookmark compiles with pipe-quoted bookmark range', async () => {
-      const script = await captureScript(findTool(bookmarkTools, 'create_bookmark'), { name: 'TestBM' });
+      const script = await captureScript(findTool(bookmarkTools, 'word_create_bookmark'), { name: 'TestBM' });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
       expect(script).toContain('|bookmark range|');
@@ -250,7 +250,7 @@ describe('AppleScript Syntax Verification', () => {
     });
 
     test('goto_bookmark compiles with text object', async () => {
-      const script = await captureScript(findTool(bookmarkTools, 'goto_bookmark'), { name: 'TestBM' });
+      const script = await captureScript(findTool(bookmarkTools, 'word_goto_bookmark'), { name: 'TestBM' });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
       expect(script).toContain('text object of b');
@@ -258,7 +258,7 @@ describe('AppleScript Syntax Verification', () => {
     });
 
     test('delete_bookmark compiles', async () => {
-      const script = await captureScript(findTool(bookmarkTools, 'delete_bookmark'), { name: 'TestBM' });
+      const script = await captureScript(findTool(bookmarkTools, 'word_delete_bookmark'), { name: 'TestBM' });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
@@ -266,7 +266,7 @@ describe('AppleScript Syntax Verification', () => {
 
   describe('Hyperlink Tools', () => {
     test('list_hyperlinks uses hyperlink objects with try/catch for text to display', async () => {
-      const script = await captureScript(findTool(hyperlinkTools, 'list_hyperlinks'), {});
+      const script = await captureScript(findTool(hyperlinkTools, 'word_list_hyperlinks'), {});
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
       expect(script).toContain('hyperlink objects of d');
@@ -278,7 +278,7 @@ describe('AppleScript Syntax Verification', () => {
     });
 
     test('create_hyperlink compiles with tell selection', async () => {
-      const script = await captureScript(findTool(hyperlinkTools, 'create_hyperlink'), { url: 'https://example.com' });
+      const script = await captureScript(findTool(hyperlinkTools, 'word_create_hyperlink'), { url: 'https://example.com' });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
       expect(script).toContain('tell selection');
@@ -287,7 +287,7 @@ describe('AppleScript Syntax Verification', () => {
     });
 
     test('create_hyperlink with displayText', async () => {
-      const script = await captureScript(findTool(hyperlinkTools, 'create_hyperlink'), { url: 'https://example.com', displayText: 'Click' });
+      const script = await captureScript(findTool(hyperlinkTools, 'word_create_hyperlink'), { url: 'https://example.com', displayText: 'Click' });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
       expect(script).toContain('|text to display|');
@@ -296,31 +296,31 @@ describe('AppleScript Syntax Verification', () => {
 
   describe('Navigation Tools', () => {
     test('goto_start compiles', async () => {
-      const script = await captureScript(findTool(navigationTools, 'goto_start'), {});
+      const script = await captureScript(findTool(navigationTools, 'word_goto_start'), {});
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
 
     test('goto_end compiles', async () => {
-      const script = await captureScript(findTool(navigationTools, 'goto_end'), {});
+      const script = await captureScript(findTool(navigationTools, 'word_goto_end'), {});
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
 
     test('get_selection_info compiles', async () => {
-      const script = await captureScript(findTool(navigationTools, 'get_selection_info'), {});
+      const script = await captureScript(findTool(navigationTools, 'word_get_selection_info'), {});
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
 
     test('select_all compiles', async () => {
-      const script = await captureScript(findTool(navigationTools, 'select_all'), {});
+      const script = await captureScript(findTool(navigationTools, 'word_select_all'), {});
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
 
     test('move_cursor_after_text compiles', async () => {
-      const script = await captureScript(findTool(navigationTools, 'move_cursor_after_text'), { searchText: 'test' });
+      const script = await captureScript(findTool(navigationTools, 'word_move_cursor_after_text'), { searchText: 'test' });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
@@ -328,14 +328,14 @@ describe('AppleScript Syntax Verification', () => {
 
   describe('Image Tools', () => {
     test('insert_image compiles', async () => {
-      const script = await captureScript(findTool(imageTools, 'insert_image'), { path: '/tmp/test.png' });
+      const script = await captureScript(findTool(imageTools, 'word_insert_image'), { path: '/tmp/test.png' });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
       expect(script).toContain('paste object selection');
     });
 
     test('insert_image with resize compiles', async () => {
-      const script = await captureScript(findTool(imageTools, 'insert_image'), { path: '/tmp/test.png', width: 200, height: 100 });
+      const script = await captureScript(findTool(imageTools, 'word_insert_image'), { path: '/tmp/test.png', width: 200, height: 100 });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
       expect(script).toContain('set width of shp to');
@@ -343,30 +343,30 @@ describe('AppleScript Syntax Verification', () => {
     });
 
     test('list_inline_shapes compiles', async () => {
-      const script = await captureScript(findTool(imageTools, 'list_inline_shapes'), {});
+      const script = await captureScript(findTool(imageTools, 'word_list_inline_shapes'), {});
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
 
     test('resize_inline_shape compiles', async () => {
-      const script = await captureScript(findTool(imageTools, 'resize_inline_shape'), { index: 1, width: 200 });
+      const script = await captureScript(findTool(imageTools, 'word_resize_inline_shape'), { index: 1, width: 200 });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
 
     test('resize_inline_shape rejects non-integer index', async () => {
-      await expect(findTool(imageTools, 'resize_inline_shape').handler({ index: 1.5, width: 200 })).rejects.toThrow('index must be an integer');
+      await expect(findTool(imageTools, 'word_resize_inline_shape').handler({ index: 1.5, width: 200 })).rejects.toThrow('index must be an integer');
     });
   });
 
   describe('Audit Fixes', () => {
     test('move_cursor_after_text does not set unused prevStart', async () => {
-      const script = await captureScript(findTool(navigationTools, 'move_cursor_after_text'), { searchText: 'test' });
+      const script = await captureScript(findTool(navigationTools, 'word_move_cursor_after_text'), { searchText: 'test' });
       expect(script).not.toContain('set prevStart to');
     });
 
     test('open_document annotation is not readOnlyHint: true', () => {
-      const tool = findTool(documentTools, 'open_document');
+      const tool = findTool(documentTools, 'word_open_document');
       expect(tool.annotations.readOnlyHint).toBe(false);
     });
   });

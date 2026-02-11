@@ -1,54 +1,298 @@
 {
   "manifest_version": "0.3",
-  "name": "Word (By noma4i, based on Anthropic)",
-  "display_name": "Word (By noma4i)",
-  "version": "0.7.0",
-  "description": "Control Microsoft Word with AppleScript automation (based on Anthropic's Word extension)",
-  "long_description": "This extension allows Claude to interact with Microsoft Word on macOS, enabling document creation, editing, formatting, and management.\n\nIt uses macOS AppleScript automation to control Word and requires your explicit permission through macOS security prompts before accessing Microsoft Word. It is not affiliated with or endorsed by Microsoft Corporation.\n\nBased on Anthropic's Word extension with additional features and improvements.",
+  "name": "Office (By noma4i, based on Anthropic)",
+  "display_name": "Office (By noma4i)",
+  "version": "0.8.0",
+  "description": "Control Microsoft Word and Excel with AppleScript automation (based on Anthropic's Word extension)",
+  "long_description": "This extension allows Claude to interact with Microsoft Word and Microsoft Excel on macOS, enabling document creation, editing, formatting, spreadsheet management, and more.\n\nIt uses macOS AppleScript automation to control Word and Excel and requires your explicit permission through macOS security prompts before accessing Microsoft Office applications. It is not affiliated with or endorsed by Microsoft Corporation.\n\nBased on Anthropic's Word extension with additional features, improvements, and Excel support.",
   "author": {
     "name": "noma4i",
     "url": "https://github.com/noma4i"
   },
-  "homepage": "https://github.com/noma4i/word_mcp",
-  "documentation": "https://github.com/noma4i/word_mcp#readme",
-  "support": "https://github.com/noma4i/word_mcp/issues",
+  "homepage": "https://github.com/noma4i/office_mcp",
+  "documentation": "https://github.com/noma4i/office_mcp#readme",
+  "support": "https://github.com/noma4i/office_mcp/issues",
   "icon": "icon.png",
   "tools": [
     {
-      "name": "create_document",
-      "description": "Create a new Word document with optional content"
+      "name": "word_create_document",
+      "description": "Create a new Microsoft Word document with optional content"
     },
     {
-      "name": "open_document",
-      "description": "Open an existing Word document"
+      "name": "word_open_document",
+      "description": "Open an existing Microsoft Word document"
     },
     {
-      "name": "get_document_text",
-      "description": "Get all text content from the active document"
+      "name": "word_get_document_text",
+      "description": "Get all text content from the active Word document"
     },
     {
-      "name": "insert_text",
-      "description": "Insert text at the current cursor position"
+      "name": "word_get_document_info",
+      "description": "Get Word document statistics (words, characters, paragraphs, pages)"
     },
     {
-      "name": "replace_text",
-      "description": "Find and replace text in the active document"
+      "name": "word_insert_text",
+      "description": "Insert text at the current cursor position in Microsoft Word"
     },
     {
-      "name": "format_text",
-      "description": "Apply formatting to selected text (bold, italic, underline, font, size, color)"
+      "name": "word_replace_text",
+      "description": "Find and replace text in the active Word document"
     },
     {
-      "name": "save_document",
-      "description": "Save the active document"
+      "name": "word_format_text",
+      "description": "Apply formatting to the currently selected text in Word"
     },
     {
-      "name": "close_document",
-      "description": "Close the active document"
+      "name": "word_save_document",
+      "description": "Save the active Word document"
     },
     {
-      "name": "export_pdf",
-      "description": "Export the active document as PDF"
+      "name": "word_close_document",
+      "description": "Close the active Word document"
+    },
+    {
+      "name": "word_export_pdf",
+      "description": "Export the active Word document as PDF"
+    },
+    {
+      "name": "word_list_tables",
+      "description": "List all tables in the active Word document with their dimensions"
+    },
+    {
+      "name": "word_get_table_cell",
+      "description": "Get the text content of a specific table cell in Word"
+    },
+    {
+      "name": "word_set_table_cell",
+      "description": "Set the text content of a specific table cell in Word"
+    },
+    {
+      "name": "word_select_table_cell",
+      "description": "Select a specific table cell and move cursor there in Word"
+    },
+    {
+      "name": "word_find_table_header",
+      "description": "Find a table column by header text in Word"
+    },
+    {
+      "name": "word_create_table",
+      "description": "Create a new table at the current cursor position in Word"
+    },
+    {
+      "name": "word_add_table_row",
+      "description": "Add a new row to a table in Word"
+    },
+    {
+      "name": "word_delete_table_row",
+      "description": "Delete a row from a table in Word"
+    },
+    {
+      "name": "word_add_table_column",
+      "description": "Add a new column to a table in Word"
+    },
+    {
+      "name": "word_delete_table_column",
+      "description": "Delete a column from a table in Word"
+    },
+    {
+      "name": "word_list_bookmarks",
+      "description": "List all bookmarks in the active Word document"
+    },
+    {
+      "name": "word_create_bookmark",
+      "description": "Create a bookmark at the current selection in Word"
+    },
+    {
+      "name": "word_goto_bookmark",
+      "description": "Jump to a bookmark by name in Word"
+    },
+    {
+      "name": "word_delete_bookmark",
+      "description": "Delete a bookmark by name in Word"
+    },
+    {
+      "name": "word_list_hyperlinks",
+      "description": "List all hyperlinks in the active Word document"
+    },
+    {
+      "name": "word_create_hyperlink",
+      "description": "Create a hyperlink at the current selection or cursor position in Word"
+    },
+    {
+      "name": "word_list_paragraphs",
+      "description": "List paragraphs with their styles in the active Word document"
+    },
+    {
+      "name": "word_goto_paragraph",
+      "description": "Jump to a specific paragraph by index in Word"
+    },
+    {
+      "name": "word_set_paragraph_style",
+      "description": "Apply a paragraph style to a specific paragraph in Word"
+    },
+    {
+      "name": "word_goto_start",
+      "description": "Move cursor to the beginning of the Word document"
+    },
+    {
+      "name": "word_goto_end",
+      "description": "Move cursor to the end of the Word document"
+    },
+    {
+      "name": "word_get_selection_info",
+      "description": "Get position and length of current selection in Word"
+    },
+    {
+      "name": "word_select_all",
+      "description": "Select all content in the Word document"
+    },
+    {
+      "name": "word_move_cursor_after_text",
+      "description": "Find text and move cursor after the specified occurrence in Word"
+    },
+    {
+      "name": "word_insert_image",
+      "description": "Insert an image into the Word document at the current cursor position"
+    },
+    {
+      "name": "word_list_inline_shapes",
+      "description": "List all inline shapes (images, objects) in the active Word document"
+    },
+    {
+      "name": "word_resize_inline_shape",
+      "description": "Resize an inline shape (image) by index in the active Word document"
+    },
+    {
+      "name": "excel_create_workbook",
+      "description": "Create a new workbook in Microsoft Excel"
+    },
+    {
+      "name": "excel_open_workbook",
+      "description": "Open an existing workbook in Microsoft Excel"
+    },
+    {
+      "name": "excel_get_workbook_info",
+      "description": "Get workbook information (name, path, sheet count) in Microsoft Excel"
+    },
+    {
+      "name": "excel_save_workbook",
+      "description": "Save the active workbook in Microsoft Excel"
+    },
+    {
+      "name": "excel_close_workbook",
+      "description": "Close the active workbook in Microsoft Excel"
+    },
+    {
+      "name": "excel_list_workbooks",
+      "description": "List all open workbooks in Microsoft Excel"
+    },
+    {
+      "name": "excel_list_sheets",
+      "description": "List all worksheets in the active Excel workbook"
+    },
+    {
+      "name": "excel_create_sheet",
+      "description": "Create a new worksheet in the active Excel workbook"
+    },
+    {
+      "name": "excel_delete_sheet",
+      "description": "Delete a worksheet by name or index in Excel"
+    },
+    {
+      "name": "excel_rename_sheet",
+      "description": "Rename a worksheet in the active Excel workbook"
+    },
+    {
+      "name": "excel_activate_sheet",
+      "description": "Activate (switch to) a worksheet by name or index in Excel"
+    },
+    {
+      "name": "excel_get_sheet_info",
+      "description": "Get worksheet info (used range address, row count, column count) in Excel"
+    },
+    {
+      "name": "excel_get_cell",
+      "description": "Get the value of a cell in Excel (A1 notation)"
+    },
+    {
+      "name": "excel_set_cell",
+      "description": "Set the value of a cell in the active Excel worksheet"
+    },
+    {
+      "name": "excel_get_range",
+      "description": "Get values from a range of cells in Excel as text"
+    },
+    {
+      "name": "excel_set_cell_formula",
+      "description": "Set a formula in an Excel cell"
+    },
+    {
+      "name": "excel_clear_range",
+      "description": "Clear contents of a range in the active Excel worksheet"
+    },
+    {
+      "name": "excel_get_used_range",
+      "description": "Get the used range address and dimensions of the active Excel sheet"
+    },
+    {
+      "name": "excel_find_cell",
+      "description": "Find a cell containing specific text in the active Excel worksheet"
+    },
+    {
+      "name": "excel_format_cells",
+      "description": "Format cells in Excel (bold, italic, font, size, font color)"
+    },
+    {
+      "name": "excel_set_number_format",
+      "description": "Set the number format of a range in Excel"
+    },
+    {
+      "name": "excel_set_cell_color",
+      "description": "Set the background color of a range in Excel"
+    },
+    {
+      "name": "excel_merge_cells",
+      "description": "Merge a range of cells in the active Excel worksheet"
+    },
+    {
+      "name": "excel_autofit",
+      "description": "Auto-fit column widths for a range in the active Excel worksheet"
+    },
+    {
+      "name": "excel_insert_rows",
+      "description": "Insert rows at a specific position in the active Excel worksheet"
+    },
+    {
+      "name": "excel_delete_rows",
+      "description": "Delete rows at a specific position in the active Excel worksheet"
+    },
+    {
+      "name": "excel_insert_columns",
+      "description": "Insert columns at a specific position in the active Excel worksheet"
+    },
+    {
+      "name": "excel_delete_columns",
+      "description": "Delete columns at a specific position in the active Excel worksheet"
+    },
+    {
+      "name": "excel_set_column_width",
+      "description": "Set the width of a column in the active Excel worksheet"
+    },
+    {
+      "name": "excel_set_row_height",
+      "description": "Set the height of a row in the active Excel worksheet"
+    },
+    {
+      "name": "excel_sort_range",
+      "description": "Sort a range by a key column in the active Excel worksheet"
+    },
+    {
+      "name": "excel_calculate",
+      "description": "Recalculate all formulas in all open Excel workbooks"
+    },
+    {
+      "name": "excel_export_csv",
+      "description": "Export the active Excel workbook as CSV"
     }
   ],
   "server": {
@@ -62,7 +306,7 @@
       }
     }
   },
-  "keywords": ["microsoft", "word", "office", "documents", "writing", "productivity", "macos", "automation"],
+  "keywords": ["microsoft", "word", "excel", "office", "documents", "spreadsheet", "writing", "productivity", "macos", "automation"],
   "license": "MIT",
   "compatibility": {
     "claude_desktop": ">=0.10.0",

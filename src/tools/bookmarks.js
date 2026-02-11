@@ -3,8 +3,8 @@ import { runAppleScript } from '../lib/applescript/executor.js';
 
 export const bookmarkTools = [
   {
-    name: 'list_bookmarks',
-    description: 'List all bookmarks in the active document',
+    name: 'word_list_bookmarks',
+    description: 'List all bookmarks in the active Word document',
     annotations: { readOnlyHint: true },
     inputSchema: {
       type: 'object',
@@ -35,8 +35,8 @@ export const bookmarkTools = [
   },
 
   {
-    name: 'create_bookmark',
-    description: 'Create a bookmark at the current selection',
+    name: 'word_create_bookmark',
+    description: 'Create a bookmark at the current selection in Word',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -67,8 +67,8 @@ export const bookmarkTools = [
   },
 
   {
-    name: 'goto_bookmark',
-    description: 'Jump to a bookmark by name',
+    name: 'word_goto_bookmark',
+    description: 'Jump to a bookmark by name in Word',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -100,8 +100,8 @@ export const bookmarkTools = [
   },
 
   {
-    name: 'delete_bookmark',
-    description: 'Delete a bookmark by name',
+    name: 'word_delete_bookmark',
+    description: 'Delete a bookmark by name in Word',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',

@@ -32,10 +32,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/noma4i/word_mcp.git"
+    "url": "https://github.com/noma4i/office_mcp.git"
   },
   "license": "MIT",
-  "homepage": "https://github.com/noma4i/word_mcp",
+  "homepage": "https://github.com/noma4i/office_mcp",
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.21.1"
   },
