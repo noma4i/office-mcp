@@ -7,7 +7,7 @@ import { join } from 'path';
 let capturedScripts = {};
 
 jest.unstable_mockModule('../src/lib/applescript/executor.js', () => ({
-  runAppleScript: async (script) => {
+  runAppleScript: async script => {
     capturedScripts._last = script;
     return 'mocked';
   }
@@ -36,18 +36,21 @@ function compileAppleScript(script) {
   } catch (err) {
     return { ok: false, error: err.stderr?.toString() || err.message };
   } finally {
-    try { unlinkSync(tmpFile); } catch {}
+    try {
+      unlinkSync(tmpFile);
+    } catch {}
   }
 }
 
 async function captureScript(tool, args = {}) {
   capturedScripts._last = null;
-  try { await tool.handler(args); } catch {}
+  try {
+    await tool.handler(args);
+  } catch {}
   return capturedScripts._last;
 }
 
 describe('Excel AppleScript Syntax Verification', () => {
-
   describe('Workbook Tools', () => {
     test('excel_create_workbook compiles', async () => {
       const script = await captureScript(findTool(excelWorkbookTools, 'excel_create_workbook'), {});
@@ -75,11 +78,20 @@ describe('Excel AppleScript Syntax Verification', () => {
       expect(result.ok).toBe(true);
     });
 
-    test('excel_save_workbook compiles (with path)', async () => {
+    test('excel_save_workbook compiles (with path) and saves workbook not sheet', async () => {
       const script = await captureScript(findTool(excelWorkbookTools, 'excel_save_workbook'), { path: '/tmp/test.xlsx' });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
-      expect(script).toContain('save as ws filename');
+      expect(script).toContain('save workbook as wb filename');
+      expect(script).not.toContain('save as ws');
+      expect(script).not.toContain('set ws to active sheet');
+    });
+
+    test('excel_save_workbook with path uses try/finally for display alerts', async () => {
+      const script = await captureScript(findTool(excelWorkbookTools, 'excel_save_workbook'), { path: '/tmp/test.xlsx' });
+      expect(script).toContain('set display alerts to false');
+      expect(script).toContain('on error errMsg');
+      expect(script).toContain('set display alerts to true');
     });
 
     test('excel_close_workbook compiles', async () => {
@@ -127,6 +139,13 @@ describe('Excel AppleScript Syntax Verification', () => {
       expect(result.ok).toBe(true);
     });
 
+    test('excel_delete_sheet uses try/finally for display alerts', async () => {
+      const script = await captureScript(findTool(excelSheetTools, 'excel_delete_sheet'), { nameOrIndex: 1 });
+      expect(script).toContain('set display alerts to false');
+      expect(script).toContain('on error errMsg');
+      expect(script).toContain('set display alerts to true');
+    });
+
     test('excel_rename_sheet compiles', async () => {
       const script = await captureScript(findTool(excelSheetTools, 'excel_rename_sheet'), { nameOrIndex: 1, newName: 'NewName' });
       const result = compileAppleScript(script);
@@ -145,6 +164,20 @@ describe('Excel AppleScript Syntax Verification', () => {
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
       expect(script).toContain('used range');
+    });
+
+    test('excel_rename_sheet has error handling for sheet access', async () => {
+      const script = await captureScript(findTool(excelSheetTools, 'excel_rename_sheet'), { nameOrIndex: 1, newName: 'Test' });
+      expect(script).toContain('try');
+      expect(script).toContain('on error');
+      expect(script).toContain('Sheet not found');
+    });
+
+    test('excel_activate_sheet has error handling for sheet access', async () => {
+      const script = await captureScript(findTool(excelSheetTools, 'excel_activate_sheet'), { nameOrIndex: 'Sheet1' });
+      expect(script).toContain('try');
+      expect(script).toContain('on error');
+      expect(script).toContain('Sheet not found');
     });
   });
 
@@ -182,6 +215,16 @@ describe('Excel AppleScript Syntax Verification', () => {
       expect(script).not.toContain('formula value');
     });
 
+    test('excel_set_cell_formula auto-prefixes = when missing', async () => {
+      const script = await captureScript(findTool(excelCellTools, 'excel_set_cell_formula'), { cell: 'A1', formula: 'SUM(B1:B10)' });
+      expect(script).toContain('=SUM(B1:B10)');
+    });
+
+    test('excel_set_cell_formula does not double-prefix =', async () => {
+      const script = await captureScript(findTool(excelCellTools, 'excel_set_cell_formula'), { cell: 'A1', formula: '=SUM(B1:B10)' });
+      expect(script).not.toContain('==SUM');
+    });
+
     test('excel_clear_range compiles', async () => {
       const script = await captureScript(findTool(excelCellTools, 'excel_clear_range'), { range: 'A1:B3' });
       const result = compileAppleScript(script);
@@ -200,6 +243,35 @@ describe('Excel AppleScript Syntax Verification', () => {
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
       expect(script).toContain('find');
+      expect(script).toContain('try');
+      expect(script).toContain('on error');
+      expect(script).toContain('end try');
+    });
+
+    test('excel_find_cell with quotes in searchText compiles', async () => {
+      const script = await captureScript(findTool(excelCellTools, 'excel_find_cell'), { searchText: 'he said "hello"' });
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+      expect(script).toContain('he said \\"hello\\"');
+    });
+
+    test('excel_get_cell has error handling', async () => {
+      const script = await captureScript(findTool(excelCellTools, 'excel_get_cell'), { cell: 'A1' });
+      expect(script).toContain('try');
+      expect(script).toContain('on error');
+    });
+
+    test('excel_get_range has error handling for range access', async () => {
+      const script = await captureScript(findTool(excelCellTools, 'excel_get_range'), { range: 'A1:B3' });
+      expect(script).toContain('try');
+      expect(script).toContain('on error');
+      expect(script).toContain('Invalid range');
+    });
+
+    test('excel_set_cell_formula with quotes in formula compiles', async () => {
+      const script = await captureScript(findTool(excelCellTools, 'excel_set_cell_formula'), { cell: 'A1', formula: '=IF(A1="yes","da","net")' });
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
     });
   });
 
@@ -225,6 +297,24 @@ describe('Excel AppleScript Syntax Verification', () => {
       expect(script).toContain('number format');
     });
 
+    test('excel_set_number_format with quotes in format compiles', async () => {
+      const script = await captureScript(findTool(excelFormattingTools, 'excel_set_number_format'), { range: 'A1', format: '0.00"kg"' });
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
+    test('excel_format_cells rejects invalid fontColor', async () => {
+      await expect(findTool(excelFormattingTools, 'excel_format_cells').handler({ range: 'A1', fontColor: [256, 0, 0] })).rejects.toThrow(
+        'fontColor must be an array of 3 numbers [R,G,B] with values 0-255'
+      );
+    });
+
+    test('excel_set_cell_color rejects invalid color', async () => {
+      await expect(findTool(excelFormattingTools, 'excel_set_cell_color').handler({ range: 'A1', color: [255, -1, 0] })).rejects.toThrow(
+        'color must be an array of 3 numbers [R,G,B] with values 0-255'
+      );
+    });
+
     test('excel_set_cell_color compiles', async () => {
       const script = await captureScript(findTool(excelFormattingTools, 'excel_set_cell_color'), { range: 'A1', color: [255, 255, 0] });
       const result = compileAppleScript(script);
@@ -244,6 +334,18 @@ describe('Excel AppleScript Syntax Verification', () => {
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
       expect(script).toContain('autofit');
+    });
+
+    test('excel_format_cells has error handling for range and formatting', async () => {
+      const script = await captureScript(findTool(excelFormattingTools, 'excel_format_cells'), { range: 'A1', bold: true });
+      expect(script).toContain('try');
+      expect(script).toContain('on error');
+    });
+
+    test('excel_set_number_format has error handling', async () => {
+      const script = await captureScript(findTool(excelFormattingTools, 'excel_set_number_format'), { range: 'A1', format: '#,##0' });
+      expect(script).toContain('try');
+      expect(script).toContain('on error');
     });
   });
 
@@ -327,11 +429,27 @@ describe('Excel AppleScript Syntax Verification', () => {
       expect(script).toContain('calculate');
     });
 
-    test('excel_export_csv compiles', async () => {
+    test('excel_export_csv compiles and saves workbook not sheet', async () => {
       const script = await captureScript(findTool(excelDataTools, 'excel_export_csv'), { path: '/tmp/test.csv' });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
       expect(script).toContain('CSV file format');
+      expect(script).toContain('save workbook as wb filename');
+      expect(script).not.toContain('save as ws');
+      expect(script).not.toContain('set ws to active sheet');
+    });
+
+    test('excel_export_csv uses try/finally for display alerts', async () => {
+      const script = await captureScript(findTool(excelDataTools, 'excel_export_csv'), { path: '/tmp/test.csv' });
+      expect(script).toContain('set display alerts to false');
+      expect(script).toContain('on error errMsg');
+      expect(script).toContain('set display alerts to true');
+    });
+
+    test('excel_sort_range has error handling', async () => {
+      const script = await captureScript(findTool(excelDataTools, 'excel_sort_range'), { range: 'A1:B10', keyCell: 'B1' });
+      expect(script).toContain('try');
+      expect(script).toContain('on error');
     });
   });
 

@@ -1,11 +1,15 @@
-import { validateString, validateInteger } from '../lib/validators.js';
+import { validateString, validateInteger, validateNumber } from '../lib/validators.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
+import { toAppleScriptString, escapeAppleScriptString } from '../lib/applescript/helpers.js';
 
 function headerFooterIndex(type) {
   switch (type) {
-    case 'first_page': return 'header footer first page';
-    case 'even_pages': return 'header footer even pages';
-    default: return 'header footer primary';
+    case 'first_page':
+      return 'header footer first page';
+    case 'even_pages':
+      return 'header footer even pages';
+    default:
+      return 'header footer primary';
   }
 }
 
@@ -44,8 +48,12 @@ export const headerFooterTools = [
           if ${section} > secCount then
             return "Section index out of range. Document has " & secCount & " sections."
           end if
-          set refHeader to get header of section ${section} of d index ${hfIndex}
-          set headerText to content of text object of refHeader
+          try
+            set refHeader to get header of section ${section} of d index ${hfIndex}
+            set headerText to content of text object of refHeader
+          on error
+            return "Header not available for this section/type"
+          end try
           return headerText
         end tell
       `;
@@ -93,8 +101,12 @@ export const headerFooterTools = [
           if ${section} > secCount then
             return "Section index out of range. Document has " & secCount & " sections."
           end if
-          set refHeader to get header of section ${section} of d index ${hfIndex}
-          set content of text object of refHeader to ${JSON.stringify(text)}
+          try
+            set refHeader to get header of section ${section} of d index ${hfIndex}
+            set content of text object of refHeader to ${toAppleScriptString(text)}
+          on error
+            return "Header not available for this section/type"
+          end try
           return "Header text set for section ${section}"
         end tell
       `;
@@ -136,8 +148,12 @@ export const headerFooterTools = [
           if ${section} > secCount then
             return "Section index out of range. Document has " & secCount & " sections."
           end if
-          set refFooter to get footer of section ${section} of d index ${hfIndex}
-          set footerText to content of text object of refFooter
+          try
+            set refFooter to get footer of section ${section} of d index ${hfIndex}
+            set footerText to content of text object of refFooter
+          on error
+            return "Footer not available for this section/type"
+          end try
           return footerText
         end tell
       `;
@@ -185,8 +201,12 @@ export const headerFooterTools = [
           if ${section} > secCount then
             return "Section index out of range. Document has " & secCount & " sections."
           end if
-          set refFooter to get footer of section ${section} of d index ${hfIndex}
-          set content of text object of refFooter to ${JSON.stringify(text)}
+          try
+            set refFooter to get footer of section ${section} of d index ${hfIndex}
+            set content of text object of refFooter to ${toAppleScriptString(text)}
+          on error
+            return "Footer not available for this section/type"
+          end try
           return "Footer text set for section ${section}"
         end tell
       `;
@@ -236,10 +256,12 @@ export const headerFooterTools = [
 
       let resizeCommands = '';
       if (args.width !== undefined) {
-        resizeCommands += `\n          set width of shp to ${args.width}`;
+        const w = validateNumber(args.width, 'width', 1, 10000);
+        resizeCommands += `\n          set width of shp to ${w}`;
       }
       if (args.height !== undefined) {
-        resizeCommands += `\n          set height of shp to ${args.height}`;
+        const h = validateNumber(args.height, 'height', 1, 10000);
+        resizeCommands += `\n          set height of shp to ${h}`;
       }
 
       const script = `
@@ -252,9 +274,13 @@ export const headerFooterTools = [
           if ${section} > secCount then
             return "Section index out of range. Document has " & secCount & " sections."
           end if
-          set refHeader to get header of section ${section} of d index ${hfIndex}
-          set hdrRange to text object of refHeader
-          set shp to make new inline picture at end of hdrRange with properties {file name:"${hfsPath}", save with document:true}${resizeCommands}
+          try
+            set refHeader to get header of section ${section} of d index ${hfIndex}
+            set hdrRange to text object of refHeader
+          on error
+            return "Header not available for this section/type"
+          end try
+          set shp to make new inline picture at end of hdrRange with properties {file name:"${escapeAppleScriptString(hfsPath)}", save with document:true}${resizeCommands}
           return "Image inserted into header of section ${section}"
         end tell
       `;
@@ -304,10 +330,12 @@ export const headerFooterTools = [
 
       let resizeCommands = '';
       if (args.width !== undefined) {
-        resizeCommands += `\n          set width of shp to ${args.width}`;
+        const w = validateNumber(args.width, 'width', 1, 10000);
+        resizeCommands += `\n          set width of shp to ${w}`;
       }
       if (args.height !== undefined) {
-        resizeCommands += `\n          set height of shp to ${args.height}`;
+        const h = validateNumber(args.height, 'height', 1, 10000);
+        resizeCommands += `\n          set height of shp to ${h}`;
       }
 
       const script = `
@@ -320,9 +348,13 @@ export const headerFooterTools = [
           if ${section} > secCount then
             return "Section index out of range. Document has " & secCount & " sections."
           end if
-          set refFooter to get footer of section ${section} of d index ${hfIndex}
-          set ftrRange to text object of refFooter
-          set shp to make new inline picture at end of ftrRange with properties {file name:"${hfsPath}", save with document:true}${resizeCommands}
+          try
+            set refFooter to get footer of section ${section} of d index ${hfIndex}
+            set ftrRange to text object of refFooter
+          on error
+            return "Footer not available for this section/type"
+          end try
+          set shp to make new inline picture at end of ftrRange with properties {file name:"${escapeAppleScriptString(hfsPath)}", save with document:true}${resizeCommands}
           return "Image inserted into footer of section ${section}"
         end tell
       `;

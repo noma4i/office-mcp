@@ -95,10 +95,14 @@ export const excelWorkbookTools = [
             if (count of workbooks) = 0 then
               return "No workbook is open"
             end if
-            set display alerts to false
             set wb to active workbook
-            set ws to active sheet of wb
-            save as ws filename ${JSON.stringify(path)}
+            set display alerts to false
+            try
+              save workbook as wb filename ${JSON.stringify(path)}
+            on error errMsg
+              set display alerts to true
+              error errMsg
+            end try
             set display alerts to true
             return "Workbook saved as " & ${JSON.stringify(path)}
           end tell

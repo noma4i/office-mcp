@@ -1,5 +1,6 @@
 import { validateString, validateInteger } from '../lib/validators.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
+import { escapeForWordFind, quoteAppleScriptString } from '../lib/applescript/helpers.js';
 
 export const navigationTools = [
   {
@@ -66,8 +67,12 @@ export const navigationTools = [
           if (count of documents) = 0 then
             return "No document is open"
           end if
-          set selStart to selection start of selection
-          set selEnd to selection end of selection
+          try
+            set selStart to selection start of selection
+            set selEnd to selection end of selection
+          on error
+            return "Cannot access selection position"
+          end try
           set selLength to selEnd - selStart
           return "Start: " & selStart & linefeed & "End: " & selEnd & linefeed & "Length: " & selLength
         end tell
@@ -135,9 +140,13 @@ export const navigationTools = [
           select (text object of activeDoc)
           set selection end of selection to selection start of selection
 
-          set findObj to find object of selection
+          try
+            set findObj to find object of selection
+          on error
+            return "Cannot access find object. Make sure a document is active."
+          end try
           clear formatting findObj
-          set content of findObj to ${JSON.stringify(searchText)}
+          set content of findObj to ${escapeForWordFind(searchText)}
           set wrap of findObj to find stop
           set forward of findObj to true
 
@@ -157,12 +166,12 @@ export const navigationTools = [
           end repeat
 
           if foundCount < ${occurrence} then
-            return "Text not found (or fewer than ${occurrence} occurrences): " & ${JSON.stringify(searchText)}
+            return "Text not found (or fewer than ${occurrence} occurrences): " & ${quoteAppleScriptString(searchText)}
           end if
 
           -- Move cursor to end of found text
           set selection start of selection to selection end of selection
-          return "Cursor moved after occurrence " & ${occurrence} & " of: " & ${JSON.stringify(searchText)}
+          return "Cursor moved after occurrence " & ${occurrence} & " of: " & ${quoteAppleScriptString(searchText)}
         end tell
       `;
 

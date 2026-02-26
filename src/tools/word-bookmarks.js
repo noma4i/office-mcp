@@ -1,5 +1,6 @@
 import { validateString } from '../lib/validators.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
+import { quoteAppleScriptString } from '../lib/applescript/helpers.js';
 
 export const bookmarkTools = [
   {
@@ -57,8 +58,12 @@ export const bookmarkTools = [
             return "No document is open"
           end if
           set d to active document
-          make new bookmark at d with properties {name:${JSON.stringify(name)}, |bookmark range|:selection}
-          return "Bookmark created: " & ${JSON.stringify(name)}
+          try
+            make new bookmark at d with properties {name:${quoteAppleScriptString(name)}, |bookmark range|:selection}
+          on error errMsg
+            return "Error creating bookmark: " & errMsg
+          end try
+          return "Bookmark created: " & ${quoteAppleScriptString(name)}
         end tell
       `;
 
@@ -89,9 +94,13 @@ export const bookmarkTools = [
             return "No document is open"
           end if
           set d to active document
-          set b to bookmark ${JSON.stringify(name)} of d
-          select (text object of b)
-          return "Jumped to bookmark: " & ${JSON.stringify(name)}
+          try
+            set b to bookmark ${quoteAppleScriptString(name)} of d
+            select (text object of b)
+          on error
+            return "Bookmark not found: " & ${quoteAppleScriptString(name)}
+          end try
+          return "Jumped to bookmark: " & ${quoteAppleScriptString(name)}
         end tell
       `;
 
@@ -122,8 +131,12 @@ export const bookmarkTools = [
             return "No document is open"
           end if
           set d to active document
-          delete bookmark ${JSON.stringify(name)} of d
-          return "Bookmark deleted: " & ${JSON.stringify(name)}
+          try
+            delete bookmark ${quoteAppleScriptString(name)} of d
+          on error
+            return "Bookmark not found: " & ${quoteAppleScriptString(name)}
+          end try
+          return "Bookmark deleted: " & ${quoteAppleScriptString(name)}
         end tell
       `;
 

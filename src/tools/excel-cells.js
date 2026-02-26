@@ -1,5 +1,6 @@
 import { validateString } from '../lib/validators.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
+import { toAppleScriptString, quoteAppleScriptString } from '../lib/applescript/helpers.js';
 
 export const excelCellTools = [
   {
@@ -24,7 +25,11 @@ export const excelCellTools = [
             return "No workbook is open"
           end if
           set ws to active sheet
-          set v to value of cell ${JSON.stringify(cell)} of ws
+          try
+            set v to value of cell ${JSON.stringify(cell)} of ws
+          on error
+            return "Cell ${cell} not accessible"
+          end try
           if v is missing value then
             return ""
           end if
@@ -58,14 +63,18 @@ export const excelCellTools = [
       if (args.value === undefined || args.value === null) {
         throw new Error('value is required');
       }
-      const val = typeof args.value === 'number' ? args.value : JSON.stringify(String(args.value));
+      const val = typeof args.value === 'number' ? args.value : toAppleScriptString(String(args.value));
       const script = `
         tell application "Microsoft Excel"
           if (count of workbooks) = 0 then
             return "No workbook is open"
           end if
           set ws to active sheet
-          set value of cell ${JSON.stringify(cell)} of ws to ${val}
+          try
+            set value of cell ${JSON.stringify(cell)} of ws to ${val}
+          on error errMsg
+            return "Error setting cell ${cell}: " & errMsg
+          end try
           return "Cell ${cell} set successfully"
         end tell
       `;
@@ -95,7 +104,11 @@ export const excelCellTools = [
             return "No workbook is open"
           end if
           set ws to active sheet
-          set r to range ${JSON.stringify(range)} of ws
+          try
+            set r to range ${JSON.stringify(range)} of ws
+          on error
+            return "Invalid range: ${range}"
+          end try
           set rc to count of rows of r
           set cc to count of columns of r
           set output to ""
@@ -140,15 +153,22 @@ export const excelCellTools = [
     },
     async handler(args) {
       const cell = validateString(args.cell, 'cell', true);
-      const formula = validateString(args.formula, 'formula', true);
+      let formula = validateString(args.formula, 'formula', true);
+      if (!formula.startsWith('=')) {
+        formula = '=' + formula;
+      }
       const script = `
         tell application "Microsoft Excel"
           if (count of workbooks) = 0 then
             return "No workbook is open"
           end if
           set ws to active sheet
-          set formula of cell ${JSON.stringify(cell)} of ws to ${JSON.stringify(formula)}
-          return "Formula set in ${cell}: ${formula}"
+          try
+            set formula of cell ${JSON.stringify(cell)} of ws to ${JSON.stringify(formula)}
+          on error errMsg
+            return "Error setting formula in ${cell}: " & errMsg
+          end try
+          return "Formula set in " & ${JSON.stringify(cell)} & ": " & ${JSON.stringify(formula)}
         end tell
       `;
       return await runAppleScript(script);
@@ -177,7 +197,11 @@ export const excelCellTools = [
             return "No workbook is open"
           end if
           set ws to active sheet
-          clear contents range ${JSON.stringify(range)} of ws
+          try
+            clear contents range ${JSON.stringify(range)} of ws
+          on error
+            return "Invalid range: ${range}"
+          end try
           return "Range ${range} cleared"
         end tell
       `;
@@ -240,10 +264,11 @@ export const excelCellTools = [
           end if
           set ws to active sheet
           set searchRange to ${rangeRef}
-          set foundCell to find searchRange what ${JSON.stringify(searchText)}
-          if foundCell is missing value then
-            return "Not found: ${searchText}"
-          end if
+          try
+            set foundCell to find searchRange what ${quoteAppleScriptString(searchText)}
+          on error
+            return "Not found"
+          end try
           set addr to get address of foundCell
           set v to value of foundCell
           return "Found at " & addr & ": " & (v as text)

@@ -33,7 +33,10 @@ export const paragraphTools = [
           set paraList to "Total paragraphs: " & paraCount & linefeed & linefeed
           repeat with i from 1 to maxPara
             set p to paragraph i of d
-            set pStyle to name local of style of p
+            set pStyle to "unknown"
+            try
+              set pStyle to name local of style of p
+            end try
             set pText to content of text object of p
             if length of pText > 50 then
               set pText to text 1 thru 50 of pText & "..."
@@ -130,7 +133,11 @@ export const paragraphTools = [
             return "Paragraph index out of range. Document has " & paraCount & " paragraphs."
           end if
           set p to paragraph ${index} of d
-          set style of p to ${JSON.stringify(styleName)}
+          try
+            set style of p to ${JSON.stringify(styleName)}
+          on error
+            return "Style not found: " & ${JSON.stringify(styleName)}
+          end try
           return "Style " & ${JSON.stringify(styleName)} & " applied to paragraph ${index}"
         end tell
       `;

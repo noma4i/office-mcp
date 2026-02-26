@@ -1,0 +1,12 @@
+src/
+tests/
+scripts/
+coverage/
+.git/
+.github/
+*.md
+.eslintrc*
+jest.config.*
+yarn.lock
+.yarn/
+.yarnrc*

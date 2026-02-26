@@ -41,7 +41,11 @@ export const excelRowColumnTools = [
             return "No workbook is open"
           end if
           set ws to active sheet
-          insert into range (range "${row}:${endRow}" of ws) shift shift down
+          try
+            insert into range (range "${row}:${endRow}" of ws) shift shift down
+          on error errMsg
+            return "Error inserting rows: " & errMsg
+          end try
           return "${count} row(s) inserted at row ${row}"
         end tell
       `;
@@ -78,7 +82,11 @@ export const excelRowColumnTools = [
             return "No workbook is open"
           end if
           set ws to active sheet
-          delete range (range "${row}:${endRow}" of ws) shift shift up
+          try
+            delete range (range "${row}:${endRow}" of ws) shift shift up
+          on error errMsg
+            return "Error deleting rows: " & errMsg
+          end try
           return "${count} row(s) deleted starting at row ${row}"
         end tell
       `;
@@ -116,7 +124,11 @@ export const excelRowColumnTools = [
             return "No workbook is open"
           end if
           set ws to active sheet
-          insert into range (range "${startCol}:${endCol}" of ws) shift shift to right
+          try
+            insert into range (range "${startCol}:${endCol}" of ws) shift shift to right
+          on error errMsg
+            return "Error inserting columns: " & errMsg
+          end try
           return "${count} column(s) inserted at column ${startCol}"
         end tell
       `;
@@ -154,7 +166,11 @@ export const excelRowColumnTools = [
             return "No workbook is open"
           end if
           set ws to active sheet
-          delete range (range "${startCol}:${endCol}" of ws) shift shift to left
+          try
+            delete range (range "${startCol}:${endCol}" of ws) shift shift to left
+          on error errMsg
+            return "Error deleting columns: " & errMsg
+          end try
           return "${count} column(s) deleted starting at column ${startCol}"
         end tell
       `;
@@ -189,7 +205,11 @@ export const excelRowColumnTools = [
             return "No workbook is open"
           end if
           set ws to active sheet
-          set column width of column ${column} of ws to ${width}
+          try
+            set column width of column ${column} of ws to ${width}
+          on error errMsg
+            return "Error setting column width: " & errMsg
+          end try
           return "Column ${column} width set to ${width}"
         end tell
       `;
@@ -224,7 +244,11 @@ export const excelRowColumnTools = [
             return "No workbook is open"
           end if
           set ws to active sheet
-          set row height of row ${row} of ws to ${height}
+          try
+            set row height of row ${row} of ws to ${height}
+          on error errMsg
+            return "Error setting row height: " & errMsg
+          end try
           return "Row ${row} height set to ${height}"
         end tell
       `;

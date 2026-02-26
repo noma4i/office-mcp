@@ -1,5 +1,6 @@
 import { validateString } from '../lib/validators.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
+import { quoteAppleScriptString } from '../lib/applescript/helpers.js';
 
 export const hyperlinkTools = [
   {
@@ -63,8 +64,8 @@ export const hyperlinkTools = [
       const displayText = validateString(args.displayText, 'displayText', false);
 
       const props = displayText
-        ? `{|hyperlink address|:${JSON.stringify(url)}, |text to display|:${JSON.stringify(displayText)}, |text object|:theRange}`
-        : `{|hyperlink address|:${JSON.stringify(url)}, |text object|:theRange}`;
+        ? `{|hyperlink address|:${quoteAppleScriptString(url)}, |text to display|:${quoteAppleScriptString(displayText)}, |text object|:theRange}`
+        : `{|hyperlink address|:${quoteAppleScriptString(url)}, |text object|:theRange}`;
 
       const script = `
         tell application "Microsoft Word"
@@ -72,10 +73,14 @@ export const hyperlinkTools = [
             return "No document is open"
           end if
           set theRange to text object of selection
-          tell selection
-            make new hyperlink object at end with properties ${props}
-          end tell
-          return "Hyperlink created: " & ${JSON.stringify(url)}
+          try
+            tell selection
+              make new hyperlink object at end with properties ${props}
+            end tell
+          on error errMsg
+            return "Error creating hyperlink: " & errMsg
+          end try
+          return "Hyperlink created: " & ${quoteAppleScriptString(url)}
         end tell
       `;
 

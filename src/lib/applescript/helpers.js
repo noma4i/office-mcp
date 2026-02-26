@@ -33,7 +33,7 @@ end if`,
 
   getActiveSheet: `set ws to active sheet`,
 
-  getSheetByNameOrIndex: (nameOrIndex, isString) => (isString ? `set ws to worksheet ${nameOrIndex} of wb` : `set ws to worksheet ${nameOrIndex} of wb`)
+  getSheetByNameOrIndex: (nameOrIndex, isString) => (isString ? `set ws to worksheet "${escapeAppleScriptString(nameOrIndex)}" of wb` : `set ws to worksheet ${nameOrIndex} of wb`)
 };
 
 export function escapeAppleScriptString(str) {
@@ -42,4 +42,15 @@ export function escapeAppleScriptString(str) {
 
 export function quoteAppleScriptString(str) {
   return `"${escapeAppleScriptString(str)}"`;
+}
+
+export function toAppleScriptString(str) {
+  const parts = str.split(/\r\n|\n|\r/);
+  const escaped = parts.map(p => `"${escapeAppleScriptString(p)}"`);
+  return escaped.length === 1 ? escaped[0] : '(' + escaped.join(' & return & ') + ')';
+}
+
+export function escapeForWordFind(str) {
+  const escaped = escapeAppleScriptString(str).replace(/\r\n/g, '^p').replace(/\n/g, '^p').replace(/\r/g, '^p');
+  return `"${escaped}"`;
 }

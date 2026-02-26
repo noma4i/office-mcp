@@ -1,6 +1,6 @@
 {
   "manifest_version": "0.3",
-  "name": "Office (By noma4i, based on Anthropic)",
+  "name": "office-mcp",
   "display_name": "Office (By noma4i)",
   "version": "0.8.0",
   "description": "Control Microsoft Word and Excel with AppleScript automation (based on Anthropic's Word extension)",
@@ -161,6 +161,70 @@
     {
       "name": "word_resize_inline_shape",
       "description": "Resize an inline shape (image) by index in the active Word document"
+    },
+    {
+      "name": "word_delete_text",
+      "description": "Delete text or current selection in the active Word document"
+    },
+    {
+      "name": "word_delete_paragraph",
+      "description": "Delete a paragraph by index in the active Word document"
+    },
+    {
+      "name": "word_copy_content",
+      "description": "Copy content with formatting to clipboard from the active Word document"
+    },
+    {
+      "name": "word_paste_content",
+      "description": "Paste content with formatting from clipboard into the active Word document"
+    },
+    {
+      "name": "word_get_header_text",
+      "description": "Get the text content of a header in the active Word document"
+    },
+    {
+      "name": "word_set_header_text",
+      "description": "Set the text content of a header in the active Word document"
+    },
+    {
+      "name": "word_get_footer_text",
+      "description": "Get the text content of a footer in the active Word document"
+    },
+    {
+      "name": "word_set_footer_text",
+      "description": "Set the text content of a footer in the active Word document"
+    },
+    {
+      "name": "word_insert_header_image",
+      "description": "Insert an image into a header in the active Word document"
+    },
+    {
+      "name": "word_insert_footer_image",
+      "description": "Insert an image into a footer in the active Word document"
+    },
+    {
+      "name": "word_list_sections",
+      "description": "List all sections with page setup info in the active Word document"
+    },
+    {
+      "name": "word_get_section_info",
+      "description": "Get detailed information about a specific section in Word"
+    },
+    {
+      "name": "word_set_page_setup",
+      "description": "Set page margins, orientation, and layout for a section in Word"
+    },
+    {
+      "name": "word_insert_section_break",
+      "description": "Insert a section break at the current cursor position in Word"
+    },
+    {
+      "name": "word_get_text_formatting",
+      "description": "Get font, size, bold, italic, and color of the current selection in Word"
+    },
+    {
+      "name": "word_get_paragraph_formatting",
+      "description": "Get style, alignment, indents, and spacing of the current paragraph in Word"
     },
     {
       "name": "excel_create_workbook",

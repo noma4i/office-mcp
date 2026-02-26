@@ -44,7 +44,11 @@ export const excelDataTools = [
             return "No workbook is open"
           end if
           set ws to active sheet
-          sort range (range ${JSON.stringify(range)} of ws) key1 (range ${JSON.stringify(keyCell)} of ws) order1 ${orderStr} ${headerStr}
+          try
+            sort range (range ${JSON.stringify(range)} of ws) key1 (range ${JSON.stringify(keyCell)} of ws) order1 ${orderStr} ${headerStr}
+          on error errMsg
+            return "Error sorting range: " & errMsg
+          end try
           return "Range ${range} sorted by ${keyCell} ${ascending ? 'ascending' : 'descending'}"
         end tell
       `;
@@ -95,10 +99,14 @@ export const excelDataTools = [
           if (count of workbooks) = 0 then
             return "No workbook is open"
           end if
-          set display alerts to false
           set wb to active workbook
-          set ws to active sheet of wb
-          save as ws filename ${JSON.stringify(path)} file format CSV file format
+          set display alerts to false
+          try
+            save workbook as wb filename ${JSON.stringify(path)} file format CSV file format
+          on error errMsg
+            set display alerts to true
+            error errMsg
+          end try
           set display alerts to true
           return "Exported as CSV to " & ${JSON.stringify(path)}
         end tell

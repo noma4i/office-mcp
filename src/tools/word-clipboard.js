@@ -4,7 +4,8 @@ import { runAppleScript } from '../lib/applescript/executor.js';
 export const clipboardTools = [
   {
     name: 'word_copy_content',
-    description: 'Copy content to the system clipboard preserving formatting. If startParagraph is specified, selects and copies that paragraph range. Without parameters, copies the current selection.',
+    description:
+      'Copy content to the system clipboard preserving formatting. If startParagraph is specified, selects and copies that paragraph range. Without parameters, copies the current selection.',
     annotations: { readOnlyHint: true },
     inputSchema: {
       type: 'object',
@@ -26,9 +27,7 @@ export const clipboardTools = [
 
       if (args.startParagraph !== undefined) {
         const startParagraph = validateInteger(args.startParagraph, 'startParagraph', 1);
-        const endParagraph = args.endParagraph !== undefined
-          ? validateInteger(args.endParagraph, 'endParagraph', 1)
-          : startParagraph;
+        const endParagraph = args.endParagraph !== undefined ? validateInteger(args.endParagraph, 'endParagraph', 1) : startParagraph;
 
         if (endParagraph < startParagraph) {
           throw new Error('endParagraph must be >= startParagraph');
@@ -65,7 +64,11 @@ export const clipboardTools = [
             if (count of documents) = 0 then
               return "No document is open"
             end if
-            copy object selection
+            try
+              copy object selection
+            on error errMsg
+              return "Error copying: " & errMsg
+            end try
             return "Current selection copied to clipboard"
           end tell
         `;
@@ -89,7 +92,11 @@ export const clipboardTools = [
           if (count of documents) = 0 then
             return "No document is open"
           end if
-          paste object selection
+          try
+            paste object selection
+          on error errMsg
+            return "Error pasting: " & errMsg
+          end try
           return "Content pasted from clipboard"
         end tell
       `;

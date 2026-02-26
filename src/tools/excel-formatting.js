@@ -54,7 +54,10 @@ export const excelFormattingTools = [
         const size = validateNumber(args.size, 'size', 1, 409);
         formatCmds.push(`set font size of font object of r to ${size}`);
       }
-      if (args.fontColor && Array.isArray(args.fontColor) && args.fontColor.length === 3) {
+      if (args.fontColor) {
+        if (!Array.isArray(args.fontColor) || args.fontColor.length !== 3 || !args.fontColor.every(v => typeof v === 'number' && v >= 0 && v <= 255)) {
+          throw new Error('fontColor must be an array of 3 numbers [R,G,B] with values 0-255');
+        }
         formatCmds.push(`set color of font object of r to {${args.fontColor.join(', ')}}`);
       }
 
@@ -68,8 +71,16 @@ export const excelFormattingTools = [
             return "No workbook is open"
           end if
           set ws to active sheet
-          set r to range ${JSON.stringify(range)} of ws
-          ${formatCmds.join('\n          ')}
+          try
+            set r to range ${JSON.stringify(range)} of ws
+          on error
+            return "Invalid range: ${range}"
+          end try
+          try
+            ${formatCmds.join('\n            ')}
+          on error errMsg
+            return "Error applying formatting: " & errMsg
+          end try
           return "Formatting applied to ${range}"
         end tell
       `;
@@ -104,8 +115,12 @@ export const excelFormattingTools = [
             return "No workbook is open"
           end if
           set ws to active sheet
-          set number format of range ${JSON.stringify(range)} of ws to ${JSON.stringify(format)}
-          return "Number format set for ${range}: ${format}"
+          try
+            set number format of range ${JSON.stringify(range)} of ws to ${JSON.stringify(format)}
+          on error errMsg
+            return "Error setting number format: " & errMsg
+          end try
+          return "Number format set for " & ${JSON.stringify(range)} & ": " & ${JSON.stringify(format)}
         end tell
       `;
       return await runAppleScript(script);
@@ -133,8 +148,8 @@ export const excelFormattingTools = [
     },
     async handler(args) {
       const range = validateString(args.range, 'range', true);
-      if (!args.color || !Array.isArray(args.color) || args.color.length !== 3) {
-        throw new Error('color must be an array of 3 numbers [R, G, B]');
+      if (!args.color || !Array.isArray(args.color) || args.color.length !== 3 || !args.color.every(v => typeof v === 'number' && v >= 0 && v <= 255)) {
+        throw new Error('color must be an array of 3 numbers [R,G,B] with values 0-255');
       }
       const script = `
         tell application "Microsoft Excel"
@@ -142,7 +157,11 @@ export const excelFormattingTools = [
             return "No workbook is open"
           end if
           set ws to active sheet
-          set color of interior object of range ${JSON.stringify(range)} of ws to {${args.color.join(', ')}}
+          try
+            set color of interior object of range ${JSON.stringify(range)} of ws to {${args.color.join(', ')}}
+          on error errMsg
+            return "Error setting cell color: " & errMsg
+          end try
           return "Background color set for ${range}"
         end tell
       `;
@@ -172,7 +191,11 @@ export const excelFormattingTools = [
             return "No workbook is open"
           end if
           set ws to active sheet
-          merge (range ${JSON.stringify(range)} of ws)
+          try
+            merge (range ${JSON.stringify(range)} of ws)
+          on error errMsg
+            return "Error merging cells: " & errMsg
+          end try
           return "Cells merged: ${range}"
         end tell
       `;
@@ -202,8 +225,12 @@ export const excelFormattingTools = [
             return "No workbook is open"
           end if
           set ws to active sheet
-          set r to entire column of range ${JSON.stringify(range)} of ws
-          autofit r
+          try
+            set r to entire column of range ${JSON.stringify(range)} of ws
+            autofit r
+          on error errMsg
+            return "Error auto-fitting columns: " & errMsg
+          end try
           return "Columns auto-fitted for ${range}"
         end tell
       `;

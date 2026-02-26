@@ -59,16 +59,16 @@
 
 ### Основные модули
 
-| Модуль                                   | Назначение                                     | API                                                     |
-| ---------------------------------------- | ---------------------------------------------- | ------------------------------------------------------- |
-| `src/index.js`                           | Точка входа                                    | `main()`                                                |
-| `src/lib/server.js`                      | MCP Server v0.8.0                              | `createServer()`, `startServer()`                       |
-| `src/lib/tool-registry.js`               | Регистрация 86 инструментов                    | `ALL_TOOLS`, `getToolDefinitions()`, `getToolHandler()` |
-| `src/lib/tool-executor.js`               | Обработчик инструментов                        | `executeTool()`                                         |
-| `src/lib/validators.js`                  | Валидация (`validateInteger` через `Number()`) | 5 функций                                               |
-| `src/lib/applescript/executor.js`        | Выполнение AppleScript (таймаут 30с)           | `runAppleScript()`                                      |
-| `src/lib/applescript/helpers.js`         | Фрагменты Word + Excel                         | `COMMON_SCRIPTS`                                        |
-| `src/lib/applescript/template-engine.js` | Шаблоны (regex-safe, type-safe)                | `processTemplate()`                                     |
+| Модуль                                   | Назначение                                     | API                                                              |
+| ---------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------- |
+| `src/index.js`                           | Точка входа                                    | `main()`                                                         |
+| `src/lib/server.js`                      | MCP Server v0.8.0                              | `createServer()`, `startServer()`                                |
+| `src/lib/tool-registry.js`               | Регистрация 86 инструментов                    | `ALL_TOOLS`, `getToolDefinitions()`, `getToolHandler()`          |
+| `src/lib/tool-executor.js`               | Обработчик инструментов                        | `executeTool()`                                                  |
+| `src/lib/validators.js`                  | Валидация (`validateInteger` через `Number()`) | 5 функций                                                        |
+| `src/lib/applescript/executor.js`        | Выполнение AppleScript (таймаут 30с)           | `runAppleScript()`                                               |
+| `src/lib/applescript/helpers.js`         | Фрагменты Word + Excel + экранирование строк   | `COMMON_SCRIPTS`, `toAppleScriptString()`, `escapeForWordFind()` |
+| `src/lib/applescript/template-engine.js` | Шаблоны (regex-safe, type-safe)                | `processTemplate()`                                              |
 
 ### Нейминг инструментов
 
@@ -91,12 +91,12 @@
 
 ### Текст (4)
 
-| Инструмент          | Назначение              | Параметры                                          |
-| ------------------- | ----------------------- | -------------------------------------------------- |
-| `word_insert_text`  | Вставить текст          | `text`                                             |
-| `word_replace_text` | Найти и заменить        | `find`, `replace?` (default ""), `all?`            |
-| `word_delete_text`  | Удалить текст/выделение | `text?` (если указан — найти и удалить все)        |
-| `word_format_text`  | Форматирование          | `bold?`, `italic?`, `underline?`, `font?`, `size?` |
+| Инструмент          | Назначение                                                       | Параметры                                          |
+| ------------------- | ---------------------------------------------------------------- | -------------------------------------------------- |
+| `word_insert_text`  | Вставить текст                                                   | `text`                                             |
+| `word_replace_text` | Найти и заменить (возвращает "not found" если не найдено)        | `find`, `replace?` (default ""), `all?`            |
+| `word_delete_text`  | Удалить текст/выделение (возвращает "not found" если не найдено) | `text?` (если указан — найти и удалить все)        |
+| `word_format_text`  | Форматирование                                                   | `bold?`, `italic?`, `underline?`, `font?`, `size?` |
 
 ### Навигация (5)
 
@@ -201,15 +201,15 @@
 
 ### Cells (7)
 
-| Инструмент               | Назначение               | Параметры              |
-| ------------------------ | ------------------------ | ---------------------- |
-| `excel_get_cell`         | Значение ячейки          | `cell` (A1-нотация)    |
-| `excel_set_cell`         | Установить значение      | `cell`, `value`        |
-| `excel_get_range`        | Значения диапазона (TSV) | `range`                |
-| `excel_set_cell_formula` | Установить формулу       | `cell`, `formula`      |
-| `excel_clear_range`      | Очистить диапазон        | `range`                |
-| `excel_get_used_range`   | Адрес и размеры          | —                      |
-| `excel_find_cell`        | Найти текст              | `searchText`, `range?` |
+| Инструмент               | Назначение                           | Параметры              |
+| ------------------------ | ------------------------------------ | ---------------------- |
+| `excel_get_cell`         | Значение ячейки                      | `cell` (A1-нотация)    |
+| `excel_set_cell`         | Установить значение                  | `cell`, `value`        |
+| `excel_get_range`        | Значения диапазона (TSV)             | `range`                |
+| `excel_set_cell_formula` | Установить формулу (auto-prefix `=`) | `cell`, `formula`      |
+| `excel_clear_range`      | Очистить диапазон                    | `range`                |
+| `excel_get_used_range`   | Адрес и размеры                      | —                      |
+| `excel_find_cell`        | Найти текст                          | `searchText`, `range?` |
 
 ### Formatting (5)
 
@@ -245,46 +245,80 @@
 - **Word**: все индексы 1-based (tableIndex, row, column, index, section)
 - **Excel**: ячейки в A1-нотации, листы по имени или 1-based индексу, строки/колонки 1-based
 
+## Экранирование строк для AppleScript
+
+**Правило:** `JSON.stringify` НЕ использовать для пользовательского текста. Хелперы в `src/lib/applescript/helpers.js`:
+
+| Функция                        | Назначение                             | Пример вывода                  |
+| ------------------------------ | -------------------------------------- | ------------------------------ |
+| `toAppleScriptString(str)`     | Контент (insert, set cell, set header) | `("line1" & return & "line2")` |
+| `escapeForWordFind(str)`       | Word Find/Replace, поиск               | `"line1^pline2"`               |
+| `escapeAppleScriptString(str)` | Экранирование `\` и `"` (базовый)      | `say \"hi\"`                   |
+| `quoteAppleScriptString(str)`  | Базовый + оборачивание в кавычки       | `"say \"hi\""`                 |
+
+**Контекст использования:**
+
+- `toAppleScriptString` — newlines → `& return &` конкатенация. Для: `word_insert_text`, `word_create_document`, `word_set_table_cell`, `word_set_header/footer_text`, `excel_set_cell`
+- `escapeForWordFind` — newlines → `^p` (Word paragraph mark). Для: `word_delete_text`, `word_replace_text`, `word_move_cursor_after_text` (ТОЛЬКО Word Find API)
+- `quoteAppleScriptString` — экранирование `\` и `"` + оборачивание в кавычки. Для: `word_create_hyperlink` (URL, displayText), `word_find_table_header` (contains), `excel_find_cell` (what), `word_goto/delete_bookmark` (name), `word_move_cursor_after_text` (return строки), `excel_create/rename_sheet` (name), return-строки с пользовательским текстом
+- `escapeAppleScriptString` — для вставки в уже кавычеченные строки. Для: `word_insert_header/footer_image` (hfsPath внутри `{file name:"..."}`)
+- `JSON.stringify` — допустимо ТОЛЬКО для: путей (`open`, `save as`), cell refs (A1), range refs (A1:B3), font names, style names, формул (`set formula`)
+
 ## AppleScript синтаксис
+
+### Обработка ошибок (ОБЯЗАТЕЛЬНО)
+
+**Правило:** ВСЕ обращения к объектам Word/Excel, которые могут не существовать, ДОЛЖНЫ быть обёрнуты в `try/on error`:
+
+- `font object of selection`, `paragraph format of selection` — selection может быть пустым
+- `get header/footer of section` — header/footer type может быть недоступен
+- `cell N of row M of table` — ячейка может не существовать
+- `find object of selection` — может упасть без документа
+- `name local of style of` — стиль может быть недоступен
+- `worksheet N of wb`, `range "X" of ws` — лист/range может не существовать
+- `inline shape N of d` — shape может не существовать
+
+Паттерн: инициализировать fallback-значение → try → set → end try (или try → on error → return error msg → end try)
 
 ### Word
 
-| Операция            | Синтаксис                                                                         |
-| ------------------- | --------------------------------------------------------------------------------- |
-| Ячейка таблицы      | `cell COLUMN of row ROW of table`                                                 |
-| Collapse            | `set selection end/start of selection to selection start/end of selection`        |
-| Find                | `find object of selection` (НЕ внутри `tell activeDoc`)                           |
-| Закладки            | `make new bookmark at d with properties {name:"X", \|bookmark range\|:selection}` |
-| Гиперссылки         | `hyperlink objects of d`, `text to display of h` (в try/catch)                    |
-| Copy/Paste          | `copy object selection`, `paste object selection`                                 |
-| Изображение         | clipboard + `paste object selection`                                              |
-| Delete paragraph    | `select (text object of paragraph N of d)` → `delete (text object of selection)`  |
-| Header              | `get header of section N of d index header footer primary`                        |
-| Footer              | `get footer of section N of d index header footer primary`                        |
-| Header/Footer текст | `content of text object of refHeader`                                             |
-| Section break       | `insert break at r break type section break next page`                            |
-| Page setup          | `page setup of section N of d` → margins, orientation                             |
-| Paragraph format    | `paragraph format left indent of pf` (НЕ `left indent of pf`)                     |
+| Операция            | Синтаксис                                                                                   |
+| ------------------- | ------------------------------------------------------------------------------------------- |
+| Ячейка таблицы      | `cell COLUMN of row ROW of table`                                                           |
+| Collapse            | `set selection end/start of selection to selection start/end of selection`                  |
+| Find                | `find object of selection` (НЕ внутри `tell activeDoc`), результат `execute find` — boolean |
+| Закладки            | `make new bookmark at d with properties {name:"X", \|bookmark range\|:selection}`           |
+| Гиперссылки         | `hyperlink objects of d`, `text to display of h` (в try/catch)                              |
+| Copy/Paste          | `copy object selection`, `paste object selection`                                           |
+| Изображение         | clipboard + `paste object selection`                                                        |
+| Delete paragraph    | `select (text object of paragraph N of d)` → `delete (text object of selection)`            |
+| Header              | `get header of section N of d index header footer primary`                                  |
+| Footer              | `get footer of section N of d index header footer primary`                                  |
+| Header/Footer текст | `content of text object of refHeader`                                                       |
+| Section break       | `insert break at r break type section break next page`                                      |
+| Page setup          | `page setup of section N of d` → margins, orientation                                       |
+| Paragraph format    | `paragraph format left indent of pf` (НЕ `left indent of pf`)                               |
 
 ### Excel
 
-| Операция        | Синтаксис                                                         |
-| --------------- | ----------------------------------------------------------------- |
-| Ячейка          | `value of cell "A1" of ws`, `set value of cell "A1" of ws to V`   |
-| Формула         | `set formula of cell "A1" of ws to "=SUM()"` (НЕ `formula value`) |
-| Диапазон        | `range "A1:B2" of ws`                                             |
-| Used range      | `used range of ws`, `get address of used range`                   |
-| Лист            | `worksheet N of wb`, `worksheet "Name" of wb`                     |
-| Создать лист    | `make new worksheet at end of wb`                                 |
-| Сохранить       | `save workbook as wb filename PATH`                               |
-| Открыть         | `open workbook workbook file name PATH`                           |
-| Шрифт           | `bold of font object of cell`, `font size of font object of cell` |
-| Цвет фона       | `color of interior object of cell to {R,G,B}`                     |
-| Вставить строку | `insert into range (range "N:N" of ws) shift shift down`          |
-| Удалить строку  | `delete range (range "N:N" of ws) shift shift up`                 |
-| Сортировка      | `sort range ... key1 ... order1 sort ascending header header yes` |
-| Autofit         | `set r to entire column of range "A:C" of ws` → `autofit r`       |
-| Поиск           | `find searchRange what "text"`                                    |
+| Операция        | Синтаксис                                                                              |
+| --------------- | -------------------------------------------------------------------------------------- |
+| Ячейка          | `value of cell "A1" of ws`, `set value of cell "A1" of ws to V`                        |
+| Формула         | `set formula of cell "A1" of ws to "=SUM()"` (НЕ `formula value`)                      |
+| Диапазон        | `range "A1:B2" of ws`                                                                  |
+| Used range      | `used range of ws`, `get address of used range`                                        |
+| Лист            | `worksheet N of wb`, `worksheet "Name" of wb`                                          |
+| Создать лист    | `make new worksheet at end of wb`                                                      |
+| Сохранить       | `save workbook as wb filename PATH`                                                    |
+| Открыть         | `open workbook workbook file name PATH`                                                |
+| Шрифт           | `bold of font object of cell`, `font size of font object of cell`                      |
+| Цвет фона       | `color of interior object of cell to {R,G,B}`                                          |
+| Вставить строку | `insert into range (range "N:N" of ws) shift shift down`                               |
+| Удалить строку  | `delete range (range "N:N" of ws) shift shift up`                                      |
+| Сортировка      | `sort range ... key1 ... order1 sort ascending header header yes`                      |
+| Autofit         | `set r to entire column of range "A:C" of ws` → `autofit r`                            |
+| Поиск           | `find searchRange what "text"` (в `try/on error` — выбрасывает ошибку если не найдено) |
+| Display alerts  | try/finally: `set display alerts to false` → try → on error → restore → end try        |
 
 ## Тестирование
 
@@ -294,13 +328,23 @@ yarn test:watch        # Watch mode
 yarn test:coverage     # С покрытием
 ```
 
-| Тестовый файл                            | Покрытие                                       | Тестов |
-| ---------------------------------------- | ---------------------------------------------- | ------ |
-| `tests/validation.test.js`               | Валидация                                      | 20+    |
-| `tests/mcp-tools.test.js`                | Word инструменты                               | 80+    |
-| `tests/server-integration.test.js`       | Интеграция (86 инструментов)                   | 40+    |
-| `tests/applescript-syntax.test.js`       | Word AppleScript + headers/sections/formatting | 70+    |
-| `tests/excel-applescript-syntax.test.js` | Excel AppleScript (все 33 инструмента)         | 42     |
+| Тестовый файл                            | Покрытие                                                                                  | Тестов |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------- | ------ |
+| `tests/validation.test.js`               | Валидация                                                                                 | 20+    |
+| `tests/mcp-tools.test.js`                | Word инструменты                                                                          | 80+    |
+| `tests/server-integration.test.js`       | Интеграция (86 инструментов)                                                              | 40+    |
+| `tests/applescript-syntax.test.js`       | Word AppleScript + headers/sections/formatting + multiline + спецсимволы + error handling | 110+   |
+| `tests/excel-applescript-syntax.test.js` | Excel AppleScript (все 33 инструмента) + спецсимволы + валидация RGB + error handling     | 60+    |
+
+## Сборка MCPB
+
+```bash
+yarn build && npx @anthropic-ai/mcpb pack . office-mcp.mcpb
+```
+
+- `.mcpbignore` — исключает src/, tests/, scripts/ и прочее из бандла
+- Бандл содержит: `manifest.json`, `dist/`, `node_modules/`, `icon.png`
+- Формат: ZIP-архив с расширением `.mcpb` для one-click установки в Claude Desktop
 
 ## Связи
 

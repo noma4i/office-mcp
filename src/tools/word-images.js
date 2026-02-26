@@ -50,7 +50,11 @@ export const imageTools = [
           try
             set the clipboard to (read imgFile as TIFF picture)
           on error
-            set the clipboard to (read imgFile as JPEG picture)
+            try
+              set the clipboard to (read imgFile as JPEG picture)
+            on error errMsg
+              return "Error reading image: " & errMsg
+            end try
           end try
         end try
         tell application "Microsoft Word"
@@ -93,19 +97,23 @@ export const imageTools = [
           end if
           set shapeList to ""
           repeat with i from 1 to shapeCount
-            set shp to inline shape i of d
-            set t to inline shape type of shp
-            set w to width of shp
-            set h to height of shp
-            set alt to ""
             try
-              set alt to alternative text of shp
+              set shp to inline shape i of d
+              set t to inline shape type of shp
+              set w to width of shp
+              set h to height of shp
+              set alt to ""
+              try
+                set alt to alternative text of shp
+              end try
+              set shapeList to shapeList & i & ". type=" & (t as text) & ", width=" & (w as text) & "pt, height=" & (h as text) & "pt"
+              if alt is not "" then
+                set shapeList to shapeList & ", alt=" & alt
+              end if
+              set shapeList to shapeList & linefeed
+            on error
+              set shapeList to shapeList & i & ". (not accessible)" & linefeed
             end try
-            set shapeList to shapeList & i & ". type=" & (t as text) & ", width=" & (w as text) & "pt, height=" & (h as text) & "pt"
-            if alt is not "" then
-              set shapeList to shapeList & ", alt=" & alt
-            end if
-            set shapeList to shapeList & linefeed
           end repeat
           return shapeList
         end tell
@@ -171,8 +179,12 @@ export const imageTools = [
           if ${index} > shapeCount then
             return "Shape index out of range. Document has " & shapeCount & " inline shapes."
           end if
-          set shp to inline shape ${index} of d
-          ${resizeCommands.join('\n          ')}
+          try
+            set shp to inline shape ${index} of d
+            ${resizeCommands.join('\n            ')}
+          on error errMsg
+            return "Error resizing shape ${index}: " & errMsg
+          end try
           return "Shape ${index} resized. Width: " & (width of shp as text) & "pt, Height: " & (height of shp as text) & "pt"
         end tell
       `;

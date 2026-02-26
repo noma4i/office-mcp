@@ -20,19 +20,23 @@ export const sectionTools = [
           set secCount to count of sections of d
           set result to "Total sections: " & secCount & linefeed & linefeed
           repeat with i from 1 to secCount
-            set s to section i of d
-            set ps to page setup of s
-            set orient to orientation of ps
-            set orientStr to "portrait"
-            if orient is orient landscape then
-              set orientStr to "landscape"
-            end if
-            set lm to left margin of ps
-            set rm to right margin of ps
-            set tm to top margin of ps
-            set bm to bottom margin of ps
-            set diffFirst to different first page header footer of ps
-            set result to result & "Section " & i & ": " & orientStr & ", margins: L=" & (round lm) & " R=" & (round rm) & " T=" & (round tm) & " B=" & (round bm) & " pts, different first page: " & diffFirst & linefeed
+            try
+              set s to section i of d
+              set ps to page setup of s
+              set orient to orientation of ps
+              set orientStr to "portrait"
+              if orient is orient landscape then
+                set orientStr to "landscape"
+              end if
+              set lm to left margin of ps
+              set rm to right margin of ps
+              set tm to top margin of ps
+              set bm to bottom margin of ps
+              set diffFirst to different first page header footer of ps
+              set result to result & "Section " & i & ": " & orientStr & ", margins: L=" & (round lm) & " R=" & (round rm) & " T=" & (round tm) & " B=" & (round bm) & " pts, different first page: " & diffFirst & linefeed
+            on error
+              set result to result & "Section " & i & ": (not accessible)" & linefeed
+            end try
           end repeat
           return result
         end tell
@@ -68,8 +72,12 @@ export const sectionTools = [
           if ${index} > secCount then
             return "Section index out of range. Document has " & secCount & " sections."
           end if
-          set s to section ${index} of d
-          set ps to page setup of s
+          try
+            set s to section ${index} of d
+            set ps to page setup of s
+          on error
+            return "Section ${index} not accessible"
+          end try
           set orient to orientation of ps
           set orientStr to "portrait"
           if orient is orient landscape then
@@ -85,15 +93,15 @@ export const sectionTools = [
           set oddEven to odd and even pages header footer of ps
           set hdrDist to header distance of ps
           set ftrDist to footer distance of ps
-          set result to "Section ${index}:" & linefeed
-          set result to result & "  Orientation: " & orientStr & linefeed
-          set result to result & "  Page size: " & (round pw) & " x " & (round ph) & " pts" & linefeed
-          set result to result & "  Margins: left=" & (round lm) & " right=" & (round rm) & " top=" & (round tm) & " bottom=" & (round bm) & " pts" & linefeed
-          set result to result & "  Header distance: " & (round hdrDist) & " pts" & linefeed
-          set result to result & "  Footer distance: " & (round ftrDist) & " pts" & linefeed
-          set result to result & "  Different first page: " & diffFirst & linefeed
-          set result to result & "  Odd/even pages: " & oddEven & linefeed
-          return result
+          set output to "Section ${index}:" & linefeed
+          set output to output & "  Orientation: " & orientStr & linefeed
+          set output to output & "  Page size: " & (round pw) & " x " & (round ph) & " pts" & linefeed
+          set output to output & "  Margins: left=" & (round lm) & " right=" & (round rm) & " top=" & (round tm) & " bottom=" & (round bm) & " pts" & linefeed
+          set output to output & "  Header distance: " & (round hdrDist) & " pts" & linefeed
+          set output to output & "  Footer distance: " & (round ftrDist) & " pts" & linefeed
+          set output to output & "  Different first page: " & diffFirst & linefeed
+          set output to output & "  Odd/even pages: " & oddEven & linefeed
+          return output
         end tell
       `;
       return await runAppleScript(script);
@@ -181,8 +189,12 @@ export const sectionTools = [
           if ${index} > secCount then
             return "Section index out of range. Document has " & secCount & " sections."
           end if
-          set ps to page setup of section ${index} of d
-          ${commands.join('\n          ')}
+          try
+            set ps to page setup of section ${index} of d
+            ${commands.join('\n            ')}
+          on error errMsg
+            return "Error updating page setup: " & errMsg
+          end try
           return "Page setup updated for section ${index}"
         end tell
       `;
@@ -220,7 +232,11 @@ export const sectionTools = [
             return "No document is open"
           end if
           set r to text object of selection
-          insert break at r break type ${breakType}
+          try
+            insert break at r break type ${breakType}
+          on error errMsg
+            return "Error inserting section break: " & errMsg
+          end try
           return "Section break inserted (${args.type || 'next_page'})"
         end tell
       `;

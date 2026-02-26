@@ -1,5 +1,6 @@
 import { validateString, validateBoolean, validateNumber } from '../lib/validators.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
+import { toAppleScriptString, escapeForWordFind } from '../lib/applescript/helpers.js';
 
 export const textTools = [
   {
@@ -24,7 +25,7 @@ export const textTools = [
           if (count of documents) = 0 then
             return "No document is open"
           end if
-          type text selection text ${JSON.stringify(text)}
+          type text selection text ${toAppleScriptString(text)}
           return "Text inserted successfully"
         end tell
       `;
@@ -66,12 +67,20 @@ export const textTools = [
           if (count of documents) = 0 then
             return "No document is open"
           end if
-          set findObject to find object of selection
+          try
+            set findObject to find object of selection
+          on error
+            return "Cannot access find object. Make sure a document is active."
+          end try
           clear formatting findObject
-          set content of findObject to ${JSON.stringify(find)}
-          set content of replacement of findObject to ${JSON.stringify(replace)}
-          ${all ? 'execute find findObject replace replace all' : 'execute find findObject replace replace one'}
-          return "Text replaced successfully"
+          set content of findObject to ${escapeForWordFind(find)}
+          set content of replacement of findObject to ${escapeForWordFind(replace)}
+          set findResult to ${all ? 'execute find findObject replace replace all' : 'execute find findObject replace replace one'}
+          if findResult then
+            return "Text replaced successfully"
+          else
+            return "Text not found, no replacements made"
+          end if
         end tell
       `;
 
@@ -100,12 +109,20 @@ export const textTools = [
             if (count of documents) = 0 then
               return "No document is open"
             end if
-            set findObject to find object of selection
+            try
+              set findObject to find object of selection
+            on error
+              return "Cannot access find object. Make sure a document is active."
+            end try
             clear formatting findObject
-            set content of findObject to ${JSON.stringify(text)}
+            set content of findObject to ${escapeForWordFind(text)}
             set content of replacement of findObject to ""
-            execute find findObject replace replace all
-            return "Text deleted successfully"
+            set findResult to execute find findObject replace replace all
+            if findResult then
+              return "Text deleted successfully"
+            else
+              return "Text not found, nothing deleted"
+            end if
           end tell
         `;
         return await runAppleScript(script);
@@ -115,7 +132,11 @@ export const textTools = [
             if (count of documents) = 0 then
               return "No document is open"
             end if
-            delete (text object of selection)
+            try
+              delete (text object of selection)
+            on error
+              return "No text selected to delete"
+            end try
             return "Selected text deleted"
           end tell
         `;
@@ -186,7 +207,11 @@ export const textTools = [
           if (count of documents) = 0 then
             return "No document is open"
           end if
-          ${formatCommands.join('\n          ')}
+          try
+            ${formatCommands.join('\n            ')}
+          on error errMsg
+            return "Error applying formatting: " & errMsg
+          end try
           return "Formatting applied successfully"
         end tell
       `;

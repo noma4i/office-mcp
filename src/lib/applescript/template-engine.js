@@ -1,4 +1,4 @@
-import { COMMON_SCRIPTS } from './helpers.js';
+import { COMMON_SCRIPTS, toAppleScriptString } from './helpers.js';
 
 function escapeRegExp(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -18,8 +18,7 @@ export function processTemplate(template, params = {}) {
     let replacementValue;
 
     if (typeof value === 'string') {
-      replacementValue = value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-      replacementValue = `"${replacementValue}"`;
+      replacementValue = toAppleScriptString(value);
     } else if (typeof value === 'boolean') {
       replacementValue = value ? 'true' : 'false';
     } else if (typeof value === 'number') {

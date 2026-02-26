@@ -15,20 +15,42 @@ export const formattingReadTools = [
           if (count of documents) = 0 then
             return "No document is open"
           end if
-          set f to font object of selection
-          set fontName to name of f
-          set fontSize to font size of f
-          set isBold to bold of f
-          set isItalic to italic of f
-          set isUnderline to underline of f
-          set fontColor to color of f
-          set result to "Font: " & fontName & linefeed
-          set result to result & "Size: " & fontSize & linefeed
-          set result to result & "Bold: " & isBold & linefeed
-          set result to result & "Italic: " & isItalic & linefeed
-          set result to result & "Underline: " & isUnderline & linefeed
-          set result to result & "Color: " & fontColor & linefeed
-          return result
+          try
+            set f to font object of selection
+          on error
+            return "No selection or font object not available"
+          end try
+          set fontName to "unknown"
+          set fontSize to "unknown"
+          set isBold to "unknown"
+          set isItalic to "unknown"
+          set isUnderline to "unknown"
+          set fontColor to "unknown"
+          try
+            set fontName to name of f
+          end try
+          try
+            set fontSize to font size of f
+          end try
+          try
+            set isBold to bold of f
+          end try
+          try
+            set isItalic to italic of f
+          end try
+          try
+            set isUnderline to underline of f
+          end try
+          try
+            set fontColor to color of f
+          end try
+          set output to "Font: " & fontName & linefeed
+          set output to output & "Size: " & fontSize & linefeed
+          set output to output & "Bold: " & isBold & linefeed
+          set output to output & "Italic: " & isItalic & linefeed
+          set output to output & "Underline: " & isUnderline & linefeed
+          set output to output & "Color: " & fontColor & linefeed
+          return output
         end tell
       `;
       return await runAppleScript(script);
@@ -49,30 +71,51 @@ export const formattingReadTools = [
           if (count of documents) = 0 then
             return "No document is open"
           end if
-          set pf to paragraph format of selection
-          set pStyle to name local of style of selection
-          set pAlign to paragraph alignment of pf
-          set alignStr to "left"
-          if pAlign is align paragraph center then
-            set alignStr to "center"
-          else if pAlign is align paragraph right then
-            set alignStr to "right"
-          else if pAlign is align paragraph justify then
-            set alignStr to "justify"
-          end if
-          set spaceBefore to space before of pf
-          set spaceAfter to space after of pf
-          set li to paragraph format left indent of pf
-          set ri to paragraph format right indent of pf
-          set fli to paragraph format first line indent of pf
-          set result to "Style: " & pStyle & linefeed
-          set result to result & "Alignment: " & alignStr & linefeed
-          set result to result & "Space before: " & spaceBefore & " pts" & linefeed
-          set result to result & "Space after: " & spaceAfter & " pts" & linefeed
-          set result to result & "Left indent: " & li & " pts" & linefeed
-          set result to result & "Right indent: " & ri & " pts" & linefeed
-          set result to result & "First line indent: " & fli & " pts" & linefeed
-          return result
+          set pStyle to "unknown"
+          set alignStr to "unknown"
+          set spaceBefore to "unknown"
+          set spaceAfter to "unknown"
+          set li to "unknown"
+          set ri to "unknown"
+          set fli to "unknown"
+          try
+            set pStyle to name local of style of selection
+          end try
+          try
+            set pf to paragraph format of selection
+            set pAlign to paragraph alignment of pf
+            set alignStr to "left"
+            if pAlign is align paragraph center then
+              set alignStr to "center"
+            else if pAlign is align paragraph right then
+              set alignStr to "right"
+            else if pAlign is align paragraph justify then
+              set alignStr to "justify"
+            end if
+          end try
+          try
+            set spaceBefore to space before of pf
+          end try
+          try
+            set spaceAfter to space after of pf
+          end try
+          try
+            set li to paragraph format left indent of pf
+          end try
+          try
+            set ri to paragraph format right indent of pf
+          end try
+          try
+            set fli to paragraph format first line indent of pf
+          end try
+          set output to "Style: " & pStyle & linefeed
+          set output to output & "Alignment: " & alignStr & linefeed
+          set output to output & "Space before: " & spaceBefore & " pts" & linefeed
+          set output to output & "Space after: " & spaceAfter & " pts" & linefeed
+          set output to output & "Left indent: " & li & " pts" & linefeed
+          set output to output & "Right indent: " & ri & " pts" & linefeed
+          set output to output & "First line indent: " & fli & " pts" & linefeed
+          return output
         end tell
       `;
       return await runAppleScript(script);

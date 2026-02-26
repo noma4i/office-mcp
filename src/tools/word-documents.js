@@ -1,5 +1,6 @@
 import { validateString, validateBoolean } from '../lib/validators.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
+import { toAppleScriptString } from '../lib/applescript/helpers.js';
 
 export const documentTools = [
   {
@@ -24,7 +25,7 @@ export const documentTools = [
           activate
           set newDoc to make new document
           tell newDoc
-            set content of text object to ${JSON.stringify(content)}
+            set content of text object to ${toAppleScriptString(content)}
           end tell
           return "New document created successfully"
         end tell

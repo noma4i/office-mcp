@@ -1,5 +1,6 @@
 import { validateString, validateInteger } from '../lib/validators.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
+import { toAppleScriptString, quoteAppleScriptString } from '../lib/applescript/helpers.js';
 
 export const tableTools = [
   {
@@ -74,8 +75,12 @@ export const tableTools = [
             return "Table index out of range. Document has " & tableCount & " tables."
           end if
           set t to table ${tableIndex} of activeDoc
-          set c to cell ${column} of row ${row} of t
-          set cellText to content of text object of c
+          try
+            set c to cell ${column} of row ${row} of t
+            set cellText to content of text object of c
+          on error
+            return "Cell not found: row ${row}, column ${column} in table ${tableIndex}"
+          end try
           -- Remove trailing cell marker (ASCII 7 and 13)
           if length of cellText > 0 then
             repeat while (length of cellText > 0) and ((ASCII number of (character -1 of cellText)) is in {7, 13})
@@ -133,8 +138,12 @@ export const tableTools = [
             return "Table index out of range. Document has " & tableCount & " tables."
           end if
           set t to table ${tableIndex} of activeDoc
-          set c to cell ${column} of row ${row} of t
-          set content of text object of c to ${JSON.stringify(text)}
+          try
+            set c to cell ${column} of row ${row} of t
+            set content of text object of c to ${toAppleScriptString(text)}
+          on error
+            return "Cell not found: row ${row}, column ${column} in table ${tableIndex}"
+          end try
           return "Cell [" & ${row} & "," & ${column} & "] in table " & ${tableIndex} & " set successfully"
         end tell
       `;
@@ -181,8 +190,12 @@ export const tableTools = [
             return "Table index out of range. Document has " & tableCount & " tables."
           end if
           set t to table ${tableIndex} of activeDoc
-          set c to cell ${column} of row ${row} of t
-          select (text object of c)
+          try
+            set c to cell ${column} of row ${row} of t
+            select (text object of c)
+          on error
+            return "Cell not found: row ${row}, column ${column} in table ${tableIndex}"
+          end try
           return "Cursor moved to cell [" & ${row} & "," & ${column} & "] in table " & ${tableIndex}
         end tell
       `;
@@ -233,23 +246,27 @@ export const tableTools = [
           set colCount to count of columns of t
           set foundCol to 0
           repeat with colIdx from 1 to colCount
-            set c to cell colIdx of row ${headerRow} of t
-            set cellText to content of text object of c
+            try
+              set c to cell colIdx of row ${headerRow} of t
+              set cellText to content of text object of c
+            on error
+              return "Header row ${headerRow} is out of range for table ${tableIndex}"
+            end try
             -- Remove trailing cell marker
             if length of cellText > 0 then
               repeat while (length of cellText > 0) and ((ASCII number of (character -1 of cellText)) is in {7, 13})
                 set cellText to text 1 thru -2 of cellText
               end repeat
             end if
-            if cellText contains ${JSON.stringify(headerText)} then
+            if cellText contains ${quoteAppleScriptString(headerText)} then
               set foundCol to colIdx
               exit repeat
             end if
           end repeat
           if foundCol = 0 then
-            return "Header not found: " & ${JSON.stringify(headerText)}
+            return "Header not found: " & ${quoteAppleScriptString(headerText)}
           else
-            return "Column " & foundCol & " contains header: " & ${JSON.stringify(headerText)}
+            return "Column " & foundCol & " contains header: " & ${quoteAppleScriptString(headerText)}
           end if
         end tell
       `;
@@ -323,13 +340,21 @@ export const tableTools = [
             return "No document is open"
           end if
           set d to active document
-          set t to table ${tableIndex} of d
+          try
+            set t to table ${tableIndex} of d
+          on error
+            return "Table ${tableIndex} not found"
+          end try
           set targetRowNum to ${targetRow}
           if targetRowNum = 0 then
             set targetRowNum to count of rows of t
           end if
-          select (text object of row targetRowNum of t)
-          insert rows selection position below
+          try
+            select (text object of row targetRowNum of t)
+            insert rows selection position below
+          on error
+            return "Row " & targetRowNum & " not found in table ${tableIndex}"
+          end try
           return "Row added after row " & targetRowNum & " in table ${tableIndex}"
         end tell
       `;
@@ -366,8 +391,12 @@ export const tableTools = [
             return "No document is open"
           end if
           set d to active document
-          set t to table ${tableIndex} of d
-          delete row ${row} of t
+          try
+            set t to table ${tableIndex} of d
+            delete row ${row} of t
+          on error
+            return "Row ${row} not found in table ${tableIndex}"
+          end try
           return "Row ${row} deleted from table ${tableIndex}"
         end tell
       `;
@@ -405,13 +434,21 @@ export const tableTools = [
             return "No document is open"
           end if
           set d to active document
-          set t to table ${tableIndex} of d
+          try
+            set t to table ${tableIndex} of d
+          on error
+            return "Table ${tableIndex} not found"
+          end try
           set targetColNum to ${targetCol}
           if targetColNum = 0 then
             set targetColNum to count of columns of t
           end if
-          select (text object of cell targetColNum of row 1 of t)
-          insert columns selection position insert on the right
+          try
+            select (text object of cell targetColNum of row 1 of t)
+            insert columns selection position insert on the right
+          on error
+            return "Column " & targetColNum & " not found in table ${tableIndex}"
+          end try
           return "Column added after column " & targetColNum & " in table ${tableIndex}"
         end tell
       `;
@@ -448,8 +485,12 @@ export const tableTools = [
             return "No document is open"
           end if
           set d to active document
-          set t to table ${tableIndex} of d
-          delete column ${column} of t
+          try
+            set t to table ${tableIndex} of d
+            delete column ${column} of t
+          on error
+            return "Column ${column} not found in table ${tableIndex}"
+          end try
           return "Column ${column} deleted from table ${tableIndex}"
         end tell
       `;

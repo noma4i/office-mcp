@@ -1,12 +1,13 @@
 import { validateString, validateInteger } from '../lib/validators.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
+import { quoteAppleScriptString } from '../lib/applescript/helpers.js';
 
 function resolveSheet(nameOrIndex) {
   if (typeof nameOrIndex === 'number' || (typeof nameOrIndex === 'string' && /^\d+$/.test(nameOrIndex))) {
     const idx = parseInt(nameOrIndex, 10);
     return `worksheet ${idx} of wb`;
   }
-  return `worksheet ${JSON.stringify(nameOrIndex)} of wb`;
+  return `worksheet ${quoteAppleScriptString(nameOrIndex)} of wb`;
 }
 
 export const excelSheetTools = [
@@ -68,7 +69,7 @@ export const excelSheetTools = [
         makeCmd = `make new worksheet at after worksheet ${afterIndex} of wb`;
       }
 
-      const nameCmd = name ? `\n          set name of newSheet to ${JSON.stringify(name)}` : '';
+      const nameCmd = name ? `\n          set name of newSheet to ${quoteAppleScriptString(name)}` : '';
 
       const script = `
         tell application "Microsoft Excel"
@@ -110,7 +111,12 @@ export const excelSheetTools = [
           end if
           set wb to active workbook
           set display alerts to false
-          delete ${sheetRef}
+          try
+            delete ${sheetRef}
+          on error errMsg
+            set display alerts to true
+            error errMsg
+          end try
           set display alerts to true
           return "Sheet deleted successfully"
         end tell
@@ -149,9 +155,13 @@ export const excelSheetTools = [
             return "No workbook is open"
           end if
           set wb to active workbook
-          set ws to ${sheetRef}
-          set name of ws to ${JSON.stringify(newName)}
-          return "Sheet renamed to " & ${JSON.stringify(newName)}
+          try
+            set ws to ${sheetRef}
+          on error
+            return "Sheet not found"
+          end try
+          set name of ws to ${quoteAppleScriptString(newName)}
+          return "Sheet renamed to " & ${quoteAppleScriptString(newName)}
         end tell
       `;
       return await runAppleScript(script);
@@ -183,7 +193,11 @@ export const excelSheetTools = [
             return "No workbook is open"
           end if
           set wb to active workbook
-          set ws to ${sheetRef}
+          try
+            set ws to ${sheetRef}
+          on error
+            return "Sheet not found"
+          end try
           activate object ws
           return "Activated sheet: " & name of ws
         end tell
@@ -206,16 +220,18 @@ export const excelSheetTools = [
       }
     },
     async handler(args) {
-      const sheetCmd = (args.nameOrIndex !== undefined && args.nameOrIndex !== null)
-        ? `set ws to ${resolveSheet(args.nameOrIndex)}`
-        : 'set ws to active sheet';
+      const sheetCmd = args.nameOrIndex !== undefined && args.nameOrIndex !== null ? `set ws to ${resolveSheet(args.nameOrIndex)}` : 'set ws to active sheet';
       const script = `
         tell application "Microsoft Excel"
           if (count of workbooks) = 0 then
             return "No workbook is open"
           end if
           set wb to active workbook
-          ${sheetCmd}
+          try
+            ${sheetCmd}
+          on error
+            return "Sheet not found"
+          end try
           set wsName to name of ws
           set ur to used range of ws
           set addr to get address of ur

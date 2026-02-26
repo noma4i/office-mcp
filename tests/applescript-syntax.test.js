@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeAll, jest } from '@jest/globals';
+import { describe, test, expect, jest } from '@jest/globals';
 import { execSync } from 'child_process';
 import { writeFileSync, unlinkSync } from 'fs';
 import { tmpdir } from 'os';
@@ -26,6 +26,8 @@ const { sectionTools } = await import('../src/tools/word-sections.js');
 const { formattingReadTools } = await import('../src/tools/word-formatting-read.js');
 const { clipboardTools } = await import('../src/tools/word-clipboard.js');
 const { processTemplate } = await import('../src/lib/applescript/template-engine.js');
+const { toAppleScriptString, escapeForWordFind, escapeAppleScriptString } = await import('../src/lib/applescript/helpers.js');
+const { excelCellTools } = await import('../src/tools/excel-cells.js');
 
 function findTool(tools, name) {
   return tools.find(t => t.name === name);
@@ -121,6 +123,12 @@ describe('AppleScript Syntax Verification', () => {
       expect(script).toBeTruthy();
     });
 
+    test('insert_text with quotes and backslash compiles', async () => {
+      const script = await captureScript(findTool(textTools, 'word_insert_text'), { text: 'say "hello" and back\\slash' });
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
     test('replace_text compiles', async () => {
       const script = await captureScript(findTool(textTools, 'word_replace_text'), { find: 'old', replace: 'new' });
       const result = compileAppleScript(script);
@@ -180,6 +188,14 @@ describe('AppleScript Syntax Verification', () => {
       expect(result.ok).toBe(true);
     });
 
+    test('find_table_header with quotes compiles', async () => {
+      const script = await captureScript(findTool(tableTools, 'word_find_table_header'), { tableIndex: 1, headerText: 'Column "A"' });
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+      expect(script).toContain('try');
+      expect(script).toContain('on error');
+    });
+
     test('add_table_row compiles with correct insert syntax', async () => {
       const script = await captureScript(findTool(tableTools, 'word_add_table_row'), { tableIndex: 1, afterRow: 2 });
       const result = compileAppleScript(script);
@@ -212,6 +228,25 @@ describe('AppleScript Syntax Verification', () => {
       const script = await captureScript(findTool(tableTools, 'word_delete_table_column'), { tableIndex: 1, column: 2 });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
+    });
+
+    test('get_table_cell has error handling for cell access', async () => {
+      const script = await captureScript(findTool(tableTools, 'word_get_table_cell'), { tableIndex: 1, row: 1, column: 1 });
+      expect(script).toContain('try');
+      expect(script).toContain('on error');
+      expect(script).toContain('Cell not found');
+    });
+
+    test('set_table_cell has error handling', async () => {
+      const script = await captureScript(findTool(tableTools, 'word_set_table_cell'), { tableIndex: 1, row: 1, column: 1, text: 'Test' });
+      expect(script).toContain('try');
+      expect(script).toContain('on error');
+    });
+
+    test('delete_table_row has error handling', async () => {
+      const script = await captureScript(findTool(tableTools, 'word_delete_table_row'), { tableIndex: 1, row: 1 });
+      expect(script).toContain('try');
+      expect(script).toContain('on error');
     });
   });
 
@@ -265,6 +300,20 @@ describe('AppleScript Syntax Verification', () => {
       const script = await captureScript(findTool(bookmarkTools, 'word_delete_bookmark'), { name: 'TestBM' });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
+    });
+
+    test('goto_bookmark has try/catch', async () => {
+      const script = await captureScript(findTool(bookmarkTools, 'word_goto_bookmark'), { name: 'TestBM' });
+      expect(script).toContain('try');
+      expect(script).toContain('on error');
+      expect(script).toContain('Bookmark not found');
+    });
+
+    test('delete_bookmark has try/catch', async () => {
+      const script = await captureScript(findTool(bookmarkTools, 'word_delete_bookmark'), { name: 'TestBM' });
+      expect(script).toContain('try');
+      expect(script).toContain('on error');
+      expect(script).toContain('Bookmark not found');
     });
   });
 
@@ -328,6 +377,18 @@ describe('AppleScript Syntax Verification', () => {
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
+
+    test('get_selection_info has error handling', async () => {
+      const script = await captureScript(findTool(navigationTools, 'word_get_selection_info'), {});
+      expect(script).toContain('try');
+      expect(script).toContain('on error');
+    });
+
+    test('move_cursor_after_text has error handling for find object', async () => {
+      const script = await captureScript(findTool(navigationTools, 'word_move_cursor_after_text'), { searchText: 'test' });
+      expect(script).toContain('try');
+      expect(script).toContain('on error');
+    });
   });
 
   describe('Image Tools', () => {
@@ -373,6 +434,36 @@ describe('AppleScript Syntax Verification', () => {
       const tool = findTool(documentTools, 'word_open_document');
       expect(tool.annotations.readOnlyHint).toBe(false);
     });
+
+    test('word_replace_text captures find result and reports not found', async () => {
+      const script = await captureScript(findTool(textTools, 'word_replace_text'), { find: 'old', replace: 'new' });
+      expect(script).toContain('set findResult to');
+      expect(script).toContain('if findResult then');
+      expect(script).toContain('Text not found, no replacements made');
+    });
+
+    test('word_delete_text with text captures find result and reports not found', async () => {
+      const script = await captureScript(findTool(textTools, 'word_delete_text'), { text: 'gone' });
+      expect(script).toContain('set findResult to');
+      expect(script).toContain('if findResult then');
+      expect(script).toContain('Text not found, nothing deleted');
+    });
+
+    test('word_create_hyperlink uses quoteAppleScriptString not JSON.stringify', async () => {
+      const script = await captureScript(findTool(hyperlinkTools, 'word_create_hyperlink'), { url: 'https://example.com', displayText: 'say "hello"' });
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+      expect(script).toContain('|hyperlink address|:"https://example.com"');
+      expect(script).toContain('|text to display|:"say \\"hello\\""');
+    });
+
+    test('word_insert_header_image rejects non-numeric width', async () => {
+      await expect(findTool(headerFooterTools, 'word_insert_header_image').handler({ path: '/tmp/test.png', width: 'abc' })).rejects.toThrow('width must be a valid number');
+    });
+
+    test('word_insert_footer_image rejects non-numeric height', async () => {
+      await expect(findTool(headerFooterTools, 'word_insert_footer_image').handler({ path: '/tmp/test.png', height: 'abc' })).rejects.toThrow('height must be a valid number');
+    });
   });
 
   describe('Header/Footer Tools', () => {
@@ -417,6 +508,39 @@ describe('AppleScript Syntax Verification', () => {
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
+
+    test('word_insert_header_image with quotes in path compiles', async () => {
+      const script = await captureScript(findTool(headerFooterTools, 'word_insert_header_image'), { path: '/tmp/my "image".png' });
+      expect(script).toBeTruthy();
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
+    test('word_get_header_text has error handling for header access', async () => {
+      const script = await captureScript(findTool(headerFooterTools, 'word_get_header_text'), {});
+      expect(script).toContain('try');
+      expect(script).toContain('on error');
+      expect(script).toContain('Header not available');
+    });
+
+    test('word_get_footer_text has error handling for footer access', async () => {
+      const script = await captureScript(findTool(headerFooterTools, 'word_get_footer_text'), {});
+      expect(script).toContain('try');
+      expect(script).toContain('on error');
+      expect(script).toContain('Footer not available');
+    });
+
+    test('word_set_header_text has error handling', async () => {
+      const script = await captureScript(findTool(headerFooterTools, 'word_set_header_text'), { text: 'Test' });
+      expect(script).toContain('try');
+      expect(script).toContain('on error');
+    });
+
+    test('word_set_footer_text has error handling', async () => {
+      const script = await captureScript(findTool(headerFooterTools, 'word_set_footer_text'), { text: 'Test' });
+      expect(script).toContain('try');
+      expect(script).toContain('on error');
+    });
   });
 
   describe('Section Tools', () => {
@@ -447,6 +571,18 @@ describe('AppleScript Syntax Verification', () => {
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });
+
+    test('word_get_section_info has error handling', async () => {
+      const script = await captureScript(findTool(sectionTools, 'word_get_section_info'), { index: 1 });
+      expect(script).toContain('try');
+      expect(script).toContain('on error');
+    });
+
+    test('word_set_page_setup has error handling', async () => {
+      const script = await captureScript(findTool(sectionTools, 'word_set_page_setup'), { topMargin: 72 });
+      expect(script).toContain('try');
+      expect(script).toContain('on error');
+    });
   });
 
   describe('Formatting Read Tools', () => {
@@ -457,11 +593,23 @@ describe('AppleScript Syntax Verification', () => {
       expect(result.ok).toBe(true);
     });
 
+    test('word_get_text_formatting has error handling', async () => {
+      const script = await captureScript(findTool(formattingReadTools, 'word_get_text_formatting'), {});
+      expect(script).toContain('try');
+      expect(script).toContain('on error');
+    });
+
     test('word_get_paragraph_formatting compiles', async () => {
       const script = await captureScript(findTool(formattingReadTools, 'word_get_paragraph_formatting'), {});
       expect(script).toBeTruthy();
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
+    });
+
+    test('word_get_paragraph_formatting has error handling', async () => {
+      const script = await captureScript(findTool(formattingReadTools, 'word_get_paragraph_formatting'), {});
+      expect(script).toContain('try');
+      expect(script).toContain('end try');
     });
   });
 
@@ -557,6 +705,139 @@ describe('AppleScript Syntax Verification', () => {
 
     test('throws on unsupported value types (array)', () => {
       expect(() => processTemplate('<<ARR>>', { ARR: [1, 2] })).toThrow('Unsupported template value type');
+    });
+
+    test('handles strings with newlines via toAppleScriptString', () => {
+      const result = processTemplate('set x to <<TEXT>>', { TEXT: 'line1\nline2' });
+      expect(result).toContain('& return &');
+      expect(result).not.toContain('\\n');
+    });
+  });
+
+  describe('Helper Functions', () => {
+    test('escapeAppleScriptString escapes backslashes and quotes', () => {
+      expect(escapeAppleScriptString('hello "world"')).toBe('hello \\"world\\"');
+      expect(escapeAppleScriptString('back\\slash')).toBe('back\\\\slash');
+    });
+
+    test('toAppleScriptString handles single-line text', () => {
+      expect(toAppleScriptString('hello')).toBe('"hello"');
+    });
+
+    test('toAppleScriptString handles multi-line text', () => {
+      const result = toAppleScriptString('line1\nline2');
+      expect(result).toBe('("line1" & return & "line2")');
+    });
+
+    test('toAppleScriptString handles multiple newlines', () => {
+      const result = toAppleScriptString('a\nb\nc');
+      expect(result).toBe('("a" & return & "b" & return & "c")');
+    });
+
+    test('toAppleScriptString handles \\r\\n', () => {
+      const result = toAppleScriptString('a\r\nb');
+      expect(result).toBe('("a" & return & "b")');
+    });
+
+    test('toAppleScriptString escapes quotes in multi-line text', () => {
+      const result = toAppleScriptString('say "hi"\ngoodbye');
+      expect(result).toBe('("say \\"hi\\"" & return & "goodbye")');
+    });
+
+    test('escapeForWordFind handles single-line text', () => {
+      expect(escapeForWordFind('hello')).toBe('"hello"');
+    });
+
+    test('escapeForWordFind converts newlines to ^p', () => {
+      expect(escapeForWordFind('line1\nline2')).toBe('"line1^pline2"');
+    });
+
+    test('escapeForWordFind converts \\r\\n to ^p', () => {
+      expect(escapeForWordFind('line1\r\nline2')).toBe('"line1^pline2"');
+    });
+
+    test('escapeForWordFind converts \\r to ^p', () => {
+      expect(escapeForWordFind('line1\rline2')).toBe('"line1^pline2"');
+    });
+
+    test('escapeForWordFind escapes quotes', () => {
+      expect(escapeForWordFind('say "hi"')).toBe('"say \\"hi\\""');
+    });
+  });
+
+  describe('Multiline Text in Tools', () => {
+    test('word_delete_text with multiline text uses ^p', async () => {
+      const script = await captureScript(findTool(textTools, 'word_delete_text'), { text: 'hello\nworld' });
+      expect(script).toContain('hello^pworld');
+      expect(script).not.toContain('\\n');
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
+    test('word_replace_text with multiline find uses ^p', async () => {
+      const script = await captureScript(findTool(textTools, 'word_replace_text'), { find: 'old\ntext', replace: 'new\ntext' });
+      expect(script).toContain('old^ptext');
+      expect(script).toContain('new^ptext');
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
+    test('word_insert_text with multiline text uses return concatenation', async () => {
+      const script = await captureScript(findTool(textTools, 'word_insert_text'), { text: 'hello\nworld' });
+      expect(script).toContain('& return &');
+      expect(script).toContain('"hello"');
+      expect(script).toContain('"world"');
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
+    test('word_move_cursor_after_text with multiline text uses ^p', async () => {
+      const script = await captureScript(findTool(navigationTools, 'word_move_cursor_after_text'), { searchText: 'hello\nworld' });
+      expect(script).toContain('hello^pworld');
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
+    test('word_set_table_cell with multiline text uses return', async () => {
+      const script = await captureScript(findTool(tableTools, 'word_set_table_cell'), { tableIndex: 1, row: 1, column: 1, text: 'line1\nline2' });
+      expect(script).toContain('& return &');
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
+    test('word_create_document with multiline content uses return', async () => {
+      const script = await captureScript(findTool(documentTools, 'word_create_document'), { content: 'Hello\nWorld' });
+      expect(script).toContain('& return &');
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
+    test('word_set_header_text with multiline text uses return', async () => {
+      const script = await captureScript(findTool(headerFooterTools, 'word_set_header_text'), { text: 'Line 1\nLine 2' });
+      expect(script).toContain('& return &');
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
+    test('word_set_footer_text with multiline text uses return', async () => {
+      const script = await captureScript(findTool(headerFooterTools, 'word_set_footer_text'), { text: 'Footer\nLine 2' });
+      expect(script).toContain('& return &');
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
+    test('excel_set_cell with multiline string uses return', async () => {
+      const script = await captureScript(findTool(excelCellTools, 'excel_set_cell'), { cell: 'A1', value: 'line1\nline2' });
+      expect(script).toContain('& return &');
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
+    test('excel_find_cell does not use Word-specific ^p markers', async () => {
+      const script = await captureScript(findTool(excelCellTools, 'excel_find_cell'), { searchText: 'hello' });
+      expect(script).not.toContain('^p');
+      expect(script).toContain('try');
+      expect(script).toContain('on error');
     });
   });
 });
