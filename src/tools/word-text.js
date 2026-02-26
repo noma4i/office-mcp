@@ -1,6 +1,7 @@
 import { validateString, validateBoolean, validateNumber } from '../lib/validators.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
 import { toAppleScriptString, escapeForWordFind } from '../lib/applescript/helpers.js';
+import { wrapWordScript } from '../lib/applescript/script-wrappers.js';
 
 export const textTools = [
   {
@@ -20,15 +21,10 @@ export const textTools = [
     async handler(args) {
       const text = validateString(args.text, 'text', true);
 
-      const script = `
-        tell application "Microsoft Word"
-          if (count of documents) = 0 then
-            return "No document is open"
-          end if
-          type text selection text ${toAppleScriptString(text)}
-          return "Text inserted successfully"
-        end tell
-      `;
+      const script = wrapWordScript(`
+type text selection text ${toAppleScriptString(text)}
+return "Text inserted successfully"
+`);
 
       return await runAppleScript(script);
     }
@@ -62,27 +58,22 @@ export const textTools = [
       const replace = args.replace !== undefined ? validateString(args.replace, 'replace', false) : '';
       const all = validateBoolean(args.all, 'all', true);
 
-      const script = `
-        tell application "Microsoft Word"
-          if (count of documents) = 0 then
-            return "No document is open"
-          end if
-          try
-            set findObject to find object of selection
-          on error
-            return "Cannot access find object. Make sure a document is active."
-          end try
-          clear formatting findObject
-          set content of findObject to ${escapeForWordFind(find)}
-          set content of replacement of findObject to ${escapeForWordFind(replace)}
-          set findResult to ${all ? 'execute find findObject replace replace all' : 'execute find findObject replace replace one'}
-          if findResult then
-            return "Text replaced successfully"
-          else
-            return "Text not found, no replacements made"
-          end if
-        end tell
-      `;
+      const script = wrapWordScript(`
+try
+  set findObject to find object of selection
+on error
+  return "Cannot access find object. Make sure a document is active."
+end try
+clear formatting findObject
+set content of findObject to ${escapeForWordFind(find)}
+set content of replacement of findObject to ${escapeForWordFind(replace)}
+set findResult to ${all ? 'execute find findObject replace replace all' : 'execute find findObject replace replace one'}
+if findResult then
+  return "Text replaced successfully"
+else
+  return "Text not found, no replacements made"
+end if
+`);
 
       return await runAppleScript(script);
     }
@@ -104,44 +95,34 @@ export const textTools = [
     async handler(args) {
       if (args.text !== undefined) {
         const text = validateString(args.text, 'text', true);
-        const script = `
-          tell application "Microsoft Word"
-            if (count of documents) = 0 then
-              return "No document is open"
-            end if
-            try
-              set findObject to find object of selection
-            on error
-              return "Cannot access find object. Make sure a document is active."
-            end try
-            clear formatting findObject
-            set content of findObject to ${escapeForWordFind(text)}
-            set content of replacement of findObject to ""
-            set findResult to execute find findObject replace replace all
-            if findResult then
-              return "Text deleted successfully"
-            else
-              return "Text not found, nothing deleted"
-            end if
-          end tell
-        `;
-        return await runAppleScript(script);
-      } else {
-        const script = `
-          tell application "Microsoft Word"
-            if (count of documents) = 0 then
-              return "No document is open"
-            end if
-            try
-              delete (text object of selection)
-            on error
-              return "No text selected to delete"
-            end try
-            return "Selected text deleted"
-          end tell
-        `;
+        const script = wrapWordScript(`
+try
+  set findObject to find object of selection
+on error
+  return "Cannot access find object. Make sure a document is active."
+end try
+clear formatting findObject
+set content of findObject to ${escapeForWordFind(text)}
+set content of replacement of findObject to ""
+set findResult to execute find findObject replace replace all
+if findResult then
+  return "Text deleted successfully"
+else
+  return "Text not found, nothing deleted"
+end if
+`);
         return await runAppleScript(script);
       }
+
+      const script = wrapWordScript(`
+try
+  delete (text object of selection)
+on error
+  return "No text selected to delete"
+end try
+return "Selected text deleted"
+`);
+      return await runAppleScript(script);
     }
   },
 
@@ -181,7 +162,7 @@ export const textTools = [
       const font = args.font ? validateString(args.font, 'font', false) : undefined;
       const size = args.size !== undefined ? validateNumber(args.size, 'size', 1, 1000) : undefined;
 
-      let formatCommands = [];
+      const formatCommands = [];
       if (bold !== undefined) {
         formatCommands.push(`set bold of font object of selection to ${bold}`);
       }
@@ -202,21 +183,17 @@ export const textTools = [
         throw new Error('At least one formatting option is required');
       }
 
-      const script = `
-        tell application "Microsoft Word"
-          if (count of documents) = 0 then
-            return "No document is open"
-          end if
-          try
-            ${formatCommands.join('\n            ')}
-          on error errMsg
-            return "Error applying formatting: " & errMsg
-          end try
-          return "Formatting applied successfully"
-        end tell
-      `;
+      const script = wrapWordScript(`
+try
+${formatCommands.join('\n')}
+on error errMsg
+  return "Error applying formatting: " & errMsg
+end try
+return "Formatting applied successfully"
+`);
 
       return await runAppleScript(script);
     }
   }
 ];
+

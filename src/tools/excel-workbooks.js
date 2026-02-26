@@ -1,5 +1,6 @@
 import { validateString, validateBoolean } from '../lib/validators.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
+import { wrapExcelScript } from '../lib/applescript/script-wrappers.js';
 
 export const excelWorkbookTools = [
   {
@@ -11,13 +12,14 @@ export const excelWorkbookTools = [
       properties: {}
     },
     async handler() {
-      const script = `
-        tell application "Microsoft Excel"
-          activate
-          make new workbook
-          return "New workbook created successfully"
-        end tell
-      `;
+      const script = wrapExcelScript(
+        `
+activate
+make new workbook
+return "New workbook created successfully"
+`,
+        { requireWorkbook: false }
+      );
       return await runAppleScript(script);
     }
   },
@@ -38,13 +40,14 @@ export const excelWorkbookTools = [
     },
     async handler(args) {
       const path = validateString(args.path, 'path', true);
-      const script = `
-        tell application "Microsoft Excel"
-          activate
-          open workbook workbook file name ${JSON.stringify(path)}
-          return "Workbook opened successfully"
-        end tell
-      `;
+      const script = wrapExcelScript(
+        `
+activate
+open workbook workbook file name ${JSON.stringify(path)}
+return "Workbook opened successfully"
+`,
+        { requireWorkbook: false }
+      );
       return await runAppleScript(script);
     }
   },
@@ -58,18 +61,16 @@ export const excelWorkbookTools = [
       properties: {}
     },
     async handler() {
-      const script = `
-        tell application "Microsoft Excel"
-          if (count of workbooks) = 0 then
-            return "No workbook is open"
-          end if
-          set wb to active workbook
-          set wbName to name of wb
-          set wbPath to full name of wb
-          set sheetCount to count of worksheets of wb
-          return "Name: " & wbName & linefeed & "Path: " & wbPath & linefeed & "Sheets: " & sheetCount
-        end tell
-      `;
+      const script = wrapExcelScript(
+        `
+set wb to active workbook
+set wbName to name of wb
+set wbPath to full name of wb
+set sheetCount to count of worksheets of wb
+return "Name: " & wbName & linefeed & "Path: " & wbPath & linefeed & "Sheets: " & sheetCount
+`,
+        { setActiveWorkbook: false }
+      );
       return await runAppleScript(script);
     }
   },
@@ -90,33 +91,23 @@ export const excelWorkbookTools = [
     async handler(args) {
       const path = args.path ? validateString(args.path, 'path', false) : undefined;
       const script = path
-        ? `
-          tell application "Microsoft Excel"
-            if (count of workbooks) = 0 then
-              return "No workbook is open"
-            end if
-            set wb to active workbook
-            set display alerts to false
-            try
-              save workbook as wb filename ${JSON.stringify(path)}
-            on error errMsg
-              set display alerts to true
-              error errMsg
-            end try
-            set display alerts to true
-            return "Workbook saved as " & ${JSON.stringify(path)}
-          end tell
-        `
-        : `
-          tell application "Microsoft Excel"
-            if (count of workbooks) = 0 then
-              return "No workbook is open"
-            end if
-            set wb to active workbook
-            save wb
-            return "Workbook saved successfully"
-          end tell
-        `;
+        ? wrapExcelScript(`
+set wb to active workbook
+set display alerts to false
+try
+  save workbook as wb filename ${JSON.stringify(path)}
+on error errMsg
+  set display alerts to true
+  error errMsg
+end try
+set display alerts to true
+return "Workbook saved as " & ${JSON.stringify(path)}
+`)
+        : wrapExcelScript(`
+set wb to active workbook
+save wb
+return "Workbook saved successfully"
+`);
       return await runAppleScript(script);
     }
   },
@@ -137,16 +128,11 @@ export const excelWorkbookTools = [
     },
     async handler(args) {
       const save = validateBoolean(args.save, 'save', true);
-      const script = `
-        tell application "Microsoft Excel"
-          if (count of workbooks) = 0 then
-            return "No workbook is open"
-          end if
-          set wb to active workbook
-          close wb ${save ? 'saving yes' : 'saving no'}
-          return "Workbook closed successfully"
-        end tell
-      `;
+      const script = wrapExcelScript(`
+set wb to active workbook
+close wb ${save ? 'saving yes' : 'saving no'}
+return "Workbook closed successfully"
+`);
       return await runAppleScript(script);
     }
   },
@@ -160,23 +146,25 @@ export const excelWorkbookTools = [
       properties: {}
     },
     async handler() {
-      const script = `
-        tell application "Microsoft Excel"
-          set wbCount to count of workbooks
-          if wbCount = 0 then
-            return "No workbooks are open"
-          end if
-          set wbList to ""
-          repeat with i from 1 to wbCount
-            set wb to workbook i
-            set wbName to name of wb
-            set sheetCount to count of worksheets of wb
-            set wbList to wbList & i & ". " & wbName & " (" & sheetCount & " sheets)" & linefeed
-          end repeat
-          return wbList
-        end tell
-      `;
+      const script = wrapExcelScript(
+        `
+set wbCount to count of workbooks
+if wbCount = 0 then
+  return "No workbooks are open"
+end if
+set wbList to ""
+repeat with i from 1 to wbCount
+  set wb to workbook i
+  set wbName to name of wb
+  set sheetCount to count of worksheets of wb
+  set wbList to wbList & i & ". " & wbName & " (" & sheetCount & " sheets)" & linefeed
+end repeat
+return wbList
+`,
+        { requireWorkbook: false }
+      );
       return await runAppleScript(script);
     }
   }
 ];
+

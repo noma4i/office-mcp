@@ -5,15 +5,15 @@ export default {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   collectCoverageFrom: [
-    'server/**/*.js',
-    '!server/**/*.test.js',
+    'src/**/*.js',
+    '!src/index.js',
   ],
   coverageThreshold: {
     global: {
-      branches: 60,
-      functions: 60,
-      lines: 60,
-      statements: 60,
+      branches: 70,
+      functions: 80,
+      lines: 80,
+      statements: 80,
     },
   },
   testMatch: [

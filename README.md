@@ -1,138 +1,82 @@
-# Word MCP Server
+# Office MCP Server
 
-MCP server for controlling Microsoft Word via AppleScript on macOS.
+MCP-сервер для автоматизации Microsoft Word и Microsoft Excel через AppleScript на macOS.
 
-## Overview
+## Что поддерживается
 
-This MCP (Model Context Protocol) server provides Claude with the ability to interact with Microsoft Word on macOS through AppleScript automation. It enables document creation, editing, formatting, and management directly from Claude conversations.
+- 86 инструментов: 53 для Word и 33 для Excel
+- Операции с документами и книгами: create/open/save/close/export
+- Текст, таблицы, закладки, навигация, headers/footers, секции в Word
+- Листы, ячейки, формулы, форматирование, сортировка и экспорт CSV в Excel
+- Проверка AppleScript-синтаксиса тестами
 
-## Features
+## Требования
 
-- **34 tools** for comprehensive Word automation
-- **Document operations**: Create, open, save, close, export to PDF
-- **Text manipulation**: Insert, replace, format text with rich formatting options
-- **Navigation**: Move cursor, select text, jump to bookmarks
-- **Table management**: Create, modify, and query tables
-- **Bookmarks**: Create, navigate, and manage bookmarks
-- **Hyperlinks**: Create and list hyperlinks
-- **Paragraphs**: List, navigate, and style paragraphs
-- **AppleScript automation**: Direct control of Word through macOS
-- **macOS only**: Requires macOS and Microsoft Word
+- macOS
+- Microsoft Word и Microsoft Excel
+- Node.js >= 16
+- Yarn
 
-## Installation
+## Установка
 
 ```bash
-npm install
+yarn install
 ```
 
-### MCP Configuration
+## Запуск
 
-Add to your Claude Desktop configuration file:
+```bash
+yarn build
+yarn start
+```
 
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+Для разработки:
+
+```bash
+yarn build:watch
+```
+
+## MCP-конфигурация (Claude Desktop)
 
 ```json
 {
   "mcpServers": {
-    "word": {
+    "office": {
       "command": "node",
-      "args": ["/path/to/word_mcp/server/index.js"]
+      "args": ["/absolute/path/to/word_mcp/dist/index.js"]
     }
   }
 }
 ```
 
-## Tools
+## Формат ответов инструментов
 
-### Documents (7 tools)
-- `create_document` - Create new document with optional content
-- `open_document` - Open existing document
-- `get_document_text` - Retrieve all text from document
-- `get_document_info` - Get statistics (words, characters, pages)
-- `save_document` - Save document to specified path
-- `close_document` - Close document with optional save
-- `export_pdf` - Export document as PDF
+Каждый tool call возвращает JSON в `content[0].text`.
 
-### Text (3 tools)
-- `insert_text` - Insert text at cursor position
-- `replace_text` - Find and replace text
-- `format_text` - Apply formatting (bold, italic, underline, font, size)
+- Успех:
+  - `{"ok": true, "message": "...", "data": ...}`
+- Ошибка:
+  - `{"ok": false, "error": {"code": "...", "message": "...", "details": ...}}`
 
-### Navigation (5 tools)
-- `move_cursor_after_text` - Move cursor after found text
-- `goto_start` - Jump to document start
-- `goto_end` - Jump to document end
-- `get_selection_info` - Get selection position and length
-- `select_all` - Select entire document
+Примеры кодов ошибок: `NO_DOCUMENT_OPEN`, `NO_WORKBOOK_OPEN`, `NOT_FOUND`, `OUT_OF_RANGE`, `VALIDATION_ERROR`, `APPSCRIPT_ERROR`.
 
-### Tables (10 tools)
-- `list_tables` - List all tables with dimensions
-- `get_table_cell` - Get text from specific cell
-- `set_table_cell` - Set text in specific cell
-- `select_table_cell` - Move cursor to cell
-- `find_table_header` - Find column by header text
-- `create_table` - Create table at cursor
-- `add_table_row` - Add row to table
-- `delete_table_row` - Delete row from table
-- `add_table_column` - Add column to table
-- `delete_table_column` - Delete column from table
-
-### Bookmarks (4 tools)
-- `list_bookmarks` - List all bookmarks
-- `create_bookmark` - Create bookmark at selection
-- `goto_bookmark` - Navigate to bookmark
-- `delete_bookmark` - Delete bookmark
-
-### Hyperlinks (2 tools)
-- `list_hyperlinks` - List all hyperlinks
-- `create_hyperlink` - Create hyperlink at selection
-
-### Paragraphs (3 tools)
-- `list_paragraphs` - List paragraphs with styles
-- `goto_paragraph` - Navigate to paragraph by index
-- `set_paragraph_style` - Apply style to paragraph
-
-## Requirements
-
-- **macOS** (AppleScript only available on macOS)
-- **Microsoft Word** installed and accessible
-- **Node.js** >= 16.0.0
-
-## Indexing
-
-All indexes are **1-based** (tableIndex=1, row=1, column=1, index=1).
-
-## Testing
-
-The project includes comprehensive test coverage with Jest.
-
-### Running Tests
+## Тесты
 
 ```bash
-npm test              # Run all tests
-npm run test:watch    # Watch mode
-npm run test:coverage # With coverage report
+yarn test
+yarn test:coverage
 ```
 
-### Test Coverage
+## Сборка MCPB
 
-- **3 test suites** with **79 tests**
-- **738 lines** of test code
-- Tests cover:
-  - Input validation functions
-  - All 34 MCP tools
-  - Server configuration and integration
-  - Error handling scenarios
-  - AppleScript safety
+```bash
+yarn build && npx @anthropic-ai/mcpb pack . office-mcp.mcpb
+```
 
-## License
+## Структура
 
-MIT - see [LICENSE](LICENSE) file
+- `src/` — исходники сервера и инструментов
+- `dist/` — собранная копия `src/`
+- `tests/` — unit/integration/syntax-тесты
+- `manifest.json` — описание MCP-пакета
 
-## Credits
-
-**Current Maintainer**: [noma4i](https://github.com/noma4i)
-
-**Original Author**: [Anthropic](https://www.anthropic.com)
-
-This project is based on Anthropic's Word extension and has been modified and extended with additional features.

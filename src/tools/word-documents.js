@@ -1,6 +1,7 @@
 import { validateString, validateBoolean } from '../lib/validators.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
 import { toAppleScriptString } from '../lib/applescript/helpers.js';
+import { wrapWordScript } from '../lib/applescript/script-wrappers.js';
 
 export const documentTools = [
   {
@@ -19,24 +20,20 @@ export const documentTools = [
     async handler(args) {
       const content = validateString(args.content, 'content', false);
 
-      const script = content
+      const body = content
         ? `
-        tell application "Microsoft Word"
-          activate
-          set newDoc to make new document
-          tell newDoc
-            set content of text object to ${toAppleScriptString(content)}
-          end tell
-          return "New document created successfully"
-        end tell
-      `
+set newDoc to make new document
+tell newDoc
+  set content of text object to ${toAppleScriptString(content)}
+end tell
+return "New document created successfully"
+`
         : `
-        tell application "Microsoft Word"
-          activate
-          set newDoc to make new document
-          return "New document created successfully"
-        end tell
-      `;
+set newDoc to make new document
+return "New document created successfully"
+`;
+
+      const script = wrapWordScript(body, { activate: true, requireDocument: false });
 
       return await runAppleScript(script);
     }
@@ -59,13 +56,13 @@ export const documentTools = [
     async handler(args) {
       const path = validateString(args.path, 'path', true);
 
-      const script = `
-        tell application "Microsoft Word"
-          activate
-          open ${JSON.stringify(path)}
-          return "Document opened successfully"
-        end tell
-      `;
+      const script = wrapWordScript(
+        `
+open ${JSON.stringify(path)}
+return "Document opened successfully"
+`,
+        { activate: true, requireDocument: false }
+      );
 
       return await runAppleScript(script);
     }
@@ -80,15 +77,10 @@ export const documentTools = [
       properties: {}
     },
     async handler() {
-      const script = `
-        tell application "Microsoft Word"
-          if (count of documents) = 0 then
-            return "No document is open"
-          end if
-          set activeDoc to active document
-          return content of text object of activeDoc as string
-        end tell
-      `;
+      const script = wrapWordScript(`
+set activeDoc to active document
+return content of text object of activeDoc as string
+`);
 
       return await runAppleScript(script);
     }
@@ -103,20 +95,15 @@ export const documentTools = [
       properties: {}
     },
     async handler() {
-      const script = `
-        tell application "Microsoft Word"
-          if (count of documents) = 0 then
-            return "No document is open"
-          end if
-          set d to active document
-          set wordCount to compute statistics d statistic statistic words
-          set charCount to compute statistics d statistic statistic characters
-          set charWithSpaces to compute statistics d statistic statistic characters with spaces
-          set paraCount to compute statistics d statistic statistic paragraphs
-          set pageCount to compute statistics d statistic statistic pages
-          return "Words: " & wordCount & linefeed & "Characters: " & charCount & linefeed & "Characters (with spaces): " & charWithSpaces & linefeed & "Paragraphs: " & paraCount & linefeed & "Pages: " & pageCount
-        end tell
-      `;
+      const script = wrapWordScript(`
+set d to active document
+set wordCount to compute statistics d statistic statistic words
+set charCount to compute statistics d statistic statistic characters
+set charWithSpaces to compute statistics d statistic statistic characters with spaces
+set paraCount to compute statistics d statistic statistic paragraphs
+set pageCount to compute statistics d statistic statistic pages
+return "Words: " & wordCount & linefeed & "Characters: " & charCount & linefeed & "Characters (with spaces): " & charWithSpaces & linefeed & "Paragraphs: " & paraCount & linefeed & "Pages: " & pageCount
+`);
 
       return await runAppleScript(script);
     }
@@ -139,26 +126,16 @@ export const documentTools = [
       const path = args.path ? validateString(args.path, 'path', false) : undefined;
 
       const script = path
-        ? `
-          tell application "Microsoft Word"
-            if (count of documents) = 0 then
-              return "No document is open"
-            end if
-            set activeDoc to active document
-            save as activeDoc file name ${JSON.stringify(path)}
-            return "Document saved as " & ${JSON.stringify(path)}
-          end tell
-        `
-        : `
-          tell application "Microsoft Word"
-            if (count of documents) = 0 then
-              return "No document is open"
-            end if
-            set activeDoc to active document
-            save activeDoc
-            return "Document saved successfully"
-          end tell
-        `;
+        ? wrapWordScript(`
+set activeDoc to active document
+save as activeDoc file name ${JSON.stringify(path)}
+return "Document saved as " & ${JSON.stringify(path)}
+`)
+        : wrapWordScript(`
+set activeDoc to active document
+save activeDoc
+return "Document saved successfully"
+`);
 
       return await runAppleScript(script);
     }
@@ -181,16 +158,11 @@ export const documentTools = [
     async handler(args) {
       const save = validateBoolean(args.save, 'save', true);
 
-      const script = `
-        tell application "Microsoft Word"
-          if (count of documents) = 0 then
-            return "No document is open"
-          end if
-          set activeDoc to active document
-          close activeDoc ${save ? 'saving yes' : 'saving no'}
-          return "Document closed successfully"
-        end tell
-      `;
+      const script = wrapWordScript(`
+set activeDoc to active document
+close activeDoc ${save ? 'saving yes' : 'saving no'}
+return "Document closed successfully"
+`);
 
       return await runAppleScript(script);
     }
@@ -213,16 +185,11 @@ export const documentTools = [
     async handler(args) {
       const path = validateString(args.path, 'path', true);
 
-      const script = `
-        tell application "Microsoft Word"
-          if (count of documents) = 0 then
-            return "No document is open"
-          end if
-          set activeDoc to active document
-          save as activeDoc file name ${JSON.stringify(path)} file format format PDF
-          return "Document exported as PDF to " & ${JSON.stringify(path)}
-        end tell
-      `;
+      const script = wrapWordScript(`
+set activeDoc to active document
+save as activeDoc file name ${JSON.stringify(path)} file format format PDF
+return "Document exported as PDF to " & ${JSON.stringify(path)}
+`);
 
       return await runAppleScript(script);
     }

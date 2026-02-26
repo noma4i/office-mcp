@@ -1,4 +1,4 @@
-import { copyFileSync, mkdirSync, readdirSync, statSync, rmSync } from 'fs';
+import { copyFileSync, mkdirSync, readdirSync, statSync, rmSync, watch } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -21,7 +21,29 @@ function copyRecursive(src, dest) {
   }
 }
 
-console.log('Building...');
-rmSync(distDir, { recursive: true, force: true });
-copyRecursive(srcDir, distDir);
-console.log('Build complete!');
+function build() {
+  console.log('Building...');
+  rmSync(distDir, { recursive: true, force: true });
+  copyRecursive(srcDir, distDir);
+  console.log('Build complete!');
+}
+
+const isWatchMode = process.argv.includes('--watch');
+
+build();
+
+if (isWatchMode) {
+  let buildTimer;
+  console.log('Watching for changes in src/ ...');
+  watch(srcDir, { recursive: true }, (_eventType, filename) => {
+    if (!filename) return;
+    clearTimeout(buildTimer);
+    buildTimer = setTimeout(() => {
+      try {
+        build();
+      } catch (error) {
+        console.error('Build failed:', error);
+      }
+    }, 100);
+  });
+}

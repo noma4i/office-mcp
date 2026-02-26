@@ -38,6 +38,19 @@ export const ALL_TOOLS = [
   ...excelDataTools
 ];
 
+export function buildToolMap(tools) {
+  const map = new Map();
+  for (const tool of tools) {
+    if (map.has(tool.name)) {
+      throw new Error(`Duplicate tool registration: ${tool.name}`);
+    }
+    map.set(tool.name, tool);
+  }
+  return map;
+}
+
+const TOOL_MAP = buildToolMap(ALL_TOOLS);
+
 export function getToolDefinitions() {
   return ALL_TOOLS.map(tool => ({
     name: tool.name,
@@ -48,7 +61,7 @@ export function getToolDefinitions() {
 }
 
 export function getToolHandler(toolName) {
-  const tool = ALL_TOOLS.find(t => t.name === toolName);
+  const tool = TOOL_MAP.get(toolName);
   if (!tool) {
     throw new Error(`Unknown tool: ${toolName}`);
   }

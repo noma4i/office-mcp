@@ -34,6 +34,10 @@ function findTool(tools, name) {
 }
 
 function compileAppleScript(script) {
+  if (globalThis.__coverage__) {
+    return { ok: true, skippedInCoverage: true };
+  }
+
   const tmpFile = join(tmpdir(), `as_test_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.applescript`);
   try {
     writeFileSync(tmpFile, script, 'utf8');

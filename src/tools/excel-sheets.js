@@ -1,6 +1,7 @@
 import { validateString, validateInteger } from '../lib/validators.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
 import { quoteAppleScriptString } from '../lib/applescript/helpers.js';
+import { wrapExcelScript } from '../lib/applescript/script-wrappers.js';
 
 function resolveSheet(nameOrIndex) {
   if (typeof nameOrIndex === 'number' || (typeof nameOrIndex === 'string' && /^\d+$/.test(nameOrIndex))) {
@@ -20,25 +21,22 @@ export const excelSheetTools = [
       properties: {}
     },
     async handler() {
-      const script = `
-        tell application "Microsoft Excel"
-          if (count of workbooks) = 0 then
-            return "No workbook is open"
-          end if
-          set wb to active workbook
-          set sheetCount to count of worksheets of wb
-          if sheetCount = 0 then
-            return "No worksheets found"
-          end if
-          set sheetList to ""
-          repeat with i from 1 to sheetCount
-            set ws to worksheet i of wb
-            set wsName to name of ws
-            set sheetList to sheetList & i & ". " & wsName & linefeed
-          end repeat
-          return sheetList
-        end tell
-      `;
+      const script = wrapExcelScript(
+        `
+set wb to active workbook
+set sheetCount to count of worksheets of wb
+if sheetCount = 0 then
+  return "No worksheets found"
+end if
+set sheetList to ""
+repeat with i from 1 to sheetCount
+  set ws to worksheet i of wb
+  set wsName to name of ws
+  set sheetList to sheetList & i & ". " & wsName & linefeed
+end repeat
+return sheetList
+`
+      );
       return await runAppleScript(script);
     }
   },
@@ -69,18 +67,12 @@ export const excelSheetTools = [
         makeCmd = `make new worksheet at after worksheet ${afterIndex} of wb`;
       }
 
-      const nameCmd = name ? `\n          set name of newSheet to ${quoteAppleScriptString(name)}` : '';
-
-      const script = `
-        tell application "Microsoft Excel"
-          if (count of workbooks) = 0 then
-            return "No workbook is open"
-          end if
-          set wb to active workbook
-          set newSheet to ${makeCmd}${nameCmd}
-          return "Sheet created: " & name of newSheet
-        end tell
-      `;
+      const nameCmd = name ? `\nset name of newSheet to ${quoteAppleScriptString(name)}` : '';
+      const script = wrapExcelScript(`
+set wb to active workbook
+set newSheet to ${makeCmd}${nameCmd}
+return "Sheet created: " & name of newSheet
+`);
       return await runAppleScript(script);
     }
   },
@@ -104,23 +96,18 @@ export const excelSheetTools = [
         throw new Error('nameOrIndex is required');
       }
       const sheetRef = resolveSheet(args.nameOrIndex);
-      const script = `
-        tell application "Microsoft Excel"
-          if (count of workbooks) = 0 then
-            return "No workbook is open"
-          end if
-          set wb to active workbook
-          set display alerts to false
-          try
-            delete ${sheetRef}
-          on error errMsg
-            set display alerts to true
-            error errMsg
-          end try
-          set display alerts to true
-          return "Sheet deleted successfully"
-        end tell
-      `;
+      const script = wrapExcelScript(`
+set wb to active workbook
+set display alerts to false
+try
+  delete ${sheetRef}
+on error errMsg
+  set display alerts to true
+  error errMsg
+end try
+set display alerts to true
+return "Sheet deleted successfully"
+`);
       return await runAppleScript(script);
     }
   },
@@ -149,21 +136,16 @@ export const excelSheetTools = [
       }
       const newName = validateString(args.newName, 'newName', true);
       const sheetRef = resolveSheet(args.nameOrIndex);
-      const script = `
-        tell application "Microsoft Excel"
-          if (count of workbooks) = 0 then
-            return "No workbook is open"
-          end if
-          set wb to active workbook
-          try
-            set ws to ${sheetRef}
-          on error
-            return "Sheet not found"
-          end try
-          set name of ws to ${quoteAppleScriptString(newName)}
-          return "Sheet renamed to " & ${quoteAppleScriptString(newName)}
-        end tell
-      `;
+      const script = wrapExcelScript(`
+set wb to active workbook
+try
+  set ws to ${sheetRef}
+on error
+  return "Sheet not found"
+end try
+set name of ws to ${quoteAppleScriptString(newName)}
+return "Sheet renamed to " & ${quoteAppleScriptString(newName)}
+`);
       return await runAppleScript(script);
     }
   },
@@ -187,21 +169,16 @@ export const excelSheetTools = [
         throw new Error('nameOrIndex is required');
       }
       const sheetRef = resolveSheet(args.nameOrIndex);
-      const script = `
-        tell application "Microsoft Excel"
-          if (count of workbooks) = 0 then
-            return "No workbook is open"
-          end if
-          set wb to active workbook
-          try
-            set ws to ${sheetRef}
-          on error
-            return "Sheet not found"
-          end try
-          activate object ws
-          return "Activated sheet: " & name of ws
-        end tell
-      `;
+      const script = wrapExcelScript(`
+set wb to active workbook
+try
+  set ws to ${sheetRef}
+on error
+  return "Sheet not found"
+end try
+activate object ws
+return "Activated sheet: " & name of ws
+`);
       return await runAppleScript(script);
     }
   },
@@ -221,26 +198,22 @@ export const excelSheetTools = [
     },
     async handler(args) {
       const sheetCmd = args.nameOrIndex !== undefined && args.nameOrIndex !== null ? `set ws to ${resolveSheet(args.nameOrIndex)}` : 'set ws to active sheet';
-      const script = `
-        tell application "Microsoft Excel"
-          if (count of workbooks) = 0 then
-            return "No workbook is open"
-          end if
-          set wb to active workbook
-          try
-            ${sheetCmd}
-          on error
-            return "Sheet not found"
-          end try
-          set wsName to name of ws
-          set ur to used range of ws
-          set addr to get address of ur
-          set rc to count of rows of ur
-          set cc to count of columns of ur
-          return "Sheet: " & wsName & linefeed & "Used range: " & addr & linefeed & "Rows: " & rc & linefeed & "Columns: " & cc
-        end tell
-      `;
+      const script = wrapExcelScript(`
+set wb to active workbook
+try
+  ${sheetCmd}
+on error
+  return "Sheet not found"
+end try
+set wsName to name of ws
+set ur to used range of ws
+set addr to get address of ur
+set rc to count of rows of ur
+set cc to count of columns of ur
+return "Sheet: " & wsName & linefeed & "Used range: " & addr & linefeed & "Rows: " & rc & linefeed & "Columns: " & cc
+`);
       return await runAppleScript(script);
     }
   }
 ];
+
