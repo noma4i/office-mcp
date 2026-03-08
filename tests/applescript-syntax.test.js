@@ -1,8 +1,5 @@
 import { describe, test, expect, jest } from '@jest/globals';
-import { execSync } from 'child_process';
-import { writeFileSync, unlinkSync } from 'fs';
-import { tmpdir } from 'os';
-import { join } from 'path';
+import { compileAppleScript } from './helpers/applescript-compile.js';
 
 let capturedScripts = {};
 
@@ -31,28 +28,6 @@ const { excelCellTools } = await import('../src/tools/excel-cells.js');
 
 function findTool(tools, name) {
   return tools.find(t => t.name === name);
-}
-
-function compileAppleScript(script) {
-  if (globalThis.__coverage__) {
-    return { ok: true, skippedInCoverage: true };
-  }
-
-  const tmpFile = join(tmpdir(), `as_test_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.applescript`);
-  try {
-    writeFileSync(tmpFile, script, 'utf8');
-    execSync(`osacompile -o /dev/null ${tmpFile}`, {
-      timeout: 10000,
-      stdio: ['pipe', 'pipe', 'pipe']
-    });
-    return { ok: true };
-  } catch (err) {
-    return { ok: false, error: err.stderr?.toString() || err.message };
-  } finally {
-    try {
-      unlinkSync(tmpFile);
-    } catch {}
-  }
 }
 
 async function captureScript(tool, args = {}) {

@@ -65,7 +65,10 @@ yarn build:watch
 ```bash
 yarn test
 yarn test:coverage
+yarn test:applescript:strict
 ```
+
+`test:applescript:strict` запускает строгую компиляцию AppleScript через `osacompile`.
 
 ## Сборка MCPB
 
@@ -79,4 +82,3 @@ yarn build && npx @anthropic-ai/mcpb pack . office-mcp.mcpb
 - `dist/` — собранная копия `src/`
 - `tests/` — unit/integration/syntax-тесты
 - `manifest.json` — описание MCP-пакета
-

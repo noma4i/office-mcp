@@ -13,6 +13,7 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules yarn jest",
     "test:watch": "NODE_OPTIONS=--experimental-vm-modules yarn jest --watch",
     "test:coverage": "NODE_OPTIONS=--experimental-vm-modules yarn jest --coverage --watchman=false",
+    "test:applescript:strict": "APPLE_SCRIPT_STRICT_COMPILE=1 NODE_OPTIONS=--experimental-vm-modules yarn jest tests/applescript-syntax.test.js tests/excel-applescript-syntax.test.js --watchman=false",
     "clean": "rm -rf dist"
   },
   "files": [
