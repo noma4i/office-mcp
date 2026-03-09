@@ -1,11 +1,11 @@
 const ERROR_PATTERNS = [
   { code: 'NO_DOCUMENT_OPEN', pattern: /^No document is open$/i },
   { code: 'NO_WORKBOOK_OPEN', pattern: /^No workbook is open$/i },
-  { code: 'NOT_FOUND', pattern: /\bnot found\b/i },
-  { code: 'OUT_OF_RANGE', pattern: /\bout of range\b/i },
-  { code: 'VALIDATION_ERROR', pattern: /\b(is required|must be|cannot be)\b/i },
+  { code: 'NOT_FOUND', pattern: /^(Not found|Text not found\b.*|Bookmark\b.*\bnot found\b.*|Header\b.*\bnot found\b.*|Footer\b.*\bnot found\b.*|Style\b.*\bnot found\b.*|Sheet\b.*\bnot found\b.*|Cell\b.*\bnot found\b.*|Row\b.*\bnot found\b.*|Column\b.*\bnot found\b.*|Paragraph\b.*\bnot found\b.*|Shape\b.*\bnot found\b.*)$/i },
+  { code: 'OUT_OF_RANGE', pattern: /^[A-Z][A-Za-z ]*\bout of range\b.*$/i },
+  { code: 'VALIDATION_ERROR', pattern: /^.*\b(is required|must be|cannot be)\b.*$/i },
   { code: 'APPSCRIPT_ERROR', pattern: /^AppleScript error:/i },
-  { code: 'OPERATION_ERROR', pattern: /^(Error|Cannot)\b/i }
+  { code: 'OPERATION_ERROR', pattern: /^(Error\b.*|Cannot\b.*)$/i }
 ];
 
 export class ToolError extends Error {
@@ -32,4 +32,3 @@ export function isLikelyErrorMessage(value) {
   }
   return ERROR_PATTERNS.some(rule => rule.pattern.test(value));
 }
-

@@ -7,7 +7,7 @@ const execFileAsync = promisify(execFile);
 export async function runAppleScript(script) {
   try {
     const { stdout } = await execFileAsync('osascript', ['-e', script], { timeout: 30000 });
-    return stdout.trim();
+    return stdout;
   } catch (error) {
     throw new Error(`AppleScript error: ${getErrorMessage(error)}`);
   }

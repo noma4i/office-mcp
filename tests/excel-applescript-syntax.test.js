@@ -73,6 +73,10 @@ describe('Excel AppleScript Syntax Verification', () => {
       expect(script).toContain('set display alerts to true');
     });
 
+    test('excel_save_workbook rejects empty path', async () => {
+      await expect(findTool(excelWorkbookTools, 'excel_save_workbook').handler({ path: '' })).rejects.toThrow('path cannot be empty');
+    });
+
     test('excel_close_workbook compiles', async () => {
       const script = await captureScript(findTool(excelWorkbookTools, 'excel_close_workbook'), {});
       const result = compileAppleScript(script);
@@ -104,6 +108,14 @@ describe('Excel AppleScript Syntax Verification', () => {
       const script = await captureScript(findTool(excelSheetTools, 'excel_create_sheet'), { name: 'DataSheet' });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
+    });
+
+    test('excel_create_sheet uses dedicated after syntax', async () => {
+      const script = await captureScript(findTool(excelSheetTools, 'excel_create_sheet'), { afterIndex: 1 });
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+      expect(script).toContain('make new worksheet after worksheet 1 of wb');
+      expect(script).not.toContain('make new worksheet at after');
     });
 
     test('excel_delete_sheet compiles (by index)', async () => {
@@ -157,6 +169,12 @@ describe('Excel AppleScript Syntax Verification', () => {
       expect(script).toContain('try');
       expect(script).toContain('on error');
       expect(script).toContain('Sheet not found');
+    });
+
+    test('excel_activate_sheet keeps numeric string as sheet name', async () => {
+      const script = await captureScript(findTool(excelSheetTools, 'excel_activate_sheet'), { nameOrIndex: '2024' });
+      expect(script).toContain('worksheet "2024" of wb');
+      expect(script).not.toContain('worksheet 2024 of wb');
     });
   });
 
@@ -234,6 +252,12 @@ describe('Excel AppleScript Syntax Verification', () => {
       expect(script).toContain('he said \\"hello\\"');
     });
 
+    test('excel_find_cell validates optional range before script generation', async () => {
+      await expect(findTool(excelCellTools, 'excel_find_cell').handler({ searchText: 'x', range: 'bad range' })).rejects.toThrow(
+        'range must be a valid Excel range reference'
+      );
+    });
+
     test('excel_get_cell has error handling', async () => {
       const script = await captureScript(findTool(excelCellTools, 'excel_get_cell'), { cell: 'A1' });
       expect(script).toContain('try');
@@ -251,6 +275,12 @@ describe('Excel AppleScript Syntax Verification', () => {
       const script = await captureScript(findTool(excelCellTools, 'excel_set_cell_formula'), { cell: 'A1', formula: '=IF(A1="yes","da","net")' });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
+    });
+
+    test('excel_get_cell rejects invalid cell reference', async () => {
+      await expect(findTool(excelCellTools, 'excel_get_cell').handler({ cell: 'A0' })).rejects.toThrow(
+        'cell must be a valid A1 cell reference'
+      );
     });
   });
 
@@ -285,6 +315,12 @@ describe('Excel AppleScript Syntax Verification', () => {
     test('excel_format_cells rejects invalid fontColor', async () => {
       await expect(findTool(excelFormattingTools, 'excel_format_cells').handler({ range: 'A1', fontColor: [256, 0, 0] })).rejects.toThrow(
         'fontColor must be an array of 3 numbers [R,G,B] with values 0-255'
+      );
+    });
+
+    test('excel_format_cells rejects non-boolean bold', async () => {
+      await expect(findTool(excelFormattingTools, 'excel_format_cells').handler({ range: 'A1', bold: 'true' })).rejects.toThrow(
+        'bold must be a boolean'
       );
     });
 

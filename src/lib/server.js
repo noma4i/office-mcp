@@ -2,6 +2,7 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 
+import { ToolError } from './errors.js';
 import { getToolDefinitions, getToolHandler } from './tool-registry.js';
 import { executeTool } from './tool-executor.js';
 
@@ -28,8 +29,13 @@ export function createServer() {
     const toolName = request.params.name;
     const args = request.params.arguments || {};
 
-    const handler = getToolHandler(toolName);
     return await executeTool(toolName, args, async () => {
+      let handler;
+      try {
+        handler = getToolHandler(toolName);
+      } catch (error) {
+        throw new ToolError('UNKNOWN_TOOL', error instanceof Error ? error.message : String(error));
+      }
       return await handler(args);
     });
   });

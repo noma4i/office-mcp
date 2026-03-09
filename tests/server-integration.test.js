@@ -1,5 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { readFileSync } from 'fs';
+import { CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { createServer } from '../src/lib/server.js';
 import { executeTool } from '../src/lib/tool-executor.js';
 import { ALL_TOOLS } from '../src/lib/tool-registry.js';
@@ -50,12 +51,32 @@ describe('MCP Server Integration', () => {
   });
 
   test('executeTool treats known error-like messages as error payload', async () => {
-    const response = await executeTool('demo_tool', {}, async () => 'Text not found, no replacements made');
+    const response = await executeTool('demo_tool', {}, async () => {
+      throw new Error('Text not found, no replacements made');
+    });
     const payload = parsePayload(response);
 
     expect(response.isError).toBe(true);
     expect(payload.ok).toBe(false);
     expect(payload.error.code).toBe('NOT_FOUND');
     expect(payload.error.message).toContain('not found');
+  });
+
+  test('unknown tool is returned as JSON error envelope', async () => {
+    const server = createServer();
+    const handler = server._requestHandlers.get(CallToolRequestSchema.shape.method.value);
+    const response = await handler({
+      method: 'tools/call',
+      params: {
+        name: 'unknown_tool',
+        arguments: {}
+      }
+    });
+    const payload = parsePayload(response);
+
+    expect(response.isError).toBe(true);
+    expect(payload.ok).toBe(false);
+    expect(payload.error.code).toBe('UNKNOWN_TOOL');
+    expect(payload.error.message).toContain('Unknown tool');
   });
 });

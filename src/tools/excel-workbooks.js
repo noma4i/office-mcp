@@ -89,7 +89,7 @@ return "Name: " & wbName & linefeed & "Path: " & wbPath & linefeed & "Sheets: " 
       }
     },
     async handler(args) {
-      const path = args.path ? validateString(args.path, 'path', false) : undefined;
+      const path = args.path !== undefined ? validateString(args.path, 'path', true) : undefined;
       const script = path
         ? wrapExcelScript(`
 set wb to active workbook
@@ -167,4 +167,3 @@ return wbList
     }
   }
 ];
-

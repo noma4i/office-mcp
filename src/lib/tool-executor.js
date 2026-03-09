@@ -1,5 +1,5 @@
 import { getErrorMessage } from "./validators.js";
-import { inferErrorCode, isLikelyErrorMessage } from './errors.js';
+import { ToolError, inferErrorCode, isLikelyErrorMessage } from './errors.js';
 
 export async function executeTool(toolName, args, handler) {
   try {
@@ -36,6 +36,8 @@ export async function executeTool(toolName, args, handler) {
     };
   } catch (error) {
     const message = getErrorMessage(error);
+    const code = error instanceof ToolError && error.code ? error.code : inferErrorCode(message);
+    const details = error instanceof ToolError ? error.details : undefined;
     return {
       content: [
         {
@@ -43,8 +45,9 @@ export async function executeTool(toolName, args, handler) {
           text: JSON.stringify({
             ok: false,
             error: {
-              code: inferErrorCode(message),
-              message: `Failed to ${toolName}: ${message}`
+              code,
+              message: `Failed to ${toolName}: ${message}`,
+              details
             }
           })
         }

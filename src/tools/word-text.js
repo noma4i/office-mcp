@@ -59,6 +59,9 @@ return "Text inserted successfully"
       const all = validateBoolean(args.all, 'all', true);
 
       const script = wrapWordScript(`
+set activeDoc to active document
+select (text object of activeDoc)
+set selection end of selection to selection start of selection
 try
   set findObject to find object of selection
 on error
@@ -96,6 +99,9 @@ end if
       if (args.text !== undefined) {
         const text = validateString(args.text, 'text', true);
         const script = wrapWordScript(`
+set activeDoc to active document
+select (text object of activeDoc)
+set selection end of selection to selection start of selection
 try
   set findObject to find object of selection
 on error
@@ -196,4 +202,3 @@ return "Formatting applied successfully"
     }
   }
 ];
-

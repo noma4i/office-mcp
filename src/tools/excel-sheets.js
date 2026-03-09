@@ -4,9 +4,8 @@ import { quoteAppleScriptString } from '../lib/applescript/helpers.js';
 import { wrapExcelScript } from '../lib/applescript/script-wrappers.js';
 
 function resolveSheet(nameOrIndex) {
-  if (typeof nameOrIndex === 'number' || (typeof nameOrIndex === 'string' && /^\d+$/.test(nameOrIndex))) {
-    const idx = parseInt(nameOrIndex, 10);
-    return `worksheet ${idx} of wb`;
+  if (typeof nameOrIndex === 'number') {
+    return `worksheet ${nameOrIndex} of wb`;
   }
   return `worksheet ${quoteAppleScriptString(nameOrIndex)} of wb`;
 }
@@ -64,13 +63,17 @@ return sheetList
 
       let makeCmd = 'make new worksheet at end of wb';
       if (afterIndex !== undefined) {
-        makeCmd = `make new worksheet at after worksheet ${afterIndex} of wb`;
+        makeCmd = `make new worksheet after worksheet ${afterIndex} of wb`;
       }
 
       const nameCmd = name ? `\nset name of newSheet to ${quoteAppleScriptString(name)}` : '';
       const script = wrapExcelScript(`
 set wb to active workbook
-set newSheet to ${makeCmd}${nameCmd}
+try
+  set newSheet to ${makeCmd}${nameCmd}
+on error errMsg
+  return "Error creating sheet: " & errMsg
+end try
 return "Sheet created: " & name of newSheet
 `);
       return await runAppleScript(script);
@@ -216,4 +219,3 @@ return "Sheet: " & wsName & linefeed & "Used range: " & addr & linefeed & "Rows:
     }
   }
 ];
-

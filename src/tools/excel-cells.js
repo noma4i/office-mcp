@@ -1,4 +1,4 @@
-import { validateString } from '../lib/validators.js';
+import { validateExcelCellReference, validateExcelRangeReference, validateString } from '../lib/validators.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
 import { toAppleScriptString, quoteAppleScriptString } from '../lib/applescript/helpers.js';
 import { wrapExcelScript } from '../lib/applescript/script-wrappers.js';
@@ -19,7 +19,7 @@ export const excelCellTools = [
       required: ['cell']
     },
     async handler(args) {
-      const cell = validateString(args.cell, 'cell', true);
+      const cell = validateExcelCellReference(args.cell, 'cell');
       const script = wrapExcelScript(
         `
 try
@@ -57,7 +57,7 @@ return v as text
       required: ['cell', 'value']
     },
     async handler(args) {
-      const cell = validateString(args.cell, 'cell', true);
+      const cell = validateExcelCellReference(args.cell, 'cell');
       if (args.value === undefined || args.value === null) {
         throw new Error('value is required');
       }
@@ -92,7 +92,7 @@ return "Cell ${cell} set successfully"
       required: ['range']
     },
     async handler(args) {
-      const range = validateString(args.range, 'range', true);
+      const range = validateExcelRangeReference(args.range, 'range');
       const script = wrapExcelScript(
         `
 try
@@ -144,7 +144,7 @@ return output
       required: ['cell', 'formula']
     },
     async handler(args) {
-      const cell = validateString(args.cell, 'cell', true);
+      const cell = validateExcelCellReference(args.cell, 'cell');
       let formula = validateString(args.formula, 'formula', true);
       if (!formula.startsWith('=')) {
         formula = '=' + formula;
@@ -179,7 +179,7 @@ return "Formula set in " & ${JSON.stringify(cell)} & ": " & ${JSON.stringify(for
       required: ['range']
     },
     async handler(args) {
-      const range = validateString(args.range, 'range', true);
+      const range = validateExcelRangeReference(args.range, 'range');
       const script = wrapExcelScript(
         `
 try
@@ -238,12 +238,12 @@ return "Used range: " & addr & linefeed & "Rows: " & rc & linefeed & "Columns: "
     },
     async handler(args) {
       const searchText = validateString(args.searchText, 'searchText', true);
-      const range = validateString(args.range, 'range', false);
+      const range = args.range !== undefined ? validateExcelRangeReference(args.range, 'range') : undefined;
       const rangeRef = range ? `range ${JSON.stringify(range)} of ws` : 'used range of ws';
       const script = wrapExcelScript(
         `
-set searchRange to ${rangeRef}
 try
+  set searchRange to ${rangeRef}
   set foundCell to find searchRange what ${quoteAppleScriptString(searchText)}
 on error
   return "Not found"
@@ -258,4 +258,3 @@ return "Found at " & addr & ": " & (v as text)
     }
   }
 ];
-

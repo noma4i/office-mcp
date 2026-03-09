@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { executeTool } from '../src/lib/tool-executor.js';
-import { inferErrorCode, isLikelyErrorMessage } from '../src/lib/errors.js';
+import { ToolError, inferErrorCode, isLikelyErrorMessage } from '../src/lib/errors.js';
 
 function parseResult(response) {
   return JSON.parse(response.content[0].text);
@@ -36,11 +36,22 @@ describe('Tool Executor', () => {
     expect(payload.error.code).toBe('VALIDATION_ERROR');
   });
 
-  test('returns error payload when handler resolves to error-like text', async () => {
-    const response = await executeTool('demo_tool', {}, async () => 'No workbook is open');
+  test('keeps success payload for arbitrary string content', async () => {
+    const response = await executeTool('demo_tool', {}, async () => 'This document says: Text not found...');
+    const payload = parseResult(response);
+    expect(response.isError).toBeUndefined();
+    expect(payload.ok).toBe(true);
+    expect(payload.message).toBe('This document says: Text not found...');
+  });
+
+  test('serializes ToolError code and details', async () => {
+    const response = await executeTool('demo_tool', {}, async () => {
+      throw new ToolError('NOT_FOUND', 'Bookmark not found', { bookmark: 'intro' });
+    });
     const payload = parseResult(response);
     expect(response.isError).toBe(true);
     expect(payload.ok).toBe(false);
-    expect(payload.error.code).toBe('NO_WORKBOOK_OPEN');
+    expect(payload.error.code).toBe('NOT_FOUND');
+    expect(payload.error.details).toEqual({ bookmark: 'intro' });
   });
 });

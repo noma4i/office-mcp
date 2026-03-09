@@ -54,11 +54,12 @@ yarn build:watch
 Каждый tool call возвращает JSON в `content[0].text`.
 
 - Успех:
-  - `{"ok": true, "message": "...", "data": ...}`
+  - `{"ok": true, "message": "..."}` для строковых результатов
+  - `{"ok": true, "message": "Operation completed successfully", "data": {...}}` для нестроковых результатов
 - Ошибка:
   - `{"ok": false, "error": {"code": "...", "message": "...", "details": ...}}`
 
-Примеры кодов ошибок: `NO_DOCUMENT_OPEN`, `NO_WORKBOOK_OPEN`, `NOT_FOUND`, `OUT_OF_RANGE`, `VALIDATION_ERROR`, `APPSCRIPT_ERROR`.
+Примеры кодов ошибок: `NO_DOCUMENT_OPEN`, `NO_WORKBOOK_OPEN`, `NOT_FOUND`, `OUT_OF_RANGE`, `VALIDATION_ERROR`, `APPSCRIPT_ERROR`, `UNKNOWN_TOOL`.
 
 ## Тесты
 

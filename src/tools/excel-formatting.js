@@ -1,4 +1,4 @@
-import { validateString, validateNumber } from '../lib/validators.js';
+import { validateBoolean, validateExcelRangeReference, validateNumber, validateString } from '../lib/validators.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
 import { wrapExcelScript } from '../lib/applescript/script-wrappers.js';
 
@@ -24,10 +24,10 @@ export const excelFormattingTools = [
       required: ['range']
     },
     async handler(args) {
-      const range = validateString(args.range, 'range', true);
+      const range = validateExcelRangeReference(args.range, 'range');
       const formatCmds = [];
-      if (args.bold !== undefined) formatCmds.push(`set bold of font object of r to ${args.bold}`);
-      if (args.italic !== undefined) formatCmds.push(`set italic of font object of r to ${args.italic}`);
+      if (args.bold !== undefined) formatCmds.push(`set bold of font object of r to ${validateBoolean(args.bold, 'bold')}`);
+      if (args.italic !== undefined) formatCmds.push(`set italic of font object of r to ${validateBoolean(args.italic, 'italic')}`);
       if (args.font) formatCmds.push(`set name of font object of r to ${JSON.stringify(args.font)}`);
       if (args.size !== undefined) {
         const size = validateNumber(args.size, 'size', 1, 409);
@@ -71,7 +71,7 @@ return "Formatting applied to ${range}"
       required: ['range', 'format']
     },
     async handler(args) {
-      const range = validateString(args.range, 'range', true);
+      const range = validateExcelRangeReference(args.range, 'range');
       const format = validateString(args.format, 'format', true);
       const script = wrapExcelScript(`
 set ws to active sheet
@@ -98,7 +98,7 @@ return "Number format set for " & ${JSON.stringify(range)} & ": " & ${JSON.strin
       required: ['range', 'color']
     },
     async handler(args) {
-      const range = validateString(args.range, 'range', true);
+      const range = validateExcelRangeReference(args.range, 'range');
       if (!args.color || !Array.isArray(args.color) || args.color.length !== 3 || !args.color.every(v => typeof v === 'number' && v >= 0 && v <= 255)) {
         throw new Error('color must be an array of 3 numbers [R,G,B] with values 0-255');
       }
@@ -124,7 +124,7 @@ return "Background color set for ${range}"
       required: ['range']
     },
     async handler(args) {
-      const range = validateString(args.range, 'range', true);
+      const range = validateExcelRangeReference(args.range, 'range');
       const script = wrapExcelScript(`
 set ws to active sheet
 try
@@ -147,7 +147,7 @@ return "Cells merged: ${range}"
       required: ['range']
     },
     async handler(args) {
-      const range = validateString(args.range, 'range', true);
+      const range = validateExcelRangeReference(args.range, 'range');
       const script = wrapExcelScript(`
 set ws to active sheet
 try
@@ -162,4 +162,3 @@ return "Columns auto-fitted for ${range}"
     }
   }
 ];
-

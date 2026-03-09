@@ -1,4 +1,4 @@
-import { validateString, validateBoolean } from '../lib/validators.js';
+import { validateBoolean, validateExcelCellReference, validateExcelRangeReference, validateString } from '../lib/validators.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
 import { wrapExcelScript } from '../lib/applescript/script-wrappers.js';
 
@@ -18,8 +18,8 @@ export const excelDataTools = [
       required: ['range', 'keyCell']
     },
     async handler(args) {
-      const range = validateString(args.range, 'range', true);
-      const keyCell = validateString(args.keyCell, 'keyCell', true);
+      const range = validateExcelRangeReference(args.range, 'range');
+      const keyCell = validateExcelCellReference(args.keyCell, 'keyCell');
       const ascending = validateBoolean(args.ascending, 'ascending', true);
       const hasHeader = validateBoolean(args.hasHeader, 'hasHeader', true);
       const orderStr = ascending ? 'sort ascending' : 'sort descending';
@@ -77,4 +77,3 @@ return "Exported as CSV to " & ${JSON.stringify(path)}
     }
   }
 ];
-

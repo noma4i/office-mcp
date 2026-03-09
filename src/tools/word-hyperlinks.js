@@ -46,16 +46,26 @@ return linkList
     },
     async handler(args) {
       const url = validateString(args.url, 'url', true);
-      const displayText = validateString(args.displayText, 'displayText', false);
-      const props = displayText
-        ? `{|hyperlink address|:${quoteAppleScriptString(url)}, |text to display|:${quoteAppleScriptString(displayText)}, |text object|:theRange}`
-        : `{|hyperlink address|:${quoteAppleScriptString(url)}, |text object|:theRange}`;
+      const displayText = args.displayText !== undefined ? validateString(args.displayText, 'displayText', true) : undefined;
+      const explicitDisplayText = displayText ? quoteAppleScriptString(displayText) : null;
+      const fallbackDisplayText = quoteAppleScriptString(displayText || url);
       const script = wrapWordScript(`
 set theRange to text object of selection
+set hasSelection to ((selection start of selection) is not equal to (selection end of selection))
 try
-  tell selection
-    make new hyperlink object at end with properties ${props}
-  end tell
+  if ${explicitDisplayText ? 'true' : 'false'} then
+    tell selection
+      make new hyperlink object at end with properties {|hyperlink address|:${quoteAppleScriptString(url)}, |text to display|:${explicitDisplayText || fallbackDisplayText}, |text object|:theRange}
+    end tell
+  else if hasSelection then
+    tell selection
+      make new hyperlink object at end with properties {|hyperlink address|:${quoteAppleScriptString(url)}, |text object|:theRange}
+    end tell
+  else
+    tell selection
+      make new hyperlink object at end with properties {|hyperlink address|:${quoteAppleScriptString(url)}, |text to display|:${fallbackDisplayText}, |text object|:theRange}
+    end tell
+  end if
 on error errMsg
   return "Error creating hyperlink: " & errMsg
 end try
@@ -65,4 +75,3 @@ return "Hyperlink created: " & ${quoteAppleScriptString(url)}
     }
   }
 ];
-

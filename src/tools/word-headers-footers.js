@@ -1,4 +1,4 @@
-import { validateString, validateInteger, validateNumber } from '../lib/validators.js';
+import { validateEnum, validateInteger, validateNumber, validateString } from '../lib/validators.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
 import { toAppleScriptString, escapeAppleScriptString } from '../lib/applescript/helpers.js';
 import { wrapWordScript } from '../lib/applescript/script-wrappers.js';
@@ -33,7 +33,8 @@ export const headerFooterTools = [
     },
     async handler(args) {
       const section = validateInteger(args.section, 'section', 1) || 1;
-      const hfIndex = headerFooterIndex(args.type);
+      const type = validateEnum(args.type, 'type', ['primary', 'first_page', 'even_pages'], 'primary');
+      const hfIndex = headerFooterIndex(type);
       const script = wrapWordScript(`
 set d to active document
 set secCount to count of sections of d
@@ -72,7 +73,8 @@ return headerText
     async handler(args) {
       const text = validateString(args.text, 'text', true);
       const section = validateInteger(args.section, 'section', 1) || 1;
-      const hfIndex = headerFooterIndex(args.type);
+      const type = validateEnum(args.type, 'type', ['primary', 'first_page', 'even_pages'], 'primary');
+      const hfIndex = headerFooterIndex(type);
       const script = wrapWordScript(`
 set d to active document
 set secCount to count of sections of d
@@ -108,7 +110,8 @@ return "Header text set for section ${section}"
     },
     async handler(args) {
       const section = validateInteger(args.section, 'section', 1) || 1;
-      const hfIndex = headerFooterIndex(args.type);
+      const type = validateEnum(args.type, 'type', ['primary', 'first_page', 'even_pages'], 'primary');
+      const hfIndex = headerFooterIndex(type);
       const script = wrapWordScript(`
 set d to active document
 set secCount to count of sections of d
@@ -147,7 +150,8 @@ return footerText
     async handler(args) {
       const text = validateString(args.text, 'text', true);
       const section = validateInteger(args.section, 'section', 1) || 1;
-      const hfIndex = headerFooterIndex(args.type);
+      const type = validateEnum(args.type, 'type', ['primary', 'first_page', 'even_pages'], 'primary');
+      const hfIndex = headerFooterIndex(type);
       const script = wrapWordScript(`
 set d to active document
 set secCount to count of sections of d
@@ -188,7 +192,8 @@ return "Footer text set for section ${section}"
     async handler(args) {
       const path = validateString(args.path, 'path', true);
       const section = validateInteger(args.section, 'section', 1) || 1;
-      const hfIndex = headerFooterIndex(args.type);
+      const type = validateEnum(args.type, 'type', ['primary', 'first_page', 'even_pages'], 'primary');
+      const hfIndex = headerFooterIndex(type);
       const posixPath = path.startsWith('/') ? path : `/${path}`;
       const hfsPath = posixPath.replace(/\//g, ':').replace(/^:/, '');
       let resizeCommands = '';
@@ -236,7 +241,8 @@ return "Image inserted into header of section ${section}"
     async handler(args) {
       const path = validateString(args.path, 'path', true);
       const section = validateInteger(args.section, 'section', 1) || 1;
-      const hfIndex = headerFooterIndex(args.type);
+      const type = validateEnum(args.type, 'type', ['primary', 'first_page', 'even_pages'], 'primary');
+      const hfIndex = headerFooterIndex(type);
       const posixPath = path.startsWith('/') ? path : `/${path}`;
       const hfsPath = posixPath.replace(/\//g, ':').replace(/^:/, '');
       let resizeCommands = '';
@@ -262,4 +268,3 @@ return "Image inserted into footer of section ${section}"
     }
   }
 ];
-

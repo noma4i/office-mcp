@@ -64,8 +64,8 @@
 | `src/index.js`                           | Точка входа                                    | `main()`                                                         |
 | `src/lib/server.js`                      | MCP Server v0.8.0                              | `createServer()`, `startServer()`                                |
 | `src/lib/tool-registry.js`               | Регистрация 86 инструментов                    | `ALL_TOOLS`, `getToolDefinitions()`, `getToolHandler()`          |
-| `src/lib/tool-executor.js`               | Обработчик инструментов                        | `executeTool()`                                                  |
-| `src/lib/validators.js`                  | Валидация (`validateInteger` через `Number()`) | 5 функций                                                        |
+| `src/lib/tool-executor.js`               | Обработчик инструментов + MCP envelope ошибок  | `executeTool()`                                                  |
+| `src/lib/validators.js`                  | Валидация строк, чисел, enum и Excel refs      | 8 функций                                                        |
 | `src/lib/applescript/executor.js`        | Выполнение AppleScript (таймаут 30с)           | `runAppleScript()`                                               |
 | `src/lib/applescript/helpers.js`         | Фрагменты Word + Excel + экранирование строк   | `COMMON_SCRIPTS`, `toAppleScriptString()`, `escapeForWordFind()` |
 | `src/lib/applescript/template-engine.js` | Шаблоны (regex-safe, type-safe)                | `processTemplate()`                                              |
@@ -335,6 +335,8 @@ yarn test:coverage     # С покрытием
 | `tests/server-integration.test.js`       | Интеграция (86 инструментов)                                                              | 40+    |
 | `tests/applescript-syntax.test.js`       | Word AppleScript + headers/sections/formatting + multiline + спецсимволы + error handling | 110+   |
 | `tests/excel-applescript-syntax.test.js` | Excel AppleScript (все 33 инструмента) + спецсимволы + валидация RGB + error handling     | 60+    |
+| `tests/tool-executor.test.js`            | MCP envelope, коды ошибок, details                                                       | 5+     |
+| `tests/applescript-wrappers.test.js`     | Word/Excel wrappers и guards                                                              | 4+     |
 
 ## Сборка MCPB
 

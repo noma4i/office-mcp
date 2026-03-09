@@ -123,7 +123,7 @@ return "Words: " & wordCount & linefeed & "Characters: " & charCount & linefeed 
       }
     },
     async handler(args) {
-      const path = args.path ? validateString(args.path, 'path', false) : undefined;
+      const path = args.path !== undefined ? validateString(args.path, 'path', true) : undefined;
 
       const script = path
         ? wrapWordScript(`

@@ -29,6 +29,7 @@ describe('Validation Functions', () => {
       expect(validateNumber(5, 'field')).toBe(5);
       expect(validateNumber('10', 'field', 0, 20)).toBe(10);
       expect(validateNumber(null, 'field')).toBeUndefined();
+      expect(() => validateNumber(false, 'field')).toThrow('field must be a valid number');
       expect(() => validateNumber(50, 'field', 0, 20)).toThrow('field must be between 0 and 20');
       expect(() => validateNumber(-5, 'field', 0, 20)).toThrow('field must be between 0 and 20');
       expect(() => validateNumber(NaN, 'field')).toThrow('field must be a valid number');
@@ -41,6 +42,7 @@ describe('Validation Functions', () => {
       expect(validateInteger(5, 'field')).toBe(5);
       expect(validateInteger('10', 'field')).toBe(10);
       expect(validateInteger(null, 'field')).toBeUndefined();
+      expect(() => validateInteger(true, 'field')).toThrow('field must be an integer');
       expect(() => validateInteger(10.2, 'field')).toThrow('field must be an integer');
       expect(() => validateInteger(50, 'field', 0, 20)).toThrow('field must be between 0 and 20');
       expect(() => validateInteger(-5, 'field', 1, 20)).toThrow('field must be between 1 and 20');

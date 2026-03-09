@@ -1,4 +1,4 @@
-import { validateInteger, validateNumber } from '../lib/validators.js';
+import { validateBoolean, validateEnum, validateInteger, validateNumber } from '../lib/validators.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
 import { wrapWordScript } from '../lib/applescript/script-wrappers.js';
 
@@ -102,13 +102,15 @@ return output
     },
     async handler(args) {
       const index = validateInteger(args.index, 'index', 1) || 1;
+      const orientation = validateEnum(args.orientation, 'orientation', ['portrait', 'landscape']);
+      const differentFirstPage = args.differentFirstPage !== undefined ? validateBoolean(args.differentFirstPage, 'differentFirstPage') : undefined;
       const commands = [];
       if (args.topMargin !== undefined) commands.push(`set top margin of ps to ${validateNumber(args.topMargin, 'topMargin', 0, 1584)}`);
       if (args.bottomMargin !== undefined) commands.push(`set bottom margin of ps to ${validateNumber(args.bottomMargin, 'bottomMargin', 0, 1584)}`);
       if (args.leftMargin !== undefined) commands.push(`set left margin of ps to ${validateNumber(args.leftMargin, 'leftMargin', 0, 1584)}`);
       if (args.rightMargin !== undefined) commands.push(`set right margin of ps to ${validateNumber(args.rightMargin, 'rightMargin', 0, 1584)}`);
-      if (args.orientation) commands.push(`set orientation of ps to ${args.orientation === 'landscape' ? 'orient landscape' : 'orient portrait'}`);
-      if (args.differentFirstPage !== undefined) commands.push(`set different first page header footer of ps to ${args.differentFirstPage}`);
+      if (orientation) commands.push(`set orientation of ps to ${orientation === 'landscape' ? 'orient landscape' : 'orient portrait'}`);
+      if (differentFirstPage !== undefined) commands.push(`set different first page header footer of ps to ${differentFirstPage}`);
       if (commands.length === 0) throw new Error('At least one page setup property is required');
 
       const script = wrapWordScript(`
@@ -144,13 +146,14 @@ return "Page setup updated for section ${index}"
       }
     },
     async handler(args) {
+      const type = validateEnum(args.type, 'type', ['next_page', 'continuous', 'even_page', 'odd_page'], 'next_page');
       const typeMap = {
         next_page: 'section break next page',
         continuous: 'section break continuous',
         even_page: 'section break even page',
         odd_page: 'section break odd page'
       };
-      const breakType = typeMap[args.type] || typeMap.next_page;
+      const breakType = typeMap[type];
       const script = wrapWordScript(`
 set r to text object of selection
 try
@@ -158,10 +161,9 @@ try
 on error errMsg
   return "Error inserting section break: " & errMsg
 end try
-return "Section break inserted (${args.type || 'next_page'})"
+return "Section break inserted (${type})"
 `);
       return await runAppleScript(script);
     }
   }
 ];
-

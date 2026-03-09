@@ -7,7 +7,7 @@ export const clipboardTools = [
     name: 'word_copy_content',
     description:
       'Copy content to the system clipboard preserving formatting. If startParagraph is specified, selects and copies that paragraph range. Without parameters, copies the current selection.',
-    annotations: { readOnlyHint: true },
+    annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
       properties: {
@@ -76,4 +76,3 @@ return "Content pasted from clipboard"
     }
   }
 ];
-

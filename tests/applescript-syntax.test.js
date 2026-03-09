@@ -65,6 +65,10 @@ describe('AppleScript Syntax Verification', () => {
       expect(result.ok).toBe(true);
     });
 
+    test('save_document rejects empty path', async () => {
+      await expect(findTool(documentTools, 'word_save_document').handler({ path: '' })).rejects.toThrow('path cannot be empty');
+    });
+
     test('close_document compiles', async () => {
       const script = await captureScript(findTool(documentTools, 'word_close_document'), {});
       const result = compileAppleScript(script);
@@ -113,6 +117,12 @@ describe('AppleScript Syntax Verification', () => {
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
       expect(script).toContain('content of replacement of findObject');
+    });
+
+    test('replace_text resets search to document start', async () => {
+      const script = await captureScript(findTool(textTools, 'word_replace_text'), { find: 'old', replace: 'new' });
+      expect(script).toContain('select (text object of activeDoc)');
+      expect(script).toContain('set selection end of selection to selection start of selection');
     });
 
     test('format_text compiles (bold)', async () => {
@@ -316,6 +326,12 @@ describe('AppleScript Syntax Verification', () => {
       expect(script).toContain('tell selection');
       expect(script).toContain('make new hyperlink object at end');
       expect(script).toContain('|hyperlink address|');
+    });
+
+    test('create_hyperlink falls back to URL display text without selection', async () => {
+      const script = await captureScript(findTool(hyperlinkTools, 'word_create_hyperlink'), { url: 'https://example.com' });
+      expect(script).toContain('else if hasSelection then');
+      expect(script).toContain('|text to display|:"https://example.com"');
     });
 
     test('create_hyperlink with displayText', async () => {
@@ -551,6 +567,12 @@ describe('AppleScript Syntax Verification', () => {
       expect(result.ok).toBe(true);
     });
 
+    test('word_insert_section_break rejects invalid type', async () => {
+      await expect(findTool(sectionTools, 'word_insert_section_break').handler({ type: 'weird' })).rejects.toThrow(
+        'type must be one of: next_page, continuous, even_page, odd_page'
+      );
+    });
+
     test('word_get_section_info has error handling', async () => {
       const script = await captureScript(findTool(sectionTools, 'word_get_section_info'), { index: 1 });
       expect(script).toContain('try');
@@ -561,6 +583,12 @@ describe('AppleScript Syntax Verification', () => {
       const script = await captureScript(findTool(sectionTools, 'word_set_page_setup'), { topMargin: 72 });
       expect(script).toContain('try');
       expect(script).toContain('on error');
+    });
+
+    test('word_set_page_setup rejects invalid orientation', async () => {
+      await expect(findTool(sectionTools, 'word_set_page_setup').handler({ orientation: 'sideways' })).rejects.toThrow(
+        'orientation must be one of: portrait, landscape'
+      );
     });
   });
 
@@ -598,6 +626,12 @@ describe('AppleScript Syntax Verification', () => {
       expect(script).toBeTruthy();
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
+    });
+
+    test('word_delete_text with text resets search to document start', async () => {
+      const script = await captureScript(findTool(textTools, 'word_delete_text'), { text: 'test' });
+      expect(script).toContain('select (text object of activeDoc)');
+      expect(script).toContain('set selection end of selection to selection start of selection');
     });
 
     test('word_delete_text without text compiles', async () => {
