@@ -24,9 +24,10 @@
 │   ├── index.js              # Точка входа
 │   ├── lib/
 │   │   ├── server.js         # MCP Server setup (Microsoft-Office-Server)
-│   │   ├── tool-registry.js  # Регистрация 86 инструментов (53 Word + 33 Excel)
+│   │   ├── tool-registry.js  # Регистрация 93 инструментов (56 Word + 37 Excel)
 │   │   ├── tool-executor.js  # Обработка CallTool requests
 │   │   ├── validators.js     # Функции валидации
+│   │   ├── fragment-store.js # Временное хранилище rich-content refs
 │   │   └── applescript/
 │   │       ├── executor.js   # Выполнение AppleScript (таймаут 30с)
 │   │       ├── helpers.js    # Общие AppleScript фрагменты (Word + Excel)
@@ -39,8 +40,8 @@
 │       ├── word-hyperlinks.js       # Word: 2 инструмента
 │       ├── word-paragraphs.js       # Word: 4 инструмента (list, goto, style, delete)
 │       ├── word-navigation.js       # Word: 5 инструментов
-│       ├── word-images.js           # Word: 3 инструмента
-│       ├── word-clipboard.js        # Word: 2 инструмента (copy, paste)
+│       ├── word-images.js           # Word: 4 инструмента
+│       ├── word-clipboard.js        # Word: 4 инструмента (copy, capture ref, insert ref, paste)
 │       ├── word-headers-footers.js  # Word: 6 инструментов (get/set header/footer, insert images)
 │       ├── word-sections.js         # Word: 4 инструмента (list, info, page setup, break)
 │       ├── word-formatting-read.js  # Word: 2 инструмента (text formatting, paragraph formatting)
@@ -49,7 +50,8 @@
 │       ├── excel-cells.js      # Excel: 7 инструментов
 │       ├── excel-formatting.js # Excel: 5 инструментов
 │       ├── excel-rows-columns.js # Excel: 6 инструментов
-│       └── excel-data.js       # Excel: 3 инструмента
+│       ├── excel-data.js       # Excel: 3 инструмента
+│       └── excel-clipboard.js  # Excel: 4 инструмента (copy, paste, capture ref, insert ref)
 ├── dist/                     # Собранные файлы (копия src/)
 ├── scripts/build.js          # Скрипт сборки
 ├── tests/                    # Тесты
@@ -63,9 +65,10 @@
 | ---------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------- |
 | `src/index.js`                           | Точка входа                                    | `main()`                                                         |
 | `src/lib/server.js`                      | MCP Server v0.8.0                              | `createServer()`, `startServer()`                                |
-| `src/lib/tool-registry.js`               | Регистрация 86 инструментов                    | `ALL_TOOLS`, `getToolDefinitions()`, `getToolHandler()`          |
+| `src/lib/tool-registry.js`               | Регистрация 93 инструментов                    | `ALL_TOOLS`, `getToolDefinitions()`, `getToolHandler()`          |
 | `src/lib/tool-executor.js`               | Обработчик инструментов + MCP envelope ошибок  | `executeTool()`                                                  |
 | `src/lib/validators.js`                  | Валидация строк, чисел, enum и Excel refs      | 8 функций                                                        |
+| `src/lib/fragment-store.js`              | Временные rich-content refs с TTL              | `reserveFragment()`, `commitReservedFragment()`, `getFragment()` |
 | `src/lib/applescript/executor.js`        | Выполнение AppleScript (таймаут 30с)           | `runAppleScript()`                                               |
 | `src/lib/applescript/helpers.js`         | Фрагменты Word + Excel + экранирование строк   | `COMMON_SCRIPTS`, `toAppleScriptString()`, `escapeForWordFind()` |
 | `src/lib/applescript/template-engine.js` | Шаблоны (regex-safe, type-safe)                | `processTemplate()`                                              |
@@ -75,7 +78,7 @@
 - **Word**: префикс `word_` (`word_create_document`, `word_insert_text`, `word_list_tables`)
 - **Excel**: префикс `excel_` (`excel_create_workbook`, `excel_set_cell`, `excel_sort_range`)
 
-## Инструменты Word (53 шт.)
+## Инструменты Word (56 шт.)
 
 ### Документы (7)
 
@@ -123,7 +126,7 @@
 | `word_add_table_column`    | Добавить колонку  | `tableIndex`, `afterColumn?`             |
 | `word_delete_table_column` | Удалить колонку   | `tableIndex`, `column`                   |
 
-### Закладки (4), Гиперссылки (2), Параграфы (4), Изображения (3)
+### Закладки (4), Гиперссылки (2), Параграфы (4), Изображения (4)
 
 | Инструмент                 | Назначение                             | Параметры                                        |
 | -------------------------- | -------------------------------------- | ------------------------------------------------ |
@@ -138,15 +141,18 @@
 | `word_set_paragraph_style` | Установить стиль                       | `index`, `styleName`                             |
 | `word_delete_paragraph`    | Удалить параграф                       | `index`                                          |
 | `word_insert_image`        | Вставить через clipboard               | `path`, `width?`, `height?`                      |
+| `word_create_image_ref`    | Создать `ref` для локального изображения | `path`                                         |
 | `word_list_inline_shapes`  | Список shapes                          | —                                                |
 | `word_resize_inline_shape` | Изменить размер                        | `index`, `width?`, `height?`, `lockAspectRatio?` |
 
-### Clipboard (2)
+### Clipboard (4)
 
-| Инструмент           | Назначение                         | Параметры                          |
-| -------------------- | ---------------------------------- | ---------------------------------- |
-| `word_copy_content`  | Копировать в clipboard с форматами | `startParagraph?`, `endParagraph?` |
-| `word_paste_content` | Вставить из clipboard с форматами  | —                                  |
+| Инструмент                  | Назначение                                   | Параметры                                                           |
+| --------------------------- | -------------------------------------------- | ------------------------------------------------------------------- |
+| `word_copy_content`         | Копировать в clipboard с форматами           | `scope?`, `startParagraph?`, `endParagraph?`, `inlineShapeIndex?`   |
+| `word_capture_content_ref`  | Захватить rich-content фрагмент в reusable ref | `scope?`, `startParagraph?`, `endParagraph?`, `inlineShapeIndex?` |
+| `word_insert_content_ref`   | Вставить ранее сохранённый Word/image ref    | `ref`, `width?`, `height?`                                           |
+| `word_paste_content`        | Вставить из clipboard с форматами            | —                                                                   |
 
 ### Headers/Footers (6)
 
@@ -175,7 +181,7 @@
 | `word_get_text_formatting`      | Шрифт, размер, bold, italic, цвет выделения | —         |
 | `word_get_paragraph_formatting` | Стиль, выравнивание, отступы, интервалы     | —         |
 
-## Инструменты Excel (33 шт.)
+## Инструменты Excel (37 шт.)
 
 ### Workbooks (6)
 
@@ -238,6 +244,16 @@
 | ------------------ | --------------- | ---------------------------------------------- |
 | `excel_sort_range` | Сортировка      | `range`, `keyCell`, `ascending?`, `hasHeader?` |
 | `excel_calculate`  | Пересчёт формул | —                                              |
+| `excel_export_csv` | Экспорт листа в CSV | `path`, `worksheet?`                        |
+
+### Clipboard (4)
+
+| Инструмент                | Назначение                                  | Параметры                    |
+| ------------------------- | ------------------------------------------- | ---------------------------- |
+| `excel_copy_range`        | Копировать диапазон с форматами в clipboard | `range`, `worksheet?`        |
+| `excel_paste_range`       | Вставить clipboard в target cell            | `targetCell`, `worksheet?`   |
+| `excel_capture_range_ref` | Захватить диапазон как reusable ref         | `range`, `worksheet?`        |
+| `excel_insert_range_ref`  | Вставить ранее сохранённый range ref        | `ref`, `targetCell`, `worksheet?` |
 | `excel_export_csv` | Экспорт в CSV   | `path`                                         |
 
 ## Индексация
@@ -319,6 +335,8 @@
 | Autofit         | `set r to entire column of range "A:C" of ws` → `autofit r`                            |
 | Поиск           | `find searchRange what "text"` (в `try/on error` — выбрасывает ошибку если не найдено) |
 | Display alerts  | try/finally: `set display alerts to false` → try → on error → restore → end try        |
+| Clipboard copy  | `select range "A1:B2" of ws` + `System Events` `keystroke "c" using command down`      |
+| Clipboard paste | `select range "C1" of ws` + `System Events` `keystroke "v" using command down`         |
 
 ## Тестирование
 
@@ -332,9 +350,10 @@ yarn test:coverage     # С покрытием
 | ---------------------------------------- | ----------------------------------------------------------------------------------------- | ------ |
 | `tests/validation.test.js`               | Валидация                                                                                 | 20+    |
 | `tests/mcp-tools.test.js`                | Word инструменты                                                                          | 80+    |
-| `tests/server-integration.test.js`       | Интеграция (86 инструментов)                                                              | 40+    |
+| `tests/server-integration.test.js`       | Интеграция (93 инструмента)                                                               | 40+    |
 | `tests/applescript-syntax.test.js`       | Word AppleScript + headers/sections/formatting + multiline + спецсимволы + error handling | 110+   |
-| `tests/excel-applescript-syntax.test.js` | Excel AppleScript (все 33 инструмента) + спецсимволы + валидация RGB + error handling     | 60+    |
+| `tests/excel-applescript-syntax.test.js` | Excel AppleScript (все 37 инструментов) + спецсимволы + валидация RGB + error handling     | 60+    |
+| `tests/fragment-store.test.js`           | `ref`-хранилище, TTL cleanup, file-backed fragments                                      | 5+     |
 | `tests/tool-executor.test.js`            | MCP envelope, коды ошибок, details                                                       | 5+     |
 | `tests/applescript-wrappers.test.js`     | Word/Excel wrappers и guards                                                              | 4+     |
 

@@ -1,4 +1,8 @@
 import { describe, test, expect, jest } from '@jest/globals';
+import { mkdirSync, writeFileSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
+
 import { compileAppleScript } from './helpers/applescript-compile.js';
 
 let capturedScripts = {};
@@ -36,6 +40,15 @@ async function captureScript(tool, args = {}) {
     await tool.handler(args);
   } catch {}
   return capturedScripts._last;
+}
+
+function createFragmentFixture(ref, metadata) {
+  const storeDir = join(tmpdir(), 'office-mcp-fragments');
+  mkdirSync(storeDir, { recursive: true });
+  if (metadata.filePath) {
+    writeFileSync(metadata.filePath, 'fixture', 'utf8');
+  }
+  writeFileSync(join(storeDir, `${ref}.json`), JSON.stringify(metadata, null, 2), 'utf8');
 }
 
 describe('AppleScript Syntax Verification', () => {
@@ -394,6 +407,12 @@ describe('AppleScript Syntax Verification', () => {
       expect(script).toContain('paste object selection');
     });
 
+    test('create_image_ref rejects unsupported formats without AppleScript execution', async () => {
+      await expect(findTool(imageTools, 'word_create_image_ref').handler({ path: '/tmp/test.gif' })).rejects.toThrow(
+        'path must point to a PNG, JPEG, or TIFF image'
+      );
+    });
+
     test('insert_image with resize compiles', async () => {
       const script = await captureScript(findTool(imageTools, 'word_insert_image'), { path: '/tmp/test.png', width: 200, height: 100 });
       const result = compileAppleScript(script);
@@ -668,6 +687,19 @@ describe('AppleScript Syntax Verification', () => {
       expect(script).toContain('set rEnd to selection end of selection');
     });
 
+    test('word_copy_content supports document scope', async () => {
+      const script = await captureScript(findTool(clipboardTools, 'word_copy_content'), { scope: 'document' });
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+      expect(script).toContain('select (text object of d)');
+    });
+
+    test('word_copy_content supports inline_shape scope', async () => {
+      const script = await captureScript(findTool(clipboardTools, 'word_copy_content'), { scope: 'inline_shape', inlineShapeIndex: 2 });
+      expect(script).toContain('inline shape 2 of d');
+      expect(script).toContain('copy object selection');
+    });
+
     test('word_copy_content with single paragraph compiles', async () => {
       const script = await captureScript(findTool(clipboardTools, 'word_copy_content'), { startParagraph: 3 });
       expect(script).toBeTruthy();
@@ -688,6 +720,37 @@ describe('AppleScript Syntax Verification', () => {
       expect(script).toBeTruthy();
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
+      expect(script).toContain('paste object selection');
+    });
+
+    test('word_capture_content_ref compiles', async () => {
+      const script = await captureScript(findTool(clipboardTools, 'word_capture_content_ref'), { scope: 'document' });
+      expect(script).toBeTruthy();
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+      expect(script).toContain('save as fragDoc file name');
+    });
+
+    test('word_insert_content_ref compiles for docx fragments', async () => {
+      const ref = 'wordfrag_demo';
+      const filePath = join(tmpdir(), `${ref}.docx`);
+      createFragmentFixture(ref, {
+        ref,
+        app: 'word',
+        kind: 'word_fragment',
+        format: 'docx',
+        filePath,
+        summary: { label: 'fixture' },
+        createdAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 60_000).toISOString()
+      });
+
+      const script = await captureScript(findTool(clipboardTools, 'word_insert_content_ref'), { ref: 'wordfrag_demo' });
+      expect(script).toBeTruthy();
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+      expect(script).toContain('open ');
+      expect(script).toContain('copy object selection');
       expect(script).toContain('paste object selection');
     });
   });

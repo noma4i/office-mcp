@@ -16,6 +16,7 @@ import { excelCellTools } from '../tools/excel-cells.js';
 import { excelFormattingTools } from '../tools/excel-formatting.js';
 import { excelRowColumnTools } from '../tools/excel-rows-columns.js';
 import { excelDataTools } from '../tools/excel-data.js';
+import { excelClipboardTools } from '../tools/excel-clipboard.js';
 
 export const ALL_TOOLS = [
   ...documentTools,
@@ -35,7 +36,8 @@ export const ALL_TOOLS = [
   ...excelCellTools,
   ...excelFormattingTools,
   ...excelRowColumnTools,
-  ...excelDataTools
+  ...excelDataTools,
+  ...excelClipboardTools
 ];
 
 export function buildToolMap(tools) {

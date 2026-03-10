@@ -4,10 +4,10 @@ MCP-сервер для автоматизации Microsoft Word и Microsoft E
 
 ## Что поддерживается
 
-- 86 инструментов: 53 для Word и 33 для Excel
+- 93 инструмента: 56 для Word и 37 для Excel
 - Операции с документами и книгами: create/open/save/close/export
-- Текст, таблицы, закладки, навигация, headers/footers, секции в Word
-- Листы, ячейки, формулы, форматирование, сортировка и экспорт CSV в Excel
+- Текст, таблицы, закладки, навигация, headers/footers, секции, rich copy/paste и `ref`-фрагменты в Word
+- Листы, ячейки, формулы, форматирование, сортировка, clipboard/range refs и экспорт CSV в Excel
 - Проверка AppleScript-синтаксиса тестами
 
 ## Требования
@@ -60,6 +60,13 @@ yarn build:watch
   - `{"ok": false, "error": {"code": "...", "message": "...", "details": ...}}`
 
 Примеры кодов ошибок: `NO_DOCUMENT_OPEN`, `NO_WORKBOOK_OPEN`, `NOT_FOUND`, `OUT_OF_RANGE`, `VALIDATION_ERROR`, `APPSCRIPT_ERROR`, `UNKNOWN_TOOL`.
+
+Rich-content инструменты используют временные `ref`-хендлы:
+
+- `word_capture_content_ref` и `excel_capture_range_ref` сохраняют native Office-фрагменты во временное хранилище и возвращают `data.ref`
+- `word_create_image_ref` создаёт `ref` для локального изображения
+- `word_insert_content_ref` и `excel_insert_range_ref` вставляют ранее сохранённые `ref`
+- `ref` является opaque-идентификатором и истекает автоматически
 
 ## Тесты
 

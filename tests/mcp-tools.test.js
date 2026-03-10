@@ -3,20 +3,20 @@ import { ALL_TOOLS, buildToolMap, getToolDefinitions, getToolHandler } from '../
 
 describe('MCP Office Tools Registry', () => {
   test('contains all declared tools', () => {
-    expect(ALL_TOOLS).toHaveLength(86);
+    expect(ALL_TOOLS).toHaveLength(93);
   });
 
-  test('contains 53 Word tools and 33 Excel tools', () => {
+  test('contains 56 Word tools and 37 Excel tools', () => {
     const wordTools = ALL_TOOLS.filter(tool => tool.name.startsWith('word_'));
     const excelTools = ALL_TOOLS.filter(tool => tool.name.startsWith('excel_'));
 
-    expect(wordTools).toHaveLength(53);
-    expect(excelTools).toHaveLength(33);
+    expect(wordTools).toHaveLength(56);
+    expect(excelTools).toHaveLength(37);
   });
 
   test('returns definitions with required fields', () => {
     const definitions = getToolDefinitions();
-    expect(definitions).toHaveLength(86);
+    expect(definitions).toHaveLength(93);
 
     for (const definition of definitions) {
       expect(definition).toHaveProperty('name');

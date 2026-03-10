@@ -1,6 +1,51 @@
 import { validateString, validateNumber, validateInteger, validateBoolean } from '../lib/validators.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
+import { buildFileSummary, createFileBackedFragment, inferImageFormat } from '../lib/fragment-store.js';
 import { wrapWordScript } from '../lib/applescript/script-wrappers.js';
+
+function buildResizeBlock(width, height) {
+  let resizeBlock = '';
+  if (width !== undefined || height !== undefined) {
+    resizeBlock = `
+set shp to inline shape (count of inline shapes of d) of d
+set lock aspect ratio of shp to ${width !== undefined && height !== undefined ? 'false' : 'true'}`;
+    if (width !== undefined) resizeBlock += `\nset width of shp to ${width}`;
+    if (height !== undefined) resizeBlock += `\nset height of shp to ${height}`;
+  }
+  return resizeBlock;
+}
+
+export function buildWordInsertImageScript(path, { width = undefined, height = undefined } = {}) {
+  const resizeBlock = buildResizeBlock(width, height);
+  const wordPart = wrapWordScript(`
+set d to active document
+set shapesBefore to count of inline shapes of d
+paste object selection
+set shapesAfter to count of inline shapes of d
+if shapesAfter = shapesBefore then
+  return "Image may not have been inserted. Try a different image format."
+end if${resizeBlock}
+return "Image inserted successfully. Total inline shapes: " & shapesAfter
+`);
+
+  return `
+set imgFile to POSIX file ${JSON.stringify(path)}
+try
+  set the clipboard to (read imgFile as «class PNGf»)
+on error
+  try
+    set the clipboard to (read imgFile as TIFF picture)
+  on error
+    try
+      set the clipboard to (read imgFile as JPEG picture)
+    on error errMsg
+      return "Error reading image: " & errMsg
+    end try
+  end try
+end try
+${wordPart}
+`;
+}
 
 export const imageTools = [
   {
@@ -20,45 +65,34 @@ export const imageTools = [
       const path = validateString(args.path, 'path', true);
       const width = args.width !== undefined ? validateNumber(args.width, 'width', 1, 10000) : undefined;
       const height = args.height !== undefined ? validateNumber(args.height, 'height', 1, 10000) : undefined;
-
-      let resizeBlock = '';
-      if (width !== undefined || height !== undefined) {
-        resizeBlock = `
-set shp to inline shape (count of inline shapes of d) of d
-set lock aspect ratio of shp to ${width !== undefined && height !== undefined ? 'false' : 'true'}`;
-        if (width !== undefined) resizeBlock += `\nset width of shp to ${width}`;
-        if (height !== undefined) resizeBlock += `\nset height of shp to ${height}`;
-      }
-
-      const wordPart = wrapWordScript(`
-set d to active document
-set shapesBefore to count of inline shapes of d
-paste object selection
-set shapesAfter to count of inline shapes of d
-if shapesAfter = shapesBefore then
-  return "Image may not have been inserted. Try a different image format."
-end if${resizeBlock}
-return "Image inserted successfully. Total inline shapes: " & shapesAfter
-`);
-
-      const script = `
-set imgFile to POSIX file ${JSON.stringify(path)}
-try
-  set the clipboard to (read imgFile as «class PNGf»)
-on error
-  try
-    set the clipboard to (read imgFile as TIFF picture)
-  on error
-    try
-      set the clipboard to (read imgFile as JPEG picture)
-    on error errMsg
-      return "Error reading image: " & errMsg
-    end try
-  end try
-end try
-${wordPart}
-`;
+      const script = buildWordInsertImageScript(path, { width, height });
       return await runAppleScript(script);
+    }
+  },
+  {
+    name: 'word_create_image_ref',
+    description: 'Create a reusable image ref from a local file for later insertion into Word',
+    annotations: { readOnlyHint: true },
+    inputSchema: {
+      type: 'object',
+      properties: {
+        path: { type: 'string', description: 'Full path to the image file (PNG, JPEG, TIFF)' }
+      },
+      required: ['path']
+    },
+    async handler(args) {
+      const path = validateString(args.path, 'path', true);
+      const format = inferImageFormat(path);
+      if (!['png', 'jpg', 'jpeg', 'tif', 'tiff'].includes(format)) {
+        throw new Error('path must point to a PNG, JPEG, or TIFF image');
+      }
+      return createFileBackedFragment({
+        prefix: 'wordimg',
+        app: 'word',
+        kind: 'image_file',
+        sourcePath: path,
+        summary: buildFileSummary(path)
+      });
     }
   },
   {
@@ -142,4 +176,3 @@ return "Shape ${index} resized. Width: " & (width of shp as text) & "pt, Height:
     }
   }
 ];
-

@@ -1,4 +1,8 @@
 import { describe, test, expect, jest } from '@jest/globals';
+import { mkdirSync, writeFileSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
+
 import { compileAppleScript } from './helpers/applescript-compile.js';
 
 let capturedScripts = {};
@@ -16,6 +20,7 @@ const { excelCellTools } = await import('../src/tools/excel-cells.js');
 const { excelFormattingTools } = await import('../src/tools/excel-formatting.js');
 const { excelRowColumnTools } = await import('../src/tools/excel-rows-columns.js');
 const { excelDataTools } = await import('../src/tools/excel-data.js');
+const { excelClipboardTools } = await import('../src/tools/excel-clipboard.js');
 
 function findTool(tools, name) {
   return tools.find(t => t.name === name);
@@ -27,6 +32,15 @@ async function captureScript(tool, args = {}) {
     await tool.handler(args);
   } catch {}
   return capturedScripts._last;
+}
+
+function createFragmentFixture(ref, metadata) {
+  const storeDir = join(tmpdir(), 'office-mcp-fragments');
+  mkdirSync(storeDir, { recursive: true });
+  if (metadata.filePath) {
+    writeFileSync(metadata.filePath, 'fixture', 'utf8');
+  }
+  writeFileSync(join(storeDir, `${ref}.json`), JSON.stringify(metadata, null, 2), 'utf8');
 }
 
 describe('Excel AppleScript Syntax Verification', () => {
@@ -468,14 +482,75 @@ describe('Excel AppleScript Syntax Verification', () => {
     });
   });
 
+  describe('Clipboard Tools', () => {
+    test('excel_copy_range compiles', async () => {
+      const script = await captureScript(findTool(excelClipboardTools, 'excel_copy_range'), { range: 'A1:C5' });
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+      expect(script).toContain('System Events');
+      expect(script).toContain('keystroke "c"');
+    });
+
+    test('excel_paste_range compiles', async () => {
+      const script = await captureScript(findTool(excelClipboardTools, 'excel_paste_range'), { targetCell: 'D2' });
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+      expect(script).toContain('keystroke "v"');
+    });
+
+    test('excel_capture_range_ref compiles', async () => {
+      const script = await captureScript(findTool(excelClipboardTools, 'excel_capture_range_ref'), { range: 'A1:B3' });
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+      expect(script).toContain('save workbook as fragWb filename');
+    });
+
+    test('excel_insert_range_ref compiles', async () => {
+      const ref = 'excelfrag_demo';
+      const filePath = join(tmpdir(), `${ref}.xlsx`);
+      createFragmentFixture(ref, {
+        ref,
+        app: 'excel',
+        kind: 'excel_range',
+        format: 'xlsx',
+        filePath,
+        summary: { label: 'fixture' },
+        createdAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 60_000).toISOString()
+      });
+
+      const script = await captureScript(findTool(excelClipboardTools, 'excel_insert_range_ref'), { ref: 'excelfrag_demo', targetCell: 'B5' });
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+      expect(script).toContain('open workbook workbook file name');
+      expect(script).toContain('keystroke "c"');
+      expect(script).toContain('keystroke "v"');
+    });
+  });
+
   describe('Tool Count', () => {
-    test('all 33 Excel tools are defined', () => {
-      const total = excelWorkbookTools.length + excelSheetTools.length + excelCellTools.length + excelFormattingTools.length + excelRowColumnTools.length + excelDataTools.length;
-      expect(total).toBe(33);
+    test('all 37 Excel tools are defined', () => {
+      const total =
+        excelWorkbookTools.length +
+        excelSheetTools.length +
+        excelCellTools.length +
+        excelFormattingTools.length +
+        excelRowColumnTools.length +
+        excelDataTools.length +
+        excelClipboardTools.length;
+      expect(total).toBe(37);
     });
 
     test('all Excel tools have excel_ prefix', () => {
-      const allTools = [...excelWorkbookTools, ...excelSheetTools, ...excelCellTools, ...excelFormattingTools, ...excelRowColumnTools, ...excelDataTools];
+      const allTools = [
+        ...excelWorkbookTools,
+        ...excelSheetTools,
+        ...excelCellTools,
+        ...excelFormattingTools,
+        ...excelRowColumnTools,
+        ...excelDataTools,
+        ...excelClipboardTools
+      ];
       allTools.forEach(tool => {
         expect(tool.name).toMatch(/^excel_/);
       });

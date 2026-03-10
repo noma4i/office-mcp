@@ -155,6 +155,10 @@
       "description": "Insert an image into the Word document at the current cursor position"
     },
     {
+      "name": "word_create_image_ref",
+      "description": "Create a reusable image ref from a local file for later insertion into Word"
+    },
+    {
       "name": "word_list_inline_shapes",
       "description": "List all inline shapes (images, objects) in the active Word document"
     },
@@ -172,7 +176,15 @@
     },
     {
       "name": "word_copy_content",
-      "description": "Copy content with formatting to clipboard from the active Word document"
+      "description": "Copy Word content with formatting to the system clipboard"
+    },
+    {
+      "name": "word_capture_content_ref",
+      "description": "Capture formatted Word content as a reusable ref"
+    },
+    {
+      "name": "word_insert_content_ref",
+      "description": "Insert previously captured Word content or image ref at the current selection"
     },
     {
       "name": "word_paste_content",
@@ -357,6 +369,22 @@
     {
       "name": "excel_export_csv",
       "description": "Export the active Excel workbook as CSV"
+    },
+    {
+      "name": "excel_copy_range",
+      "description": "Copy an Excel range with formatting to the system clipboard"
+    },
+    {
+      "name": "excel_paste_range",
+      "description": "Paste the system clipboard into the active Excel workbook at the target cell"
+    },
+    {
+      "name": "excel_capture_range_ref",
+      "description": "Capture an Excel range as a reusable ref backed by a temporary workbook"
+    },
+    {
+      "name": "excel_insert_range_ref",
+      "description": "Insert a previously captured Excel range ref into the active workbook at the target cell"
     }
   ],
   "server": {
