@@ -13,7 +13,8 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules yarn jest",
     "test:watch": "NODE_OPTIONS=--experimental-vm-modules yarn jest --watch",
     "test:coverage": "NODE_OPTIONS=--experimental-vm-modules yarn jest --coverage --watchman=false",
-    "test:applescript:strict": "APPLE_SCRIPT_STRICT_COMPILE=1 NODE_OPTIONS=--experimental-vm-modules yarn jest tests/applescript-syntax.test.js tests/excel-applescript-syntax.test.js --watchman=false",
+    "test:applescript:strict": "APPLE_SCRIPT_STRICT_COMPILE=1 NODE_OPTIONS=--experimental-vm-modules yarn jest tests/applescript-syntax.test.js tests/excel-applescript-syntax.test.js tests/applescript-registry.test.js --watchman=false",
+    "test:word-find:live": "WORD_LIVE_TESTS=1 NODE_OPTIONS=--experimental-vm-modules yarn jest tests/word-find-live.test.js --runInBand --watchman=false",
     "clean": "rm -rf dist"
   },
   "files": [

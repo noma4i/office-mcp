@@ -1,12 +1,5 @@
 import { ToolError } from '../lib/errors.js';
-import {
-  buildSourceSummary,
-  commitReservedFragment,
-  discardReservedFragment,
-  getFragment,
-  reserveFragment,
-  toFragmentPayload
-} from '../lib/fragment-store.js';
+import { buildSourceSummary, getFragment } from '../lib/fragment-store.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
 import { wrapWordScript } from '../lib/applescript/script-wrappers.js';
 import { validateEnum, validateInteger, validateNumber } from '../lib/validators.js';
@@ -128,57 +121,6 @@ return "Content copied to clipboard"
 `);
 }
 
-function buildWordCaptureRefScript(selection, fragmentPath) {
-  const selectionScript = buildWordSelectionScript(selection);
-  return wrapWordScript(`
-${selectionScript}
-try
-  copy object selection
-on error errMsg
-  return "Error copying: " & errMsg
-end try
-set fragDoc to make new document
-try
-  paste object selection
-  save as fragDoc file name ${JSON.stringify(fragmentPath)}
-  close fragDoc saving no
-on error errMsg
-  try
-    close fragDoc saving no
-  end try
-  return "Error creating fragment: " & errMsg
-end try
-return "Content captured to ref"
-`);
-}
-
-function buildWordInsertRefScript(fragmentPath) {
-  return wrapWordScript(`
-set targetStart to selection start of selection
-set targetEnd to selection end of selection
-open ${JSON.stringify(fragmentPath)}
-set fragDoc to active document
-select (text object of fragDoc)
-try
-  copy object selection
-  close fragDoc saving no
-on error errMsg
-  try
-    close fragDoc saving no
-  end try
-  return "Error preparing fragment for paste: " & errMsg
-end try
-set selection start of selection to targetStart
-set selection end of selection to targetEnd
-try
-  paste object selection
-on error errMsg
-  return "Error pasting: " & errMsg
-end try
-return "Content inserted from ref"
-`);
-}
-
 export const clipboardTools = [
   {
     name: 'word_copy_content',
@@ -208,7 +150,7 @@ export const clipboardTools = [
   },
   {
     name: 'word_capture_content_ref',
-    description: 'Capture formatted Word content as a reusable ref. Supports selection, full document, paragraph range, or inline shape.',
+    description: 'Legacy tool disabled by in-place editing policy. Use word_copy_content or word_copy_story_content instead.',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -224,35 +166,18 @@ export const clipboardTools = [
       }
     },
     async handler(args) {
-      const selection = resolveCopySelection(args);
-      const reserved = reserveFragment({
-        prefix: 'wordfrag',
-        app: 'word',
-        kind: 'word_fragment',
-        extension: 'docx',
-        summary: selection.summary
-      });
-
-      try {
-        const result = await runAppleScript(buildWordCaptureRefScript(selection, reserved.filePath));
-        if (result !== 'Content captured to ref') {
-          throw new ToolError('OPERATION_ERROR', result);
-        }
-        return commitReservedFragment(reserved);
-      } catch (error) {
-        discardReservedFragment(reserved);
-        throw error;
-      }
+      resolveCopySelection(args);
+      throw new ToolError('NOT_SUPPORTED', 'word_capture_content_ref is disabled by in-place editing policy. Use word_copy_content or word_copy_story_content.');
     }
   },
   {
     name: 'word_insert_content_ref',
-    description: 'Insert previously captured Word content or image ref at the current selection in the active document.',
+    description: 'Insert a local image ref at the current selection in the active document. Native Word fragment refs are disabled by in-place editing policy.',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
       properties: {
-        ref: { type: 'string', description: 'Opaque ref returned by word_capture_content_ref or word_create_image_ref.' },
+        ref: { type: 'string', description: 'Opaque ref returned by word_create_image_ref.' },
         width: { type: 'number', description: 'Optional width for image refs in points.' },
         height: { type: 'number', description: 'Optional height for image refs in points.' }
       },
@@ -278,12 +203,7 @@ export const clipboardTools = [
       if (fragment.kind !== 'word_fragment') {
         throw new ToolError('VALIDATION_ERROR', `ref kind is not supported in Word: ${fragment.kind}`);
       }
-
-      const result = await runAppleScript(buildWordInsertRefScript(fragment.filePath));
-      if (result !== 'Content inserted from ref') {
-        throw new ToolError('OPERATION_ERROR', result);
-      }
-      return { inserted: true, ref: fragment.ref, kind: fragment.kind };
+      throw new ToolError('NOT_SUPPORTED', 'Native Word fragment refs are disabled by in-place editing policy. Use word_paste_content or word_copy_story_content.');
     }
   },
   {

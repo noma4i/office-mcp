@@ -21,6 +21,7 @@ const { excelFormattingTools } = await import('../src/tools/excel-formatting.js'
 const { excelRowColumnTools } = await import('../src/tools/excel-rows-columns.js');
 const { excelDataTools } = await import('../src/tools/excel-data.js');
 const { excelClipboardTools } = await import('../src/tools/excel-clipboard.js');
+const { excelWorkflowTools } = await import('../src/tools/excel-workflows.js');
 
 function findTool(tools, name) {
   return tools.find(t => t.name === name);
@@ -498,38 +499,41 @@ describe('Excel AppleScript Syntax Verification', () => {
       expect(script).toContain('keystroke "v"');
     });
 
-    test('excel_capture_range_ref compiles', async () => {
-      const script = await captureScript(findTool(excelClipboardTools, 'excel_capture_range_ref'), { range: 'A1:B3' });
-      const result = compileAppleScript(script);
-      expect(result.ok).toBe(true);
-      expect(script).toContain('save workbook as fragWb filename');
+    test('excel_capture_range_ref is disabled by in-place policy', async () => {
+      await expect(findTool(excelClipboardTools, 'excel_capture_range_ref').handler({ range: 'A1:B3' })).rejects.toMatchObject({
+        code: 'NOT_SUPPORTED'
+      });
     });
 
-    test('excel_insert_range_ref compiles', async () => {
-      const ref = 'excelfrag_demo';
-      const filePath = join(tmpdir(), `${ref}.xlsx`);
-      createFragmentFixture(ref, {
-        ref,
-        app: 'excel',
-        kind: 'excel_range',
-        format: 'xlsx',
-        filePath,
-        summary: { label: 'fixture' },
-        createdAt: new Date().toISOString(),
-        expiresAt: new Date(Date.now() + 60_000).toISOString()
+    test('excel_insert_range_ref is disabled by in-place policy', async () => {
+      await expect(findTool(excelClipboardTools, 'excel_insert_range_ref').handler({ ref: 'excelfrag_demo', targetCell: 'B5' })).rejects.toMatchObject({
+        code: 'NOT_SUPPORTED'
       });
+    });
+  });
 
-      const script = await captureScript(findTool(excelClipboardTools, 'excel_insert_range_ref'), { ref: 'excelfrag_demo', targetCell: 'B5' });
+  describe('Workflow Tools', () => {
+    test('excel_clear_worksheet compiles', async () => {
+      const script = await captureScript(findTool(excelWorkflowTools, 'excel_clear_worksheet'), { worksheet: 1 });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
-      expect(script).toContain('open workbook workbook file name');
-      expect(script).toContain('keystroke "c"');
-      expect(script).toContain('keystroke "v"');
+      expect(script).toContain('clear contents targetRange');
+    });
+
+    test('excel_set_range_values compiles', async () => {
+      const script = await captureScript(findTool(excelWorkflowTools, 'excel_set_range_values'), {
+        range: 'A1:B2',
+        values: '1\t2\n3\t4'
+      });
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+      expect(script).toContain('set value of targetRange to rangeValues');
+      expect(script).toContain('{{"1", "2"}, {"3", "4"}}');
     });
   });
 
   describe('Tool Count', () => {
-    test('all 37 Excel tools are defined', () => {
+    test('all 39 Excel tools are defined', () => {
       const total =
         excelWorkbookTools.length +
         excelSheetTools.length +
@@ -537,8 +541,9 @@ describe('Excel AppleScript Syntax Verification', () => {
         excelFormattingTools.length +
         excelRowColumnTools.length +
         excelDataTools.length +
-        excelClipboardTools.length;
-      expect(total).toBe(37);
+        excelClipboardTools.length +
+        excelWorkflowTools.length;
+      expect(total).toBe(39);
     });
 
     test('all Excel tools have excel_ prefix', () => {
@@ -549,7 +554,8 @@ describe('Excel AppleScript Syntax Verification', () => {
         ...excelFormattingTools,
         ...excelRowColumnTools,
         ...excelDataTools,
-        ...excelClipboardTools
+        ...excelClipboardTools,
+        ...excelWorkflowTools
       ];
       allTools.forEach(tool => {
         expect(tool.name).toMatch(/^excel_/);

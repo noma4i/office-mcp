@@ -180,15 +180,27 @@
     },
     {
       "name": "word_capture_content_ref",
-      "description": "Capture formatted Word content as a reusable ref"
+      "description": "Legacy tool disabled by in-place editing policy. Use word_copy_content or word_copy_story_content instead"
     },
     {
       "name": "word_insert_content_ref",
-      "description": "Insert previously captured Word content or image ref at the current selection"
+      "description": "Insert a local image ref at the current selection; native Word fragment refs are disabled by in-place editing policy"
     },
     {
       "name": "word_paste_content",
       "description": "Paste content with formatting from clipboard into the active Word document"
+    },
+    {
+      "name": "word_copy_story_content",
+      "description": "Copy body, header, or footer content from the active Word document to the system clipboard"
+    },
+    {
+      "name": "word_clear_story_content",
+      "description": "Clear body, header, or footer content in the active Word document without creating temporary documents"
+    },
+    {
+      "name": "word_set_story_text",
+      "description": "Replace body, header, or footer text in the active Word document in place"
     },
     {
       "name": "word_get_header_text",
@@ -380,11 +392,19 @@
     },
     {
       "name": "excel_capture_range_ref",
-      "description": "Capture an Excel range as a reusable ref backed by a temporary workbook"
+      "description": "Legacy tool disabled by in-place editing policy. Use excel_copy_range instead"
     },
     {
       "name": "excel_insert_range_ref",
-      "description": "Insert a previously captured Excel range ref into the active workbook at the target cell"
+      "description": "Legacy tool disabled by in-place editing policy. Use excel_paste_range instead"
+    },
+    {
+      "name": "excel_clear_worksheet",
+      "description": "Clear the used range of the active Excel worksheet in place"
+    },
+    {
+      "name": "excel_set_range_values",
+      "description": "Set a rectangular Excel range from TSV text in the active workbook"
     }
   ],
   "server": {

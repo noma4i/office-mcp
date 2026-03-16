@@ -1,6 +1,6 @@
 import { validateString, validateInteger } from '../lib/validators.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
-import { toAppleScriptString, quoteAppleScriptString } from '../lib/applescript/helpers.js';
+import { COMMON_SCRIPTS, toAppleScriptString, quoteAppleScriptString } from '../lib/applescript/helpers.js';
 import { wrapWordScript } from '../lib/applescript/script-wrappers.js';
 
 export const tableTools = [
@@ -58,11 +58,7 @@ try
 on error
   return "Cell not found: row ${row}, column ${column} in table ${tableIndex}"
 end try
-if length of cellText > 0 then
-  repeat while (length of cellText > 0) and ((ASCII number of (character -1 of cellText)) is in {7, 13})
-    set cellText to text 1 thru -2 of cellText
-  end repeat
-end if
+${COMMON_SCRIPTS.cleanCellMarkers}
 return cellText
 `);
       return await runAppleScript(script);
@@ -173,11 +169,7 @@ repeat with colIdx from 1 to colCount
   on error
     return "Header row ${headerRow} is out of range for table ${tableIndex}"
   end try
-  if length of cellText > 0 then
-    repeat while (length of cellText > 0) and ((ASCII number of (character -1 of cellText)) is in {7, 13})
-      set cellText to text 1 thru -2 of cellText
-    end repeat
-  end if
+  ${COMMON_SCRIPTS.cleanCellMarkers}
   if cellText contains ${quoteAppleScriptString(headerText)} then
     set foundCol to colIdx
     exit repeat
@@ -344,4 +336,3 @@ return "Column ${column} deleted from table ${tableIndex}"
     }
   }
 ];
-

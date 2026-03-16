@@ -16,8 +16,8 @@ describe('MCP Server Integration', () => {
     const registryNames = new Set(ALL_TOOLS.map(tool => tool.name));
     const manifestNames = new Set(manifest.tools.map(tool => tool.name));
 
-    expect(registryNames.size).toBe(93);
-    expect(manifestNames.size).toBe(93);
+    expect(registryNames.size).toBe(98);
+    expect(manifestNames.size).toBe(98);
     expect([...registryNames].filter(name => !manifestNames.has(name))).toHaveLength(0);
     expect([...manifestNames].filter(name => !registryNames.has(name))).toHaveLength(0);
   });

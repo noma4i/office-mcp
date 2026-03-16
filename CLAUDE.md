@@ -24,13 +24,14 @@
 │   ├── index.js              # Точка входа
 │   ├── lib/
 │   │   ├── server.js         # MCP Server setup (Microsoft-Office-Server)
-│   │   ├── tool-registry.js  # Регистрация 93 инструментов (56 Word + 37 Excel)
+│   │   ├── tool-registry.js  # Регистрация 98 инструментов (59 Word + 39 Excel)
 │   │   ├── tool-executor.js  # Обработка CallTool requests
 │   │   ├── validators.js     # Функции валидации
 │   │   ├── fragment-store.js # Временное хранилище rich-content refs
 │   │   └── applescript/
 │   │       ├── executor.js   # Выполнение AppleScript (таймаут 30с)
 │   │       ├── helpers.js    # Общие AppleScript фрагменты (Word + Excel)
+│   │       ├── word-find.js  # Word Find orchestration + compatibility fallback
 │   │       └── template-engine.js # Шаблонизатор
 │   └── tools/
 │       ├── word-documents.js        # Word: 7 инструментов
@@ -42,6 +43,7 @@
 │       ├── word-navigation.js       # Word: 5 инструментов
 │       ├── word-images.js           # Word: 4 инструмента
 │       ├── word-clipboard.js        # Word: 4 инструмента (copy, capture ref, insert ref, paste)
+│       ├── word-workflows.js        # Word: 3 инструмента (copy/clear/set story content)
 │       ├── word-headers-footers.js  # Word: 6 инструментов (get/set header/footer, insert images)
 │       ├── word-sections.js         # Word: 4 инструмента (list, info, page setup, break)
 │       ├── word-formatting-read.js  # Word: 2 инструмента (text formatting, paragraph formatting)
@@ -51,7 +53,8 @@
 │       ├── excel-formatting.js # Excel: 5 инструментов
 │       ├── excel-rows-columns.js # Excel: 6 инструментов
 │       ├── excel-data.js       # Excel: 3 инструмента
-│       └── excel-clipboard.js  # Excel: 4 инструмента (copy, paste, capture ref, insert ref)
+│       ├── excel-clipboard.js  # Excel: 4 инструмента (copy, paste, capture ref, insert ref)
+│       └── excel-workflows.js  # Excel: 2 инструмента (clear worksheet, set range values)
 ├── dist/                     # Собранные файлы (копия src/)
 ├── scripts/build.js          # Скрипт сборки
 ├── tests/                    # Тесты
@@ -65,12 +68,13 @@
 | ---------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------- |
 | `src/index.js`                           | Точка входа                                    | `main()`                                                         |
 | `src/lib/server.js`                      | MCP Server v0.8.0                              | `createServer()`, `startServer()`                                |
-| `src/lib/tool-registry.js`               | Регистрация 93 инструментов                    | `ALL_TOOLS`, `getToolDefinitions()`, `getToolHandler()`          |
+| `src/lib/tool-registry.js`               | Регистрация 98 инструментов                    | `ALL_TOOLS`, `getToolDefinitions()`, `getToolHandler()`          |
 | `src/lib/tool-executor.js`               | Обработчик инструментов + MCP envelope ошибок  | `executeTool()`                                                  |
 | `src/lib/validators.js`                  | Валидация строк, чисел, enum и Excel refs      | 8 функций                                                        |
 | `src/lib/fragment-store.js`              | Временные rich-content refs с TTL              | `reserveFragment()`, `commitReservedFragment()`, `getFragment()` |
 | `src/lib/applescript/executor.js`        | Выполнение AppleScript (таймаут 30с)           | `runAppleScript()`                                               |
-| `src/lib/applescript/helpers.js`         | Фрагменты Word + Excel + экранирование строк   | `COMMON_SCRIPTS`, `toAppleScriptString()`, `escapeForWordFind()` |
+| `src/lib/applescript/helpers.js`         | Фрагменты Word + Excel + экранирование строк   | `COMMON_SCRIPTS`, `toAppleScriptString()`, `escapeForWordFind()`, `buildWordExecuteFind()` |
+| `src/lib/applescript/word-find.js`       | Единый Word Find runner + direct/legacy fallback | `buildWordFindScript()`, `runWordFindWithFallback()`           |
 | `src/lib/applescript/template-engine.js` | Шаблоны (regex-safe, type-safe)                | `processTemplate()`                                              |
 
 ### Нейминг инструментов
@@ -78,7 +82,7 @@
 - **Word**: префикс `word_` (`word_create_document`, `word_insert_text`, `word_list_tables`)
 - **Excel**: префикс `excel_` (`excel_create_workbook`, `excel_set_cell`, `excel_sort_range`)
 
-## Инструменты Word (56 шт.)
+## Инструменты Word (59 шт.)
 
 ### Документы (7)
 
@@ -150,9 +154,17 @@
 | Инструмент                  | Назначение                                   | Параметры                                                           |
 | --------------------------- | -------------------------------------------- | ------------------------------------------------------------------- |
 | `word_copy_content`         | Копировать в clipboard с форматами           | `scope?`, `startParagraph?`, `endParagraph?`, `inlineShapeIndex?`   |
-| `word_capture_content_ref`  | Захватить rich-content фрагмент в reusable ref | `scope?`, `startParagraph?`, `endParagraph?`, `inlineShapeIndex?` |
-| `word_insert_content_ref`   | Вставить ранее сохранённый Word/image ref    | `ref`, `width?`, `height?`                                           |
+| `word_capture_content_ref`  | Legacy disabled под in-place policy          | `scope?`, `startParagraph?`, `endParagraph?`, `inlineShapeIndex?`   |
+| `word_insert_content_ref`   | Вставить image ref                           | `ref`, `width?`, `height?`                                           |
 | `word_paste_content`        | Вставить из clipboard с форматами            | —                                                                   |
+
+### Workflows (3)
+
+| Инструмент                 | Назначение                                 | Параметры                           |
+| -------------------------- | ------------------------------------------ | ----------------------------------- |
+| `word_copy_story_content`  | Копировать body/header/footer в clipboard  | `scope?`, `section?`, `type?`       |
+| `word_clear_story_content` | Очистить body/header/footer in-place       | `scope?`, `section?`, `type?`       |
+| `word_set_story_text`      | Заменить текст body/header/footer in-place | `scope?`, `text`, `section?`, `type?` |
 
 ### Headers/Footers (6)
 
@@ -181,7 +193,7 @@
 | `word_get_text_formatting`      | Шрифт, размер, bold, italic, цвет выделения | —         |
 | `word_get_paragraph_formatting` | Стиль, выравнивание, отступы, интервалы     | —         |
 
-## Инструменты Excel (37 шт.)
+## Инструменты Excel (39 шт.)
 
 ### Workbooks (6)
 
@@ -252,8 +264,15 @@
 | ------------------------- | ------------------------------------------- | ---------------------------- |
 | `excel_copy_range`        | Копировать диапазон с форматами в clipboard | `range`, `worksheet?`        |
 | `excel_paste_range`       | Вставить clipboard в target cell            | `targetCell`, `worksheet?`   |
-| `excel_capture_range_ref` | Захватить диапазон как reusable ref         | `range`, `worksheet?`        |
-| `excel_insert_range_ref`  | Вставить ранее сохранённый range ref        | `ref`, `targetCell`, `worksheet?` |
+| `excel_capture_range_ref` | Legacy disabled под in-place policy         | `range`, `worksheet?`        |
+| `excel_insert_range_ref`  | Legacy disabled под in-place policy         | `ref`, `targetCell`, `worksheet?` |
+
+### Workflows (2)
+
+| Инструмент               | Назначение                              | Параметры                      |
+| ------------------------ | --------------------------------------- | ------------------------------ |
+| `excel_clear_worksheet`  | Очистить used range активного листа     | `worksheet?`                   |
+| `excel_set_range_values` | Записать TSV-матрицу в диапазон in-place | `range`, `values`, `worksheet?` |
 | `excel_export_csv` | Экспорт в CSV   | `path`                                         |
 
 ## Индексация
@@ -269,6 +288,7 @@
 | ------------------------------ | -------------------------------------- | ------------------------------ |
 | `toAppleScriptString(str)`     | Контент (insert, set cell, set header) | `("line1" & return & "line2")` |
 | `escapeForWordFind(str)`       | Word Find/Replace, поиск               | `"line1^pline2"`               |
+| `buildWordExecuteFind(...)`    | Прямой `execute find` с параметрами    | `execute find findObject ...`  |
 | `escapeAppleScriptString(str)` | Экранирование `\` и `"` (базовый)      | `say \"hi\"`                   |
 | `quoteAppleScriptString(str)`  | Базовый + оборачивание в кавычки       | `"say \"hi\""`                 |
 
@@ -276,6 +296,8 @@
 
 - `toAppleScriptString` — newlines → `& return &` конкатенация. Для: `word_insert_text`, `word_create_document`, `word_set_table_cell`, `word_set_header/footer_text`, `excel_set_cell`
 - `escapeForWordFind` — newlines → `^p` (Word paragraph mark). Для: `word_delete_text`, `word_replace_text`, `word_move_cursor_after_text` (ТОЛЬКО Word Find API)
+- `buildWordExecuteFind` — генерирует primary-path вызов `execute find ... find text ... replace with ...`
+- `src/lib/applescript/word-find.js` — единая точка выполнения Word Find. Direct `execute find ... find text ...` остаётся primary path; legacy `set content of find object` допустим только как compatibility fallback после runtime-dispatch ошибки (`-1708` / `doesn't understand execute find`)
 - `quoteAppleScriptString` — экранирование `\` и `"` + оборачивание в кавычки. Для: `word_create_hyperlink` (URL, displayText), `word_find_table_header` (contains), `excel_find_cell` (what), `word_goto/delete_bookmark` (name), `word_move_cursor_after_text` (return строки), `excel_create/rename_sheet` (name), return-строки с пользовательским текстом
 - `escapeAppleScriptString` — для вставки в уже кавычеченные строки. Для: `word_insert_header/footer_image` (hfsPath внутри `{file name:"..."}`)
 - `JSON.stringify` — допустимо ТОЛЬКО для: путей (`open`, `save as`), cell refs (A1), range refs (A1:B3), font names, style names, формул (`set formula`)
@@ -302,7 +324,7 @@
 | ------------------- | ------------------------------------------------------------------------------------------- |
 | Ячейка таблицы      | `cell COLUMN of row ROW of table`                                                           |
 | Collapse            | `set selection end/start of selection to selection start/end of selection`                  |
-| Find                | `find object of selection` (НЕ внутри `tell activeDoc`), результат `execute find` — boolean |
+| Find                | `find object of selection` (НЕ внутри `tell activeDoc`), primary path: `execute find ... find text ... replace with ...`; compatibility fallback на `set content of find object` допустим только внутри `src/lib/applescript/word-find.js` после runtime-dispatch ошибки |
 | Закладки            | `make new bookmark at d with properties {name:"X", \|bookmark range\|:selection}`           |
 | Гиперссылки         | `hyperlink objects of d`, `text to display of h` (в try/catch)                              |
 | Copy/Paste          | `copy object selection`, `paste object selection`                                           |
@@ -344,18 +366,27 @@
 yarn test              # Все тесты
 yarn test:watch        # Watch mode
 yarn test:coverage     # С покрытием
+yarn test:applescript:strict # Strict compile через osacompile
+yarn test:word-find:live     # Opt-in runtime smoke для Word Find
 ```
 
 | Тестовый файл                            | Покрытие                                                                                  | Тестов |
 | ---------------------------------------- | ----------------------------------------------------------------------------------------- | ------ |
 | `tests/validation.test.js`               | Валидация                                                                                 | 20+    |
 | `tests/mcp-tools.test.js`                | Word инструменты                                                                          | 80+    |
-| `tests/server-integration.test.js`       | Интеграция (93 инструмента)                                                               | 40+    |
+| `tests/server-integration.test.js`       | Интеграция (98 инструментов)                                                               | 40+    |
 | `tests/applescript-syntax.test.js`       | Word AppleScript + headers/sections/formatting + multiline + спецсимволы + error handling | 110+   |
-| `tests/excel-applescript-syntax.test.js` | Excel AppleScript (все 37 инструментов) + спецсимволы + валидация RGB + error handling     | 60+    |
+| `tests/applescript-registry.test.js`     | Registry-level strict compile для всех AppleScript-backed tools через `ALL_TOOLS`         | 1      |
+| `tests/excel-applescript-syntax.test.js` | Excel AppleScript (все 39 инструментов) + спецсимволы + валидация RGB + error handling     | 60+    |
 | `tests/fragment-store.test.js`           | `ref`-хранилище, TTL cleanup, file-backed fragments                                      | 5+     |
 | `tests/tool-executor.test.js`            | MCP envelope, коды ошибок, details                                                       | 5+     |
 | `tests/applescript-wrappers.test.js`     | Word/Excel wrappers и guards                                                              | 4+     |
+| `tests/word-find-orchestration.test.js`  | Word Find retry orchestration, compatibility fallback, combined errors                    | 6      |
+| `tests/word-find-live.test.js`           | Opt-in runtime smoke против реального Microsoft Word для short/long/placeholder replace, delete, move | 6      |
+
+- `yarn test:applescript:strict` проверяет синтаксис через `osacompile`, но не подтверждает runtime-поведение Word Find API
+- `tests/word-find-orchestration.test.js` обязателен для любых изменений в `src/lib/applescript/word-find.js` и Word Find инструментах
+- `yarn test:word-find:live` запускать только в локальной GUI-сессии с доступным Microsoft Word; suite должен покрывать short/long/placeholder replace, delete и move
 
 ## Сборка MCPB
 

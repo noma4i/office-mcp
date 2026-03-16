@@ -1,6 +1,7 @@
 import { validateString, validateBoolean, validateNumber } from '../lib/validators.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
-import { toAppleScriptString, escapeForWordFind } from '../lib/applescript/helpers.js';
+import { toAppleScriptString } from '../lib/applescript/helpers.js';
+import { WORD_FIND_MODES, runWordFindWithFallback } from '../lib/applescript/word-find.js';
 import { wrapWordScript } from '../lib/applescript/script-wrappers.js';
 
 export const textTools = [
@@ -58,27 +59,15 @@ return "Text inserted successfully"
       const replace = args.replace !== undefined ? validateString(args.replace, 'replace', false) : '';
       const all = validateBoolean(args.all, 'all', true);
 
-      const script = wrapWordScript(`
-set activeDoc to active document
-select (text object of activeDoc)
-set selection end of selection to selection start of selection
-try
-  set findObject to find object of selection
-on error
-  return "Cannot access find object. Make sure a document is active."
-end try
-clear formatting findObject
-set content of findObject to ${escapeForWordFind(find)}
-set content of replacement of findObject to ${escapeForWordFind(replace)}
-set findResult to ${all ? 'execute find findObject replace replace all' : 'execute find findObject replace replace one'}
-if findResult then
-  return "Text replaced successfully"
-else
-  return "Text not found, no replacements made"
-end if
-`);
-
-      return await runAppleScript(script);
+      return await runWordFindWithFallback(
+        {
+          mode: WORD_FIND_MODES.REPLACE,
+          findText: find,
+          replaceWith: replace,
+          replaceAll: all
+        },
+        { executeAppleScript: runAppleScript }
+      );
     }
   },
 
@@ -98,26 +87,13 @@ end if
     async handler(args) {
       if (args.text !== undefined) {
         const text = validateString(args.text, 'text', true);
-        const script = wrapWordScript(`
-set activeDoc to active document
-select (text object of activeDoc)
-set selection end of selection to selection start of selection
-try
-  set findObject to find object of selection
-on error
-  return "Cannot access find object. Make sure a document is active."
-end try
-clear formatting findObject
-set content of findObject to ${escapeForWordFind(text)}
-set content of replacement of findObject to ""
-set findResult to execute find findObject replace replace all
-if findResult then
-  return "Text deleted successfully"
-else
-  return "Text not found, nothing deleted"
-end if
-`);
-        return await runAppleScript(script);
+        return await runWordFindWithFallback(
+          {
+            mode: WORD_FIND_MODES.DELETE_ALL,
+            findText: text
+          },
+          { executeAppleScript: runAppleScript }
+        );
       }
 
       const script = wrapWordScript(`

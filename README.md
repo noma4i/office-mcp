@@ -4,7 +4,7 @@ MCP-сервер для автоматизации Microsoft Word и Microsoft E
 
 ## Что поддерживается
 
-- 93 инструмента: 56 для Word и 37 для Excel
+- 98 инструментов: 59 для Word и 39 для Excel
 - Операции с документами и книгами: create/open/save/close/export
 - Текст, таблицы, закладки, навигация, headers/footers, секции, rich copy/paste и `ref`-фрагменты в Word
 - Листы, ячейки, формулы, форматирование, сортировка, clipboard/range refs и экспорт CSV в Excel
@@ -63,9 +63,9 @@ yarn build:watch
 
 Rich-content инструменты используют временные `ref`-хендлы:
 
-- `word_capture_content_ref` и `excel_capture_range_ref` сохраняют native Office-фрагменты во временное хранилище и возвращают `data.ref`
+- `word_capture_content_ref` и `excel_capture_range_ref` переведены в legacy/disabled под in-place policy
 - `word_create_image_ref` создаёт `ref` для локального изображения
-- `word_insert_content_ref` и `excel_insert_range_ref` вставляют ранее сохранённые `ref`
+- `word_insert_content_ref` продолжает работать для image refs; native Word/Excel fragment refs не являются основным workflow path
 - `ref` является opaque-идентификатором и истекает автоматически
 
 ## Тесты
@@ -74,9 +74,16 @@ Rich-content инструменты используют временные `ref
 yarn test
 yarn test:coverage
 yarn test:applescript:strict
+yarn test:word-find:live
 ```
 
 `test:applescript:strict` запускает строгую компиляцию AppleScript через `osacompile`.
+
+`test:word-find:live` запускает opt-in runtime smoke suite против реального Microsoft Word для Word Find/Replace/Delete/Move сценариев, включая placeholder-like replace кейсы с Unicode punctuation и длинными API replacement строками. Этот набор нужно запускать в локальной GUI-сессии; он не входит в обычный `yarn test`.
+
+Word Find runtime теперь проходит через общий orchestration layer: primary path использует direct `execute find ... find text ...`, а compatibility fallback на legacy `set content of find object` включается только после runtime-ошибки `execute find` в Microsoft Word.
+
+Дополнительно этот набор теперь включает registry-level проверку: тест проходит по всему `ALL_TOOLS`, генерирует минимально валидный AppleScript для каждого AppleScript-backed инструмента и компилирует его в strict-режиме.
 
 ## Сборка MCPB
 

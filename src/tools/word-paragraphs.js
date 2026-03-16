@@ -31,19 +31,18 @@ repeat with i from 1 to maxPara
   if length of pText > 50 then
     set pText to text 1 thru 50 of pText & "..."
   end if
-  set pText to my replaceText(pText, return, " ")
-  set pText to my replaceText(pText, linefeed, " ")
+  set AppleScript's text item delimiters to return
+  set pText to text items of pText as text
+  set AppleScript's text item delimiters to " "
+  set pText to text items of pText as text
+  set AppleScript's text item delimiters to linefeed
+  set pText to text items of pText as text
+  set AppleScript's text item delimiters to " "
+  set pText to text items of pText as text
+  set AppleScript's text item delimiters to ""
   set paraList to paraList & i & ". [" & pStyle & "] " & pText & linefeed
 end repeat
 return paraList
-on replaceText(theText, searchString, replacementString)
-  set AppleScript's text item delimiters to searchString
-  set theTextItems to text items of theText
-  set AppleScript's text item delimiters to replacementString
-  set theText to theTextItems as text
-  set AppleScript's text item delimiters to ""
-  return theText
-end replaceText
 `);
       return await runAppleScript(script);
     }
@@ -121,4 +120,3 @@ return "Paragraph ${index} deleted"
     }
   }
 ];
-

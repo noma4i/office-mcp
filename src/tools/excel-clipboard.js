@@ -1,5 +1,4 @@
 import { ToolError } from '../lib/errors.js';
-import { commitReservedFragment, discardReservedFragment, getFragment, reserveFragment } from '../lib/fragment-store.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
 import { validateExcelCellReference, validateExcelRangeReference, validateInteger, validateString } from '../lib/validators.js';
 
@@ -59,91 +58,6 @@ return "Range pasted from clipboard"
 `;
 }
 
-function buildExcelCaptureRangeRefScript(range, worksheetRef, fragmentPath) {
-  return `
-tell application "Microsoft Excel"
-  if (count of workbooks) = 0 then
-    return "No workbook is open"
-  end if
-  activate
-  set sourceWb to active workbook
-  set sourceWs to ${worksheetRef}
-  try
-    select range ${JSON.stringify(range)} of sourceWs
-  on error
-    return "Invalid range: ${range}"
-  end try
-end tell
-delay 0.2
-tell application "System Events"
-  keystroke "c" using command down
-end tell
-delay 0.2
-tell application "Microsoft Excel"
-  activate
-  set fragWb to make new workbook
-  set fragWs to active sheet
-  select range "A1" of fragWs
-end tell
-delay 0.2
-tell application "System Events"
-  keystroke "v" using command down
-end tell
-delay 0.2
-tell application "Microsoft Excel"
-  try
-    save workbook as fragWb filename ${JSON.stringify(fragmentPath)}
-    close fragWb saving no
-  on error errMsg
-    try
-      close fragWb saving no
-    end try
-    return "Error creating range fragment: " & errMsg
-  end try
-end tell
-return "Range captured to ref"
-`;
-}
-
-function buildExcelInsertRangeRefScript(fragmentPath, targetCell, worksheetRef) {
-  return `
-tell application "Microsoft Excel"
-  if (count of workbooks) = 0 then
-    return "No workbook is open"
-  end if
-  activate
-  set targetWb to active workbook
-  set targetWs to ${worksheetRef}
-end tell
-tell application "Microsoft Excel"
-  open workbook workbook file name ${JSON.stringify(fragmentPath)}
-  set fragWb to active workbook
-  set fragWs to active sheet
-  set fragRange to used range of fragWs
-  select fragRange
-end tell
-delay 0.2
-tell application "System Events"
-  keystroke "c" using command down
-end tell
-delay 0.2
-tell application "Microsoft Excel"
-  close fragWb saving no
-  activate object targetWs
-  try
-    select range ${JSON.stringify(targetCell)} of targetWs
-  on error
-    return "Cell ${targetCell} not accessible"
-  end try
-end tell
-delay 0.2
-tell application "System Events"
-  keystroke "v" using command down
-end tell
-return "Range inserted from ref"
-`;
-}
-
 export const excelClipboardTools = [
   {
     name: 'excel_copy_range',
@@ -183,7 +97,7 @@ export const excelClipboardTools = [
   },
   {
     name: 'excel_capture_range_ref',
-    description: 'Capture an Excel range as a reusable ref backed by a temporary workbook.',
+    description: 'Legacy tool disabled by in-place editing policy. Use excel_copy_range instead.',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -194,31 +108,14 @@ export const excelClipboardTools = [
       required: ['range']
     },
     async handler(args) {
-      const range = validateExcelRangeReference(args.range, 'range');
-      const worksheetRef = resolveWorksheetRef(args.worksheet);
-      const reserved = reserveFragment({
-        prefix: 'excelfrag',
-        app: 'excel',
-        kind: 'excel_range',
-        extension: 'xlsx',
-        summary: { label: `range ${range}`, worksheet: args.worksheet ?? 'active' }
-      });
-
-      try {
-        const result = await runAppleScript(buildExcelCaptureRangeRefScript(range, worksheetRef, reserved.filePath));
-        if (result !== 'Range captured to ref') {
-          throw new ToolError('OPERATION_ERROR', result);
-        }
-        return commitReservedFragment(reserved);
-      } catch (error) {
-        discardReservedFragment(reserved);
-        throw error;
-      }
+      validateExcelRangeReference(args.range, 'range');
+      resolveWorksheetRef(args.worksheet);
+      throw new ToolError('NOT_SUPPORTED', 'excel_capture_range_ref is disabled by in-place editing policy. Use excel_copy_range.');
     }
   },
   {
     name: 'excel_insert_range_ref',
-    description: 'Insert a previously captured Excel range ref into the active workbook at the target cell.',
+    description: 'Legacy tool disabled by in-place editing policy. Use excel_paste_range instead.',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
@@ -230,19 +127,10 @@ export const excelClipboardTools = [
       required: ['ref', 'targetCell']
     },
     async handler(args) {
-      const ref = validateString(args.ref, 'ref', true);
-      const targetCell = validateExcelCellReference(args.targetCell, 'targetCell');
-      const worksheetRef = resolveWorksheetRef(args.worksheet);
-      const fragment = getFragment(ref, 'excel');
-      if (fragment.kind !== 'excel_range') {
-        throw new ToolError('VALIDATION_ERROR', `ref kind is not supported in Excel: ${fragment.kind}`);
-      }
-
-      const result = await runAppleScript(buildExcelInsertRangeRefScript(fragment.filePath, targetCell, worksheetRef));
-      if (result !== 'Range inserted from ref') {
-        throw new ToolError('OPERATION_ERROR', result);
-      }
-      return { inserted: true, ref: fragment.ref, kind: fragment.kind, targetCell };
+      validateString(args.ref, 'ref', true);
+      validateExcelCellReference(args.targetCell, 'targetCell');
+      resolveWorksheetRef(args.worksheet);
+      throw new ToolError('NOT_SUPPORTED', 'excel_insert_range_ref is disabled by in-place editing policy. Use excel_paste_range.');
     }
   }
 ];

@@ -8,8 +8,16 @@ end if`,
 
   cleanCellMarkers: `
 if length of cellText > 0 then
-  repeat while (length of cellText > 0) and ((ASCII number of (character -1 of cellText)) is in {7, 13})
-    set cellText to text 1 thru -2 of cellText
+  repeat while length of cellText > 0
+    set lastCharCode to ASCII number of (character -1 of cellText)
+    if lastCharCode is not in {7, 13} then
+      exit repeat
+    end if
+    if length of cellText is 1 then
+      set cellText to ""
+    else
+      set cellText to text 1 thru -2 of cellText
+    end if
   end repeat
 end if`,
 
@@ -53,4 +61,36 @@ export function toAppleScriptString(str) {
 export function escapeForWordFind(str) {
   const escaped = escapeAppleScriptString(str).replace(/\r\n/g, '^p').replace(/\n/g, '^p').replace(/\r/g, '^p');
   return `"${escaped}"`;
+}
+
+export function buildWordExecuteFind(findObjectName, {
+  findText,
+  replaceWith,
+  replace,
+  matchForward,
+  wrapFind
+} = {}) {
+  const parts = [`execute find ${findObjectName}`];
+
+  if (findText !== undefined) {
+    parts.push(`find text ${escapeForWordFind(findText)}`);
+  }
+  if (matchForward !== undefined) {
+    parts.push(`match forward ${matchForward}`);
+  }
+  if (wrapFind !== undefined) {
+    parts.push(`wrap find ${wrapFind}`);
+  }
+  if (replaceWith !== undefined) {
+    parts.push(`replace with ${escapeForWordFind(replaceWith)}`);
+  }
+  if (replace !== undefined) {
+    parts.push(`replace ${replace}`);
+  }
+
+  return parts.join(' ');
+}
+
+export function wrapExcelRowValues(values) {
+  return `{${values.map(value => quoteAppleScriptString(String(value))).join(', ')}}`;
 }

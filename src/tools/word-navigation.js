@@ -1,6 +1,6 @@
 import { validateString, validateInteger } from '../lib/validators.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
-import { escapeForWordFind, quoteAppleScriptString } from '../lib/applescript/helpers.js';
+import { WORD_FIND_MODES, runWordFindWithFallback } from '../lib/applescript/word-find.js';
 import { wrapWordScript } from '../lib/applescript/script-wrappers.js';
 
 export const navigationTools = [
@@ -83,42 +83,14 @@ return "All content selected"
       const searchText = validateString(args.searchText, 'searchText', true);
       const occurrence = validateInteger(args.occurrence, 'occurrence', 1) || 1;
 
-      const script = wrapWordScript(`
-set activeDoc to active document
-select (text object of activeDoc)
-set selection end of selection to selection start of selection
-try
-  set findObj to find object of selection
-on error
-  return "Cannot access find object. Make sure a document is active."
-end try
-clear formatting findObj
-set content of findObj to ${escapeForWordFind(searchText)}
-set wrap of findObj to find stop
-set forward of findObj to true
-set foundCount to 0
-repeat ${occurrence} times
-  execute find findObj
-  set selStart to selection start of selection
-  set selEnd to selection end of selection
-  if selStart is equal to selEnd then
-    exit repeat
-  end if
-  set foundCount to foundCount + 1
-  if foundCount < ${occurrence} then
-    set selection end of selection to selEnd
-    set selection start of selection to selEnd
-  end if
-end repeat
-if foundCount < ${occurrence} then
-  return "Text not found (or fewer than ${occurrence} occurrences): " & ${quoteAppleScriptString(searchText)}
-end if
-set selection start of selection to selection end of selection
-return "Cursor moved after occurrence " & ${occurrence} & " of: " & ${quoteAppleScriptString(searchText)}
-`);
-
-      return await runAppleScript(script);
+      return await runWordFindWithFallback(
+        {
+          mode: WORD_FIND_MODES.MOVE_CURSOR_AFTER_TEXT,
+          findText: searchText,
+          occurrence
+        },
+        { executeAppleScript: runAppleScript }
+      );
     }
   }
 ];
-

@@ -22,12 +22,14 @@ const { hyperlinkTools } = await import('../src/tools/word-hyperlinks.js');
 const { navigationTools } = await import('../src/tools/word-navigation.js');
 const { documentTools } = await import('../src/tools/word-documents.js');
 const { imageTools } = await import('../src/tools/word-images.js');
+const { wordWorkflowTools } = await import('../src/tools/word-workflows.js');
 const { headerFooterTools } = await import('../src/tools/word-headers-footers.js');
 const { sectionTools } = await import('../src/tools/word-sections.js');
 const { formattingReadTools } = await import('../src/tools/word-formatting-read.js');
 const { clipboardTools } = await import('../src/tools/word-clipboard.js');
 const { processTemplate } = await import('../src/lib/applescript/template-engine.js');
-const { toAppleScriptString, escapeForWordFind, escapeAppleScriptString } = await import('../src/lib/applescript/helpers.js');
+const { COMMON_SCRIPTS, toAppleScriptString, escapeForWordFind, escapeAppleScriptString, buildWordExecuteFind } = await import('../src/lib/applescript/helpers.js');
+const { WORD_FIND_MODES, WORD_FIND_STRATEGIES, buildWordFindScript } = await import('../src/lib/applescript/word-find.js');
 const { excelCellTools } = await import('../src/tools/excel-cells.js');
 
 function findTool(tools, name) {
@@ -129,7 +131,11 @@ describe('AppleScript Syntax Verification', () => {
       const script = await captureScript(findTool(textTools, 'word_replace_text'), { find: 'old', replace: 'new' });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
-      expect(script).toContain('content of replacement of findObject');
+      expect(script).toContain('execute find findObject');
+      expect(script).toContain('find text "old"');
+      expect(script).toContain('replace with "new"');
+      expect(script).not.toContain('set content of findObject');
+      expect(script).not.toContain('content of replacement of findObject');
     });
 
     test('replace_text resets search to document start', async () => {
@@ -170,6 +176,7 @@ describe('AppleScript Syntax Verification', () => {
       const script = await captureScript(findTool(tableTools, 'word_get_table_cell'), { tableIndex: 1, row: 1, column: 1 });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
+      expect(script).toContain('if length of cellText is 1 then');
     });
 
     test('set_table_cell compiles', async () => {
@@ -188,6 +195,7 @@ describe('AppleScript Syntax Verification', () => {
       const script = await captureScript(findTool(tableTools, 'word_find_table_header'), { tableIndex: 1, headerText: 'Name' });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
+      expect(script).toContain('if length of cellText is 1 then');
     });
 
     test('find_table_header with quotes compiles', async () => {
@@ -239,6 +247,12 @@ describe('AppleScript Syntax Verification', () => {
       expect(script).toContain('Cell not found');
     });
 
+    test('cleanCellMarkers helper protects single marker cells', () => {
+      expect(COMMON_SCRIPTS.cleanCellMarkers).toContain('if length of cellText is 1 then');
+      expect(COMMON_SCRIPTS.cleanCellMarkers).toContain('set cellText to ""');
+      expect(COMMON_SCRIPTS.cleanCellMarkers).toContain('set lastCharCode to ASCII number of (character -1 of cellText)');
+    });
+
     test('set_table_cell has error handling', async () => {
       const script = await captureScript(findTool(tableTools, 'word_set_table_cell'), { tableIndex: 1, row: 1, column: 1, text: 'Test' });
       expect(script).toContain('try');
@@ -259,6 +273,7 @@ describe('AppleScript Syntax Verification', () => {
       expect(result.ok).toBe(true);
       expect(script).toContain('name local of style of p');
       expect(script).not.toContain('paragraph style');
+      expect(script).not.toContain('on replaceText');
     });
 
     test('goto_paragraph compiles', async () => {
@@ -384,6 +399,10 @@ describe('AppleScript Syntax Verification', () => {
       const script = await captureScript(findTool(navigationTools, 'word_move_cursor_after_text'), { searchText: 'test' });
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
+      expect(script).toContain('execute find findObject');
+      expect(script).toContain('match forward true');
+      expect(script).toContain('wrap find find stop');
+      expect(script).not.toContain('set content of findObject');
     });
 
     test('get_selection_info has error handling', async () => {
@@ -454,6 +473,8 @@ describe('AppleScript Syntax Verification', () => {
       expect(script).toContain('set findResult to');
       expect(script).toContain('if findResult then');
       expect(script).toContain('Text not found, no replacements made');
+      expect(script).toContain('replace with "new"');
+      expect(script).not.toContain('set content of findObject');
     });
 
     test('word_delete_text with text captures find result and reports not found', async () => {
@@ -461,6 +482,8 @@ describe('AppleScript Syntax Verification', () => {
       expect(script).toContain('set findResult to');
       expect(script).toContain('if findResult then');
       expect(script).toContain('Text not found, nothing deleted');
+      expect(script).toContain('replace with ""');
+      expect(script).not.toContain('set content of findObject');
     });
 
     test('word_create_hyperlink uses quoteAppleScriptString not JSON.stringify', async () => {
@@ -645,6 +668,10 @@ describe('AppleScript Syntax Verification', () => {
       expect(script).toBeTruthy();
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
+      expect(script).toContain('execute find findObject');
+      expect(script).toContain('find text "test"');
+      expect(script).toContain('replace with ""');
+      expect(script).not.toContain('set content of findObject');
     });
 
     test('word_delete_text with text resets search to document start', async () => {
@@ -724,34 +751,64 @@ describe('AppleScript Syntax Verification', () => {
     });
 
     test('word_capture_content_ref compiles', async () => {
-      const script = await captureScript(findTool(clipboardTools, 'word_capture_content_ref'), { scope: 'document' });
-      expect(script).toBeTruthy();
-      const result = compileAppleScript(script);
-      expect(result.ok).toBe(true);
-      expect(script).toContain('save as fragDoc file name');
+      await expect(findTool(clipboardTools, 'word_capture_content_ref').handler({ scope: 'document' })).rejects.toMatchObject({
+        code: 'NOT_SUPPORTED'
+      });
     });
 
-    test('word_insert_content_ref compiles for docx fragments', async () => {
-      const ref = 'wordfrag_demo';
-      const filePath = join(tmpdir(), `${ref}.docx`);
+    test('word_insert_content_ref compiles for image refs', async () => {
+      const ref = 'wordimg_demo';
+      const filePath = '/tmp/test.png';
       createFragmentFixture(ref, {
         ref,
         app: 'word',
-        kind: 'word_fragment',
-        format: 'docx',
+        kind: 'image_file',
+        format: 'png',
         filePath,
         summary: { label: 'fixture' },
         createdAt: new Date().toISOString(),
         expiresAt: new Date(Date.now() + 60_000).toISOString()
       });
 
-      const script = await captureScript(findTool(clipboardTools, 'word_insert_content_ref'), { ref: 'wordfrag_demo' });
+      const script = await captureScript(findTool(clipboardTools, 'word_insert_content_ref'), { ref: 'wordimg_demo' });
       expect(script).toBeTruthy();
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
-      expect(script).toContain('open ');
-      expect(script).toContain('copy object selection');
       expect(script).toContain('paste object selection');
+    });
+  });
+
+  describe('Workflow Tools', () => {
+    test('word_copy_story_content compiles for header scope', async () => {
+      const script = await captureScript(findTool(wordWorkflowTools, 'word_copy_story_content'), {
+        scope: 'header',
+        section: 1,
+        type: 'primary'
+      });
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+      expect(script).toContain('set storyRange to text object of storyRef');
+      expect(script).toContain('copy object selection');
+    });
+
+    test('word_clear_story_content compiles for body scope', async () => {
+      const script = await captureScript(findTool(wordWorkflowTools, 'word_clear_story_content'), { scope: 'body' });
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+      expect(script).toContain('set content of storyRange to ""');
+    });
+
+    test('word_set_story_text compiles for footer scope', async () => {
+      const script = await captureScript(findTool(wordWorkflowTools, 'word_set_story_text'), {
+        scope: 'footer',
+        section: 1,
+        type: 'primary',
+        text: 'Footer text'
+      });
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+      expect(script).toContain('set content of storyRange to');
+      expect(script).toContain('Footer text');
     });
   });
 
@@ -839,6 +896,47 @@ describe('AppleScript Syntax Verification', () => {
     test('escapeForWordFind escapes quotes', () => {
       expect(escapeForWordFind('say "hi"')).toBe('"say \\"hi\\""');
     });
+
+    test('buildWordExecuteFind builds direct execute-find command with parameters', () => {
+      expect(
+        buildWordExecuteFind('findObj', {
+          findText: 'hello\nworld',
+          replaceWith: 'new value',
+          replace: 'replace all',
+          matchForward: true,
+          wrapFind: 'find stop'
+        })
+      ).toBe('execute find findObj find text "hello^pworld" match forward true wrap find find stop replace with "new value" replace replace all');
+    });
+
+    test('buildWordFindScript compiles direct strategy for replace', () => {
+      const script = buildWordFindScript({
+        strategy: WORD_FIND_STRATEGIES.DIRECT_EXECUTE_PARAMS,
+        mode: WORD_FIND_MODES.REPLACE,
+        findText: 'old value',
+        replaceWith: 'new value'
+      });
+      expect(script).toContain('execute find findObject');
+      expect(script).toContain('find text "old value"');
+      expect(script).toContain('replace with "new value"');
+      expect(script).not.toContain('set content of findObject');
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
+    test('buildWordFindScript compiles legacy strategy for replace', () => {
+      const script = buildWordFindScript({
+        strategy: WORD_FIND_STRATEGIES.LEGACY_FIND_OBJECT_CONTENT,
+        mode: WORD_FIND_MODES.REPLACE,
+        findText: 'old value',
+        replaceWith: 'new value'
+      });
+      expect(script).toContain('set content of findObject to "old value"');
+      expect(script).toContain('set content of replacement of findObject to "new value"');
+      expect(script).toContain('set findResult to execute find findObject replace replace all');
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
   });
 
   describe('Multiline Text in Tools', () => {
@@ -854,6 +952,18 @@ describe('AppleScript Syntax Verification', () => {
       const script = await captureScript(findTool(textTools, 'word_replace_text'), { find: 'old\ntext', replace: 'new\ntext' });
       expect(script).toContain('old^ptext');
       expect(script).toContain('new^ptext');
+      const result = compileAppleScript(script);
+      expect(result.ok).toBe(true);
+    });
+
+    test('word_replace_text with long single-line find and replace uses execute find parameters', async () => {
+      const longFind = 'automation incident details '.repeat(12).trim();
+      const longReplace = '[describe incident impact] '.repeat(8).trim();
+      const script = await captureScript(findTool(textTools, 'word_replace_text'), { find: longFind, replace: longReplace });
+      expect(script).toContain(`find text "${longFind}"`);
+      expect(script).toContain(`replace with "${longReplace}"`);
+      expect(script).not.toContain('set content of findObject');
+      expect(script).not.toContain('content of replacement of findObject');
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
     });

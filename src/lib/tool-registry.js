@@ -7,6 +7,7 @@ import { paragraphTools } from '../tools/word-paragraphs.js';
 import { navigationTools } from '../tools/word-navigation.js';
 import { imageTools } from '../tools/word-images.js';
 import { clipboardTools } from '../tools/word-clipboard.js';
+import { wordWorkflowTools } from '../tools/word-workflows.js';
 import { headerFooterTools } from '../tools/word-headers-footers.js';
 import { sectionTools } from '../tools/word-sections.js';
 import { formattingReadTools } from '../tools/word-formatting-read.js';
@@ -17,6 +18,7 @@ import { excelFormattingTools } from '../tools/excel-formatting.js';
 import { excelRowColumnTools } from '../tools/excel-rows-columns.js';
 import { excelDataTools } from '../tools/excel-data.js';
 import { excelClipboardTools } from '../tools/excel-clipboard.js';
+import { excelWorkflowTools } from '../tools/excel-workflows.js';
 
 export const ALL_TOOLS = [
   ...documentTools,
@@ -28,6 +30,7 @@ export const ALL_TOOLS = [
   ...navigationTools,
   ...imageTools,
   ...clipboardTools,
+  ...wordWorkflowTools,
   ...headerFooterTools,
   ...sectionTools,
   ...formattingReadTools,
@@ -37,7 +40,8 @@ export const ALL_TOOLS = [
   ...excelFormattingTools,
   ...excelRowColumnTools,
   ...excelDataTools,
-  ...excelClipboardTools
+  ...excelClipboardTools,
+  ...excelWorkflowTools
 ];
 
 export function buildToolMap(tools) {
