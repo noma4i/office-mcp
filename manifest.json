@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "office-mcp",
   "display_name": "Office (By noma4i)",
-  "version": "0.8.0",
+  "version": "0.1.0",
   "description": "Control Microsoft Word and Excel with AppleScript automation (based on Anthropic's Word extension)",
   "long_description": "This extension allows Claude to interact with Microsoft Word and Microsoft Excel on macOS, enabling document creation, editing, formatting, spreadsheet management, and more.\n\nIt uses macOS AppleScript automation to control Word and Excel and requires your explicit permission through macOS security prompts before accessing Microsoft Office applications. It is not affiliated with or endorsed by Microsoft Corporation.\n\nBased on Anthropic's Word extension with additional features, improvements, and Excel support.",
   "author": {

@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.8.0
+## v0.1.0
 
 Initial public release.
 
