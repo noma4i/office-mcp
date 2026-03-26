@@ -1,99 +1,126 @@
 # Office MCP Server
 
-MCP-сервер для автоматизации Microsoft Word и Microsoft Excel через AppleScript на macOS.
+An MCP server that lets Claude control Microsoft Word and Excel on macOS via AppleScript.
 
-## Что поддерживается
+**98 tools** - 59 for Word, 39 for Excel - covering documents, text, tables, formatting, navigation, clipboard, headers/footers, sections, images, and more.
 
-- 98 инструментов: 59 для Word и 39 для Excel
-- Операции с документами и книгами: create/open/save/close/export
-- Текст, таблицы, закладки, навигация, headers/footers, секции, rich copy/paste и `ref`-фрагменты в Word
-- Листы, ячейки, формулы, форматирование, сортировка, clipboard/range refs и экспорт CSV в Excel
-- Проверка AppleScript-синтаксиса тестами
+## Requirements
 
-## Требования
-
-- macOS
-- Microsoft Word и Microsoft Excel
+- macOS with Microsoft Word and/or Excel installed
 - Node.js >= 16
 - Yarn
 
-## Установка
+## Quick Start
 
 ```bash
 yarn install
-```
-
-## Запуск
-
-```bash
 yarn build
 yarn start
 ```
 
-Для разработки:
+### Claude Desktop Configuration
 
-```bash
-yarn build:watch
-```
-
-## MCP-конфигурация (Claude Desktop)
+Add to your Claude Desktop config:
 
 ```json
 {
   "mcpServers": {
     "office": {
       "command": "node",
-      "args": ["/absolute/path/to/word_mcp/dist/index.js"]
+      "args": ["/absolute/path/to/office_mcp/dist/index.js"]
     }
   }
 }
 ```
 
-## Формат ответов инструментов
-
-Каждый tool call возвращает JSON в `content[0].text`.
-
-- Успех:
-  - `{"ok": true, "message": "..."}` для строковых результатов
-  - `{"ok": true, "message": "Operation completed successfully", "data": {...}}` для нестроковых результатов
-- Ошибка:
-  - `{"ok": false, "error": {"code": "...", "message": "...", "details": ...}}`
-
-Примеры кодов ошибок: `NO_DOCUMENT_OPEN`, `NO_WORKBOOK_OPEN`, `NOT_FOUND`, `OUT_OF_RANGE`, `VALIDATION_ERROR`, `APPSCRIPT_ERROR`, `UNKNOWN_TOOL`.
-
-Rich-content инструменты используют временные `ref`-хендлы:
-
-- `word_capture_content_ref` и `excel_capture_range_ref` переведены в legacy/disabled под in-place policy
-- `word_create_image_ref` создаёт `ref` для локального изображения
-- `word_insert_content_ref` продолжает работать для image refs; native Word/Excel fragment refs не являются основным workflow path
-- `ref` является opaque-идентификатором и истекает автоматически
-
-## Тесты
-
-```bash
-yarn test
-yarn test:coverage
-yarn test:applescript:strict
-yarn test:word-find:live
-```
-
-`test:applescript:strict` запускает строгую компиляцию AppleScript через `osacompile`.
-
-`test:word-find:live` запускает opt-in runtime smoke suite против реального Microsoft Word для Word Find/Replace/Delete/Move сценариев, включая placeholder-like replace кейсы с Unicode punctuation и длинными API replacement строками. Этот набор нужно запускать в локальной GUI-сессии; он не входит в обычный `yarn test`.
-
-Word Find runtime теперь проходит через общий orchestration layer: primary path использует direct `execute find ... find text ...`, а compatibility fallback на legacy `set content of find object` включается только после runtime-ошибки `execute find` в Microsoft Word.
-
-Дополнительно этот набор теперь включает registry-level проверку: тест проходит по всему `ALL_TOOLS`, генерирует минимально валидный AppleScript для каждого AppleScript-backed инструмента и компилирует его в strict-режиме.
-
-## Сборка MCPB
+### MCPB Bundle
 
 ```bash
 yarn build && npx @anthropic-ai/mcpb pack . office-mcp.mcpb
 ```
 
-## Структура
+One-click install for Claude Desktop.
 
-- `src/` — исходники сервера и инструментов
-- `dist/` — собранная копия `src/`
-- `tests/` — unit/integration/syntax-тесты
-- `manifest.json` — описание MCP-пакета
+## Word Tools (59)
+
+| Category            | Tools                                                | Examples                                           |
+| ------------------- | ---------------------------------------------------- | -------------------------------------------------- |
+| Documents (7)       | create, open, save, close, export PDF, get text/info | `word_create_document`, `word_export_pdf`          |
+| Text (4)            | insert, replace, delete, format                      | `word_insert_text`, `word_replace_text`            |
+| Navigation (5)      | cursor movement, selection, goto start/end           | `word_move_cursor_after_text`, `word_goto_start`   |
+| Tables (10)         | CRUD rows/columns/cells, find headers                | `word_create_table`, `word_set_table_cell`         |
+| Paragraphs (4)      | list, goto, style, delete                            | `word_list_paragraphs`, `word_set_paragraph_style` |
+| Bookmarks (4)       | list, create, goto, delete                           | `word_create_bookmark`, `word_goto_bookmark`       |
+| Hyperlinks (2)      | list, create                                         | `word_list_hyperlinks`, `word_create_hyperlink`    |
+| Images (4)          | insert, create ref, list shapes, resize              | `word_insert_image`, `word_resize_inline_shape`    |
+| Clipboard (4)       | copy, paste, capture ref, insert ref                 | `word_copy_content`, `word_paste_content`          |
+| Workflows (3)       | copy/clear/set story content                         | `word_copy_story_content`, `word_set_story_text`   |
+| Headers/Footers (6) | get/set text, insert images                          | `word_get_header_text`, `word_insert_header_image` |
+| Sections (4)        | list, info, page setup, breaks                       | `word_list_sections`, `word_set_page_setup`        |
+| Formatting Read (2) | text formatting, paragraph formatting                | `word_get_text_formatting`                         |
+
+## Excel Tools (39)
+
+| Category         | Tools                                        | Examples                                          |
+| ---------------- | -------------------------------------------- | ------------------------------------------------- |
+| Workbooks (6)    | create, open, save, close, info, list        | `excel_create_workbook`, `excel_list_workbooks`   |
+| Sheets (6)       | list, create, delete, rename, activate, info | `excel_create_sheet`, `excel_rename_sheet`        |
+| Cells (7)        | get/set value, range, formula, clear, find   | `excel_get_cell`, `excel_set_cell_formula`        |
+| Formatting (5)   | font, number format, color, merge, autofit   | `excel_format_cells`, `excel_set_cell_color`      |
+| Rows/Columns (6) | insert/delete rows/columns, width, height    | `excel_insert_rows`, `excel_set_column_width`     |
+| Data (3)         | sort, calculate, export CSV                  | `excel_sort_range`, `excel_export_csv`            |
+| Clipboard (4)    | copy, paste, capture ref, insert ref         | `excel_copy_range`, `excel_paste_range`           |
+| Workflows (2)    | clear worksheet, set range values            | `excel_clear_worksheet`, `excel_set_range_values` |
+
+## Tool Response Format
+
+Every tool returns JSON in `content[0].text`:
+
+```json
+// Success
+{"ok": true, "message": "Document created"}
+{"ok": true, "message": "Operation completed successfully", "data": {...}}
+
+// Error
+{"ok": false, "error": {"code": "NO_DOCUMENT_OPEN", "message": "...", "details": ...}}
+```
+
+Error codes: `NO_DOCUMENT_OPEN`, `NO_WORKBOOK_OPEN`, `NOT_FOUND`, `OUT_OF_RANGE`, `VALIDATION_ERROR`, `APPSCRIPT_ERROR`, `UNKNOWN_TOOL`.
+
+## Testing
+
+```bash
+yarn test                        # All tests
+yarn test:watch                  # Watch mode
+yarn test:coverage               # With coverage
+yarn test:applescript:strict     # Strict osacompile syntax check
+yarn test:word-find:live         # Runtime smoke tests (requires Word)
+```
+
+The live test suite runs against a real Microsoft Word instance and covers find/replace, delete, and cursor movement scenarios. Run it in a local GUI session.
+
+## Project Structure
+
+```
+src/
+  index.js                        # Entry point
+  lib/
+    server.js                     # MCP server setup
+    tool-registry.js              # Tool registration (98 tools)
+    tool-executor.js              # Tool call handler
+    validators.js                 # Input validation
+    fragment-store.js             # Temporary rich-content refs
+    applescript/
+      executor.js                 # AppleScript runner (30s timeout)
+      helpers.js                  # String escaping helpers
+      word-find.js                # Word Find orchestration
+      template-engine.js          # AppleScript template engine
+  tools/
+    word-*.js                     # Word tools (13 modules)
+    excel-*.js                    # Excel tools (8 modules)
+tests/                            # Unit, integration, syntax tests
+```
+
+## License
+
+MIT
