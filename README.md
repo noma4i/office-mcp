@@ -4,11 +4,15 @@ An MCP server that lets Claude control Microsoft Word and Excel on macOS via App
 
 **98 tools** - 59 for Word, 39 for Excel - covering documents, text, tables, formatting, navigation, clipboard, headers/footers, sections, images, and more.
 
-## Requirements
+## Features
 
-- macOS with Microsoft Word and/or Excel installed
-- Node.js >= 16
-- Yarn
+- **Rich object clipboard** - copy and paste content with full formatting between documents, not just plain text. Move styled paragraphs, images, and table fragments without losing anything.
+- **Deep table operations** - full CRUD on rows, columns, and cells in both Word and Excel. Find columns by header text, add/delete rows and columns, read and write individual cells.
+- **Cross-app coverage** - one server handles both Word and Excel. Create a spreadsheet, process data, then build a formatted report in Word - all in a single conversation.
+- **Headers, footers, and sections** - read and write headers/footers per section, insert images into them, control page setup, margins, and orientation. Most MCP servers ignore these entirely.
+- **Formatting-aware** - read current text and paragraph formatting (font, size, bold, color, alignment, indents, spacing). Apply styles, format selections, set number formats in Excel.
+- **Image support** - insert images into documents and headers/footers, resize inline shapes, create reusable image refs for repeated insertion.
+- **98 tools total** - 59 for Word, 39 for Excel. Not a thin wrapper - full document automation.
 
 ## Quick Start
 
