@@ -72,55 +72,6 @@ One-click install for Claude Desktop.
 | Clipboard (4)    | copy, paste, capture ref, insert ref         | `excel_copy_range`, `excel_paste_range`           |
 | Workflows (2)    | clear worksheet, set range values            | `excel_clear_worksheet`, `excel_set_range_values` |
 
-## Tool Response Format
-
-Every tool returns JSON in `content[0].text`:
-
-```json
-// Success
-{"ok": true, "message": "Document created"}
-{"ok": true, "message": "Operation completed successfully", "data": {...}}
-
-// Error
-{"ok": false, "error": {"code": "NO_DOCUMENT_OPEN", "message": "...", "details": ...}}
-```
-
-Error codes: `NO_DOCUMENT_OPEN`, `NO_WORKBOOK_OPEN`, `NOT_FOUND`, `OUT_OF_RANGE`, `VALIDATION_ERROR`, `APPSCRIPT_ERROR`, `UNKNOWN_TOOL`.
-
-## Testing
-
-```bash
-yarn test                        # All tests
-yarn test:watch                  # Watch mode
-yarn test:coverage               # With coverage
-yarn test:applescript:strict     # Strict osacompile syntax check
-yarn test:word-find:live         # Runtime smoke tests (requires Word)
-```
-
-The live test suite runs against a real Microsoft Word instance and covers find/replace, delete, and cursor movement scenarios. Run it in a local GUI session.
-
-## Project Structure
-
-```
-src/
-  index.js                        # Entry point
-  lib/
-    server.js                     # MCP server setup
-    tool-registry.js              # Tool registration (98 tools)
-    tool-executor.js              # Tool call handler
-    validators.js                 # Input validation
-    fragment-store.js             # Temporary rich-content refs
-    applescript/
-      executor.js                 # AppleScript runner (30s timeout)
-      helpers.js                  # String escaping helpers
-      word-find.js                # Word Find orchestration
-      template-engine.js          # AppleScript template engine
-  tools/
-    word-*.js                     # Word tools (13 modules)
-    excel-*.js                    # Excel tools (8 modules)
-tests/                            # Unit, integration, syntax tests
-```
-
 ## License
 
-MIT
+MIT - see [LICENSE](LICENSE)
