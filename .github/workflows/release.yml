@@ -33,6 +33,9 @@ jobs:
       - name: Run tests
         run: yarn test
 
+      - name: Build MCPB package
+        run: npx @anthropic-ai/mcpb pack . office-mcp.mcpb
+
       - name: Generate changelog
         id: changelog
         run: |
@@ -47,3 +50,4 @@ jobs:
         with:
           body_path: changelog.md
           generate_release_notes: false
+          files: office-mcp.mcpb
