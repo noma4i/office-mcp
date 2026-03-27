@@ -2,8 +2,9 @@
 
 ## v0.1.1
 
-- Fix CI: Node 22 only, yarn install, MCPB artifact
-- Disable immutable installs in CI
+- Fix word_replace_text -1708 fallback not loaded in dist/
+- Fix CI: Node 22 only, yarn install, immutable installs
+- Add MCPB artifact to release workflow
 
 ## v0.1.0
 
