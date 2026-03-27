@@ -2,9 +2,9 @@
 
 ## v0.1.1
 
-- Fix word_replace_text -1708 fallback not loaded in dist/
-- Fix CI: Node 22 only, yarn install, immutable installs
-- Add MCPB artifact to release workflow
+- word_replace_text/word_delete_text: -1708 fallback (legacy find object content strategy) was missing from dist/ build
+- CI: drop Node 18, test on Node 22 only, fix yarn install with immutable installs disabled
+- Release workflow: add MCPB artifact upload
 
 ## v0.1.0
 
