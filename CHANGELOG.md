@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.1.1
+
+- Fix CI: Node 22 only, yarn install, MCPB artifact
+- Disable immutable installs in CI
+
 ## v0.1.0
 
 Initial public release.

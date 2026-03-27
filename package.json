@@ -1,6 +1,6 @@
 {
   "name": "office-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP server for controlling Microsoft Word and Excel via AppleScript on macOS",
   "type": "module",
   "private": true,
