@@ -89,6 +89,18 @@ export function validateExcelRangeReference(value, name = 'range') {
   return range;
 }
 
+export const WORD_FIND_MAX_LENGTH = 255;
+
+export function validateFindText(value, name) {
+  const str = validateString(value, name, true);
+  if (str.length > WORD_FIND_MAX_LENGTH) {
+    throw new Error(
+      `${name} exceeds Word Find limit of ${WORD_FIND_MAX_LENGTH} characters (got ${str.length}). For longer text, use paragraph-level tools (word_list_paragraphs, word_delete_paragraph, word_goto_paragraph + word_insert_text).`
+    );
+  }
+  return str;
+}
+
 export function getErrorMessage(error) {
   if (error instanceof Error) return error.message;
   if (typeof error === 'string') return error;

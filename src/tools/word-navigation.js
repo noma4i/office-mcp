@@ -1,4 +1,4 @@
-import { validateString, validateInteger } from '../lib/validators.js';
+import { validateString, validateInteger, validateFindText } from '../lib/validators.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
 import { WORD_FIND_MODES, runWordFindWithFallback } from '../lib/applescript/word-find.js';
 import { wrapWordScript } from '../lib/applescript/script-wrappers.js';
@@ -69,18 +69,18 @@ return "All content selected"
   },
   {
     name: 'word_move_cursor_after_text',
-    description: 'Find text and move cursor after the specified occurrence in Word',
+    description: 'Find text and move cursor after the specified occurrence in Word (max 255 chars)',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
       properties: {
-        searchText: { type: 'string', description: 'Text to search for' },
+        searchText: { type: 'string', maxLength: 255, description: 'Text to search for (max 255 characters)' },
         occurrence: { type: 'integer', description: 'Which occurrence to jump to (default: 1)', default: 1 }
       },
       required: ['searchText']
     },
     async handler(args) {
-      const searchText = validateString(args.searchText, 'searchText', true);
+      const searchText = validateFindText(args.searchText, 'searchText');
       const occurrence = validateInteger(args.occurrence, 'occurrence', 1) || 1;
 
       return await runWordFindWithFallback(

@@ -427,9 +427,7 @@ describe('AppleScript Syntax Verification', () => {
     });
 
     test('create_image_ref rejects unsupported formats without AppleScript execution', async () => {
-      await expect(findTool(imageTools, 'word_create_image_ref').handler({ path: '/tmp/test.gif' })).rejects.toThrow(
-        'path must point to a PNG, JPEG, or TIFF image'
-      );
+      await expect(findTool(imageTools, 'word_create_image_ref').handler({ path: '/tmp/test.gif' })).rejects.toThrow('path must point to a PNG, JPEG, or TIFF image');
     });
 
     test('insert_image with resize compiles', async () => {
@@ -628,9 +626,7 @@ describe('AppleScript Syntax Verification', () => {
     });
 
     test('word_set_page_setup rejects invalid orientation', async () => {
-      await expect(findTool(sectionTools, 'word_set_page_setup').handler({ orientation: 'sideways' })).rejects.toThrow(
-        'orientation must be one of: portrait, landscape'
-      );
+      await expect(findTool(sectionTools, 'word_set_page_setup').handler({ orientation: 'sideways' })).rejects.toThrow('orientation must be one of: portrait, landscape');
     });
   });
 
@@ -956,9 +952,11 @@ describe('AppleScript Syntax Verification', () => {
       expect(result.ok).toBe(true);
     });
 
-    test('word_replace_text with long single-line find and replace uses execute find parameters', async () => {
-      const longFind = 'automation incident details '.repeat(12).trim();
-      const longReplace = '[describe incident impact] '.repeat(8).trim();
+    test('word_replace_text with long single-line find and replace within 255 limit uses execute find parameters', async () => {
+      const longFind = 'automation incident details '.repeat(9).trim();
+      const longReplace = '[describe incident impact] '.repeat(9).trim();
+      expect(longFind.length).toBeLessThanOrEqual(255);
+      expect(longReplace.length).toBeLessThanOrEqual(255);
       const script = await captureScript(findTool(textTools, 'word_replace_text'), { find: longFind, replace: longReplace });
       expect(script).toContain(`find text "${longFind}"`);
       expect(script).toContain(`replace with "${longReplace}"`);
@@ -966,6 +964,11 @@ describe('AppleScript Syntax Verification', () => {
       expect(script).not.toContain('content of replacement of findObject');
       const result = compileAppleScript(script);
       expect(result.ok).toBe(true);
+    });
+
+    test('word_replace_text rejects text exceeding 255 characters', async () => {
+      const longFind = 'x'.repeat(256);
+      await expect(findTool(textTools, 'word_replace_text').handler({ find: longFind, replace: 'short' })).rejects.toThrow(/exceeds Word Find limit/);
     });
 
     test('word_insert_text with multiline text uses return concatenation', async () => {

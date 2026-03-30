@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.1.2
+
+- Word Find/Replace: enforce 255-character limit with clear error message and alternative (paragraph tools)
+- Tool schemas expose maxLength so agents see the limit before calling
+
 ## v0.1.1
 
 - word_replace_text/word_delete_text: -1708 fallback (legacy find object content strategy) was missing from dist/ build

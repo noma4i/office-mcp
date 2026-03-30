@@ -10,7 +10,7 @@
 
 - **Цель**: MCP сервер для управления Microsoft Word и Excel через AppleScript
 - **Принцип**: Модульная архитектура с разделением инструментов по категориям
-- **Версия**: 0.8.0
+- **Версия**: 0.1.2
 - **Автор**: noma4i (github.com/noma4i)
 - **Пакет**: `office-mcp`
 
@@ -64,18 +64,18 @@
 
 ### Основные модули
 
-| Модуль                                   | Назначение                                     | API                                                              |
-| ---------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------- |
-| `src/index.js`                           | Точка входа                                    | `main()`                                                         |
-| `src/lib/server.js`                      | MCP Server v0.8.0                              | `createServer()`, `startServer()`                                |
-| `src/lib/tool-registry.js`               | Регистрация 98 инструментов                    | `ALL_TOOLS`, `getToolDefinitions()`, `getToolHandler()`          |
-| `src/lib/tool-executor.js`               | Обработчик инструментов + MCP envelope ошибок  | `executeTool()`                                                  |
-| `src/lib/validators.js`                  | Валидация строк, чисел, enum и Excel refs      | 8 функций                                                        |
-| `src/lib/fragment-store.js`              | Временные rich-content refs с TTL              | `reserveFragment()`, `commitReservedFragment()`, `getFragment()` |
-| `src/lib/applescript/executor.js`        | Выполнение AppleScript (таймаут 30с)           | `runAppleScript()`                                               |
-| `src/lib/applescript/helpers.js`         | Фрагменты Word + Excel + экранирование строк   | `COMMON_SCRIPTS`, `toAppleScriptString()`, `escapeForWordFind()`, `buildWordExecuteFind()` |
-| `src/lib/applescript/word-find.js`       | Единый Word Find runner + direct/legacy fallback | `buildWordFindScript()`, `runWordFindWithFallback()`           |
-| `src/lib/applescript/template-engine.js` | Шаблоны (regex-safe, type-safe)                | `processTemplate()`                                              |
+| Модуль                                   | Назначение                                                | API                                                                                        |
+| ---------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `src/index.js`                           | Точка входа                                               | `main()`                                                                                   |
+| `src/lib/server.js`                      | MCP Server v0.1.2                                         | `createServer()`, `startServer()`                                                          |
+| `src/lib/tool-registry.js`               | Регистрация 98 инструментов                               | `ALL_TOOLS`, `getToolDefinitions()`, `getToolHandler()`                                    |
+| `src/lib/tool-executor.js`               | Обработчик инструментов + MCP envelope ошибок             | `executeTool()`                                                                            |
+| `src/lib/validators.js`                  | Валидация строк, чисел, enum, Excel refs, Word Find limit | 9 функций                                                                                  |
+| `src/lib/fragment-store.js`              | Временные rich-content refs с TTL                         | `reserveFragment()`, `commitReservedFragment()`, `getFragment()`                           |
+| `src/lib/applescript/executor.js`        | Выполнение AppleScript (таймаут 30с)                      | `runAppleScript()`                                                                         |
+| `src/lib/applescript/helpers.js`         | Фрагменты Word + Excel + экранирование строк              | `COMMON_SCRIPTS`, `toAppleScriptString()`, `escapeForWordFind()`, `buildWordExecuteFind()` |
+| `src/lib/applescript/word-find.js`       | Единый Word Find runner + direct/legacy fallback          | `buildWordFindScript()`, `runWordFindWithFallback()`                                       |
+| `src/lib/applescript/template-engine.js` | Шаблоны (regex-safe, type-safe)                           | `processTemplate()`                                                                        |
 
 ### Нейминг инструментов
 
@@ -98,22 +98,24 @@
 
 ### Текст (4)
 
-| Инструмент          | Назначение                                                       | Параметры                                          |
-| ------------------- | ---------------------------------------------------------------- | -------------------------------------------------- |
-| `word_insert_text`  | Вставить текст                                                   | `text`                                             |
-| `word_replace_text` | Найти и заменить (возвращает "not found" если не найдено)        | `find`, `replace?` (default ""), `all?`            |
-| `word_delete_text`  | Удалить текст/выделение (возвращает "not found" если не найдено) | `text?` (если указан — найти и удалить все)        |
-| `word_format_text`  | Форматирование                                                   | `bold?`, `italic?`, `underline?`, `font?`, `size?` |
+**Лимит Word Find API:** `find`, `replace`, `text` (для поиска) - максимум 255 символов. Для длинного текста использовать `word_list_paragraphs` + `word_delete_paragraph` + `word_goto_paragraph` + `word_insert_text`.
+
+| Инструмент          | Назначение                                                                      | Параметры                                          |
+| ------------------- | ------------------------------------------------------------------------------- | -------------------------------------------------- |
+| `word_insert_text`  | Вставить текст                                                                  | `text`                                             |
+| `word_replace_text` | Найти и заменить (max 255 chars, возвращает "not found" если не найдено)        | `find`, `replace?` (default ""), `all?`            |
+| `word_delete_text`  | Удалить текст/выделение (max 255 chars, возвращает "not found" если не найдено) | `text?` (если указан - найти и удалить все)        |
+| `word_format_text`  | Форматирование                                                                  | `bold?`, `italic?`, `underline?`, `font?`, `size?` |
 
 ### Навигация (5)
 
-| Инструмент                    | Назначение          | Параметры                   |
-| ----------------------------- | ------------------- | --------------------------- |
-| `word_move_cursor_after_text` | Курсор после текста | `searchText`, `occurrence?` |
-| `word_goto_start`             | В начало            | —                           |
-| `word_goto_end`               | В конец             | —                           |
-| `word_get_selection_info`     | Позиция выделения   | —                           |
-| `word_select_all`             | Выделить всё        | —                           |
+| Инструмент                    | Назначение                          | Параметры                   |
+| ----------------------------- | ----------------------------------- | --------------------------- |
+| `word_move_cursor_after_text` | Курсор после текста (max 255 chars) | `searchText`, `occurrence?` |
+| `word_goto_start`             | В начало                            | —                           |
+| `word_goto_end`               | В конец                             | —                           |
+| `word_get_selection_info`     | Позиция выделения                   | —                           |
+| `word_select_all`             | Выделить всё                        | —                           |
 
 ### Таблицы (10)
 
@@ -132,38 +134,38 @@
 
 ### Закладки (4), Гиперссылки (2), Параграфы (4), Изображения (4)
 
-| Инструмент                 | Назначение                             | Параметры                                        |
-| -------------------------- | -------------------------------------- | ------------------------------------------------ |
-| `word_list_bookmarks`      | Список закладок                        | —                                                |
-| `word_create_bookmark`     | Создать закладку                       | `name`                                           |
-| `word_goto_bookmark`       | Перейти                                | `name`                                           |
-| `word_delete_bookmark`     | Удалить                                | `name`                                           |
-| `word_list_hyperlinks`     | Список (try/catch для text to display) | —                                                |
-| `word_create_hyperlink`    | Создать                                | `url`, `displayText?`                            |
-| `word_list_paragraphs`     | Список со стилями                      | `limit?`                                         |
-| `word_goto_paragraph`      | Перейти                                | `index`                                          |
-| `word_set_paragraph_style` | Установить стиль                       | `index`, `styleName`                             |
-| `word_delete_paragraph`    | Удалить параграф                       | `index`                                          |
-| `word_insert_image`        | Вставить через clipboard               | `path`, `width?`, `height?`                      |
-| `word_create_image_ref`    | Создать `ref` для локального изображения | `path`                                         |
-| `word_list_inline_shapes`  | Список shapes                          | —                                                |
-| `word_resize_inline_shape` | Изменить размер                        | `index`, `width?`, `height?`, `lockAspectRatio?` |
+| Инструмент                 | Назначение                               | Параметры                                        |
+| -------------------------- | ---------------------------------------- | ------------------------------------------------ |
+| `word_list_bookmarks`      | Список закладок                          | —                                                |
+| `word_create_bookmark`     | Создать закладку                         | `name`                                           |
+| `word_goto_bookmark`       | Перейти                                  | `name`                                           |
+| `word_delete_bookmark`     | Удалить                                  | `name`                                           |
+| `word_list_hyperlinks`     | Список (try/catch для text to display)   | —                                                |
+| `word_create_hyperlink`    | Создать                                  | `url`, `displayText?`                            |
+| `word_list_paragraphs`     | Список со стилями                        | `limit?`                                         |
+| `word_goto_paragraph`      | Перейти                                  | `index`                                          |
+| `word_set_paragraph_style` | Установить стиль                         | `index`, `styleName`                             |
+| `word_delete_paragraph`    | Удалить параграф                         | `index`                                          |
+| `word_insert_image`        | Вставить через clipboard                 | `path`, `width?`, `height?`                      |
+| `word_create_image_ref`    | Создать `ref` для локального изображения | `path`                                           |
+| `word_list_inline_shapes`  | Список shapes                            | —                                                |
+| `word_resize_inline_shape` | Изменить размер                          | `index`, `width?`, `height?`, `lockAspectRatio?` |
 
 ### Clipboard (4)
 
-| Инструмент                  | Назначение                                   | Параметры                                                           |
-| --------------------------- | -------------------------------------------- | ------------------------------------------------------------------- |
-| `word_copy_content`         | Копировать в clipboard с форматами           | `scope?`, `startParagraph?`, `endParagraph?`, `inlineShapeIndex?`   |
-| `word_capture_content_ref`  | Legacy disabled под in-place policy          | `scope?`, `startParagraph?`, `endParagraph?`, `inlineShapeIndex?`   |
-| `word_insert_content_ref`   | Вставить image ref                           | `ref`, `width?`, `height?`                                           |
-| `word_paste_content`        | Вставить из clipboard с форматами            | —                                                                   |
+| Инструмент                 | Назначение                          | Параметры                                                         |
+| -------------------------- | ----------------------------------- | ----------------------------------------------------------------- |
+| `word_copy_content`        | Копировать в clipboard с форматами  | `scope?`, `startParagraph?`, `endParagraph?`, `inlineShapeIndex?` |
+| `word_capture_content_ref` | Legacy disabled под in-place policy | `scope?`, `startParagraph?`, `endParagraph?`, `inlineShapeIndex?` |
+| `word_insert_content_ref`  | Вставить image ref                  | `ref`, `width?`, `height?`                                        |
+| `word_paste_content`       | Вставить из clipboard с форматами   | —                                                                 |
 
 ### Workflows (3)
 
-| Инструмент                 | Назначение                                 | Параметры                           |
-| -------------------------- | ------------------------------------------ | ----------------------------------- |
-| `word_copy_story_content`  | Копировать body/header/footer в clipboard  | `scope?`, `section?`, `type?`       |
-| `word_clear_story_content` | Очистить body/header/footer in-place       | `scope?`, `section?`, `type?`       |
+| Инструмент                 | Назначение                                 | Параметры                             |
+| -------------------------- | ------------------------------------------ | ------------------------------------- |
+| `word_copy_story_content`  | Копировать body/header/footer в clipboard  | `scope?`, `section?`, `type?`         |
+| `word_clear_story_content` | Очистить body/header/footer in-place       | `scope?`, `section?`, `type?`         |
 | `word_set_story_text`      | Заменить текст body/header/footer in-place | `scope?`, `text`, `section?`, `type?` |
 
 ### Headers/Footers (6)
@@ -252,28 +254,28 @@
 
 ### Data (3)
 
-| Инструмент         | Назначение      | Параметры                                      |
-| ------------------ | --------------- | ---------------------------------------------- |
-| `excel_sort_range` | Сортировка      | `range`, `keyCell`, `ascending?`, `hasHeader?` |
-| `excel_calculate`  | Пересчёт формул | —                                              |
-| `excel_export_csv` | Экспорт листа в CSV | `path`, `worksheet?`                        |
+| Инструмент         | Назначение          | Параметры                                      |
+| ------------------ | ------------------- | ---------------------------------------------- |
+| `excel_sort_range` | Сортировка          | `range`, `keyCell`, `ascending?`, `hasHeader?` |
+| `excel_calculate`  | Пересчёт формул     | —                                              |
+| `excel_export_csv` | Экспорт листа в CSV | `path`, `worksheet?`                           |
 
 ### Clipboard (4)
 
-| Инструмент                | Назначение                                  | Параметры                    |
-| ------------------------- | ------------------------------------------- | ---------------------------- |
-| `excel_copy_range`        | Копировать диапазон с форматами в clipboard | `range`, `worksheet?`        |
-| `excel_paste_range`       | Вставить clipboard в target cell            | `targetCell`, `worksheet?`   |
-| `excel_capture_range_ref` | Legacy disabled под in-place policy         | `range`, `worksheet?`        |
+| Инструмент                | Назначение                                  | Параметры                         |
+| ------------------------- | ------------------------------------------- | --------------------------------- |
+| `excel_copy_range`        | Копировать диапазон с форматами в clipboard | `range`, `worksheet?`             |
+| `excel_paste_range`       | Вставить clipboard в target cell            | `targetCell`, `worksheet?`        |
+| `excel_capture_range_ref` | Legacy disabled под in-place policy         | `range`, `worksheet?`             |
 | `excel_insert_range_ref`  | Legacy disabled под in-place policy         | `ref`, `targetCell`, `worksheet?` |
 
 ### Workflows (2)
 
-| Инструмент               | Назначение                              | Параметры                      |
-| ------------------------ | --------------------------------------- | ------------------------------ |
-| `excel_clear_worksheet`  | Очистить used range активного листа     | `worksheet?`                   |
+| Инструмент               | Назначение                               | Параметры                       |
+| ------------------------ | ---------------------------------------- | ------------------------------- |
+| `excel_clear_worksheet`  | Очистить used range активного листа      | `worksheet?`                    |
 | `excel_set_range_values` | Записать TSV-матрицу в диапазон in-place | `range`, `values`, `worksheet?` |
-| `excel_export_csv` | Экспорт в CSV   | `path`                                         |
+| `excel_export_csv`       | Экспорт в CSV                            | `path`                          |
 
 ## Индексация
 
@@ -320,22 +322,22 @@
 
 ### Word
 
-| Операция            | Синтаксис                                                                                   |
-| ------------------- | ------------------------------------------------------------------------------------------- |
-| Ячейка таблицы      | `cell COLUMN of row ROW of table`                                                           |
-| Collapse            | `set selection end/start of selection to selection start/end of selection`                  |
+| Операция            | Синтаксис                                                                                                                                                                                                                                                                |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Ячейка таблицы      | `cell COLUMN of row ROW of table`                                                                                                                                                                                                                                        |
+| Collapse            | `set selection end/start of selection to selection start/end of selection`                                                                                                                                                                                               |
 | Find                | `find object of selection` (НЕ внутри `tell activeDoc`), primary path: `execute find ... find text ... replace with ...`; compatibility fallback на `set content of find object` допустим только внутри `src/lib/applescript/word-find.js` после runtime-dispatch ошибки |
-| Закладки            | `make new bookmark at d with properties {name:"X", \|bookmark range\|:selection}`           |
-| Гиперссылки         | `hyperlink objects of d`, `text to display of h` (в try/catch)                              |
-| Copy/Paste          | `copy object selection`, `paste object selection`                                           |
-| Изображение         | clipboard + `paste object selection`                                                        |
-| Delete paragraph    | `select (text object of paragraph N of d)` → `delete (text object of selection)`            |
-| Header              | `get header of section N of d index header footer primary`                                  |
-| Footer              | `get footer of section N of d index header footer primary`                                  |
-| Header/Footer текст | `content of text object of refHeader`                                                       |
-| Section break       | `insert break at r break type section break next page`                                      |
-| Page setup          | `page setup of section N of d` → margins, orientation                                       |
-| Paragraph format    | `paragraph format left indent of pf` (НЕ `left indent of pf`)                               |
+| Закладки            | `make new bookmark at d with properties {name:"X", \|bookmark range\|:selection}`                                                                                                                                                                                        |
+| Гиперссылки         | `hyperlink objects of d`, `text to display of h` (в try/catch)                                                                                                                                                                                                           |
+| Copy/Paste          | `copy object selection`, `paste object selection`                                                                                                                                                                                                                        |
+| Изображение         | clipboard + `paste object selection`                                                                                                                                                                                                                                     |
+| Delete paragraph    | `select (text object of paragraph N of d)` → `delete (text object of selection)`                                                                                                                                                                                         |
+| Header              | `get header of section N of d index header footer primary`                                                                                                                                                                                                               |
+| Footer              | `get footer of section N of d index header footer primary`                                                                                                                                                                                                               |
+| Header/Footer текст | `content of text object of refHeader`                                                                                                                                                                                                                                    |
+| Section break       | `insert break at r break type section break next page`                                                                                                                                                                                                                   |
+| Page setup          | `page setup of section N of d` → margins, orientation                                                                                                                                                                                                                    |
+| Paragraph format    | `paragraph format left indent of pf` (НЕ `left indent of pf`)                                                                                                                                                                                                            |
 
 ### Excel
 
@@ -370,18 +372,18 @@ yarn test:applescript:strict # Strict compile через osacompile
 yarn test:word-find:live     # Opt-in runtime smoke для Word Find
 ```
 
-| Тестовый файл                            | Покрытие                                                                                  | Тестов |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------- | ------ |
-| `tests/validation.test.js`               | Валидация                                                                                 | 20+    |
-| `tests/mcp-tools.test.js`                | Word инструменты                                                                          | 80+    |
-| `tests/server-integration.test.js`       | Интеграция (98 инструментов)                                                               | 40+    |
-| `tests/applescript-syntax.test.js`       | Word AppleScript + headers/sections/formatting + multiline + спецсимволы + error handling | 110+   |
-| `tests/applescript-registry.test.js`     | Registry-level strict compile для всех AppleScript-backed tools через `ALL_TOOLS`         | 1      |
-| `tests/excel-applescript-syntax.test.js` | Excel AppleScript (все 39 инструментов) + спецсимволы + валидация RGB + error handling     | 60+    |
-| `tests/fragment-store.test.js`           | `ref`-хранилище, TTL cleanup, file-backed fragments                                      | 5+     |
-| `tests/tool-executor.test.js`            | MCP envelope, коды ошибок, details                                                       | 5+     |
-| `tests/applescript-wrappers.test.js`     | Word/Excel wrappers и guards                                                              | 4+     |
-| `tests/word-find-orchestration.test.js`  | Word Find retry orchestration, compatibility fallback, combined errors                    | 6      |
+| Тестовый файл                            | Покрытие                                                                                              | Тестов |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------- | ------ |
+| `tests/validation.test.js`               | Валидация                                                                                             | 20+    |
+| `tests/mcp-tools.test.js`                | Word инструменты                                                                                      | 80+    |
+| `tests/server-integration.test.js`       | Интеграция (98 инструментов)                                                                          | 40+    |
+| `tests/applescript-syntax.test.js`       | Word AppleScript + headers/sections/formatting + multiline + спецсимволы + error handling             | 110+   |
+| `tests/applescript-registry.test.js`     | Registry-level strict compile для всех AppleScript-backed tools через `ALL_TOOLS`                     | 1      |
+| `tests/excel-applescript-syntax.test.js` | Excel AppleScript (все 39 инструментов) + спецсимволы + валидация RGB + error handling                | 60+    |
+| `tests/fragment-store.test.js`           | `ref`-хранилище, TTL cleanup, file-backed fragments                                                   | 5+     |
+| `tests/tool-executor.test.js`            | MCP envelope, коды ошибок, details                                                                    | 5+     |
+| `tests/applescript-wrappers.test.js`     | Word/Excel wrappers и guards                                                                          | 4+     |
+| `tests/word-find-orchestration.test.js`  | Word Find retry orchestration, compatibility fallback, combined errors                                | 6      |
 | `tests/word-find-live.test.js`           | Opt-in runtime smoke против реального Microsoft Word для short/long/placeholder replace, delete, move | 6      |
 
 - `yarn test:applescript:strict` проверяет синтаксис через `osacompile`, но не подтверждает runtime-поведение Word Find API

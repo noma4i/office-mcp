@@ -1,4 +1,4 @@
-import { validateString, validateBoolean, validateNumber } from '../lib/validators.js';
+import { validateString, validateBoolean, validateNumber, validateFindText } from '../lib/validators.js';
 import { runAppleScript } from '../lib/applescript/executor.js';
 import { toAppleScriptString } from '../lib/applescript/helpers.js';
 import { WORD_FIND_MODES, runWordFindWithFallback } from '../lib/applescript/word-find.js';
@@ -33,18 +33,20 @@ return "Text inserted successfully"
 
   {
     name: 'word_replace_text',
-    description: 'Find and replace text in the active Word document',
+    description: 'Find and replace text in the active Word document (max 255 chars per field - for longer text use paragraph tools)',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
       properties: {
         find: {
           type: 'string',
-          description: 'Text to find'
+          maxLength: 255,
+          description: 'Text to find (max 255 characters)'
         },
         replace: {
           type: 'string',
-          description: 'Text to replace with'
+          maxLength: 255,
+          description: 'Text to replace with (max 255 characters)'
         },
         all: {
           type: 'boolean',
@@ -55,8 +57,8 @@ return "Text inserted successfully"
       required: ['find']
     },
     async handler(args) {
-      const find = validateString(args.find, 'find', true);
-      const replace = args.replace !== undefined ? validateString(args.replace, 'replace', false) : '';
+      const find = validateFindText(args.find, 'find');
+      const replace = args.replace !== undefined ? validateFindText(args.replace, 'replace') : '';
       const all = validateBoolean(args.all, 'all', true);
 
       return await runWordFindWithFallback(
@@ -73,20 +75,22 @@ return "Text inserted successfully"
 
   {
     name: 'word_delete_text',
-    description: 'Delete selected text or find and delete all occurrences of specific text in the active Word document',
+    description:
+      'Delete selected text or find and delete all occurrences of specific text in the active Word document (max 255 chars for find - for longer text use word_delete_paragraph)',
     annotations: { destructiveHint: true },
     inputSchema: {
       type: 'object',
       properties: {
         text: {
           type: 'string',
-          description: 'Text to find and delete. If not provided, deletes the current selection.'
+          maxLength: 255,
+          description: 'Text to find and delete (max 255 characters). If not provided, deletes the current selection.'
         }
       }
     },
     async handler(args) {
       if (args.text !== undefined) {
-        const text = validateString(args.text, 'text', true);
+        const text = validateFindText(args.text, 'text');
         return await runWordFindWithFallback(
           {
             mode: WORD_FIND_MODES.DELETE_ALL,

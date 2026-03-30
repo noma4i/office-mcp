@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { getErrorMessage, validateBoolean, validateInteger, validateNumber, validateString } from '../src/lib/validators.js';
+import { getErrorMessage, validateBoolean, validateFindText, validateInteger, validateNumber, validateString, WORD_FIND_MAX_LENGTH } from '../src/lib/validators.js';
 
 describe('Validation Functions', () => {
   describe('validateString', () => {
@@ -46,6 +46,30 @@ describe('Validation Functions', () => {
       expect(() => validateInteger(10.2, 'field')).toThrow('field must be an integer');
       expect(() => validateInteger(50, 'field', 0, 20)).toThrow('field must be between 0 and 20');
       expect(() => validateInteger(-5, 'field', 1, 20)).toThrow('field must be between 1 and 20');
+    });
+  });
+
+  describe('validateFindText', () => {
+    test('accepts text within limit', () => {
+      expect(validateFindText('short text', 'find')).toBe('short text');
+      expect(validateFindText('x'.repeat(255), 'find')).toBe('x'.repeat(255));
+    });
+
+    test('rejects text exceeding 255 characters', () => {
+      const long = 'x'.repeat(256);
+      expect(() => validateFindText(long, 'find')).toThrow(`find exceeds Word Find limit of ${WORD_FIND_MAX_LENGTH} characters (got 256)`);
+    });
+
+    test('rejects empty string', () => {
+      expect(() => validateFindText('', 'find')).toThrow('find cannot be empty');
+    });
+
+    test('rejects non-string', () => {
+      expect(() => validateFindText(123, 'find')).toThrow('find must be a string');
+    });
+
+    test('error message suggests paragraph tools', () => {
+      expect(() => validateFindText('x'.repeat(300), 'find')).toThrow(/paragraph-level tools/);
     });
   });
 
